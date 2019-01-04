@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_account"
+            android:icon="@drawable/iconfinder_accountcircle_326497"
+            android:title="My Account" />
+        <item
+            android:id="@+id/nav_orders"
+            android:icon="@drawable/iconfinder_shoppingcart_216477"
+            android:title="My Orders" />
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="App Settings" />
+        <item
+            android:id="@+id/nav_manage"
+            android:icon="@drawable/iconfinder_iconnotification_2867931"
+            android:title="Notifications" />
+        <item
+            android:id="@+id/nav_policy"
+            android:icon="@drawable/iconfinder_lock__protect__privacy__security_2541992"
+            android:title="Privacy Policy" />
+        <item
+            android:id="@+id/nav_report"
+            android:icon="@drawable/iconfinder_report_326685"
+            android:title="Report a Problem" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/iconfinder_icons_exit2_1564506"
+            android:title="Logout" />
+    </group>
+
+    <item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Share" />
+            <item
+                android:id="@+id/nav_contact_us"
+                android:icon="@drawable/iconfinder_contact_126567"
+                android:title="Contact us" />
+        </menu>
+    </item>
+
+</menu>
