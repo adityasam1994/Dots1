@@ -466,15 +466,36 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         String st=dataSnapshot.child("status").getValue().toString();
 
+                                        if(st.equals("customer")) {
+                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, provider_home.class));
+                                                }
+                                            }
+                                            else {
+                                                pd.dismiss();
+                                                startActivity(new Intent(newsignup.this, newdrawer.class));
+                                            }}
+
                                         if(st.equals("provider")){
+                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, provider_home.class));
+                                                }
+                                            }
+
                                             pd.dismiss();
-                                            Intent inte=new Intent(newsignup.this, provider_home.class);
-                                            startActivity(inte);
-                                        }
-                                        if(st.equals("customer")){
-                                            pd.dismiss();
-                                            Intent inte=new Intent(newsignup.this, newdrawer.class);
-                                            startActivity(inte);
+                                            startActivity(new Intent(newsignup.this, provider_home.class));
                                         }
                                     }
 
@@ -536,15 +557,36 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         String st=dataSnapshot.child("status").getValue().toString();
 
+                                        if(st.equals("customer")) {
+                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, provider_home.class));
+                                                }
+                                            }
+                                            else {
+                                                pd.dismiss();
+                                                startActivity(new Intent(newsignup.this, newdrawer.class));
+                                            }}
+
                                         if(st.equals("provider")){
+                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, provider_home.class));
+                                                }
+                                            }
+
                                             pd.dismiss();
-                                            Intent inte=new Intent(newsignup.this, provider_home.class);
-                                            startActivity(inte);
-                                        }
-                                        if(st.equals("customer")){
-                                            pd.dismiss();
-                                            Intent inte=new Intent(newsignup.this, newdrawer.class);
-                                            startActivity(inte);
+                                            startActivity(new Intent(newsignup.this, provider_home.class));
                                         }
                                     }
 

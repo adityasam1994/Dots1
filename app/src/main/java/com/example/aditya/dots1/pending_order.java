@@ -1,13 +1,18 @@
 package com.example.aditya.dots1;
 
 import android.content.Intent;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,12 +31,15 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
 
     GoogleMap gmap;
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Orders");
+    DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     String oid, pid;
-    TextView tvid,tvservice,tvlocation,tvtime,tvcost,tvcomment,tvheading,txtdistance,tvstatus;
-    Button cancel;
+    TextView tvid,tvservice,tvlocation,tvtime,tvcost,tvcomment,tvheading,txtdistance,tvstatus, location_label,comment_label;
+    Button cancel, btngmap;
     ImageView btnback;
-    double lat,lng;
+    double lat,lng, plat, plng, distance;
+    FrameLayout frameLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +47,8 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
 
         oid=getIntent().getExtras().getString("oid");
 
+        btngmap=(Button)findViewById(R.id.btngmap);
+        frameLayout=(FrameLayout)findViewById(R.id.frameLayout);
         btnback=(ImageView)findViewById(R.id.btnback);
         tvid=(TextView)findViewById(R.id.tvid);
         tvservice=(TextView)findViewById(R.id.tvservice);
@@ -48,6 +58,9 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
         tvcost=(TextView)findViewById(R.id.tvcost);
         cancel=(Button)findViewById(R.id.btnaccept);
         txtdistance=(TextView)findViewById(R.id.txtdistance);
+        location_label=(TextView)findViewById(R.id.location_lable);
+        comment_label=(TextView)findViewById(R.id.comment_label);
+
 
         MapFragment mapFragment=(MapFragment)getFragmentManager().findFragmentById(R.id.gmap);
         mapFragment.getMapAsync(this);
@@ -81,28 +94,96 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
                 tvcomment.setText(comment);
                 tvcost.setText(cost);
 
-                gmap.clear();
-                final LatLng currentlocation=new LatLng(lat,lng);
 
-                MarkerOptions markerOptions=new MarkerOptions();
-                markerOptions.position(currentlocation);
-                markerOptions.title("My Location");
-                gmap.addMarker(markerOptions);
-                gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                gmap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+                final ViewTreeObserver observer=tvlocation.getViewTreeObserver();
+                observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
-                    public void onCameraIdle() {
-                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                    public void onGlobalLayout() {
+                        int height=tvlocation.getHeight();
+                        LinearLayout.LayoutParams pp= (LinearLayout.LayoutParams) ((TextView)findViewById(R.id.location_lable)).getLayoutParams();
+                        pp.height=height;
+                        location_label.setLayoutParams(pp);
                     }
                 });
 
-                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                final ViewTreeObserver cobserver=tvlocation.getViewTreeObserver();
+                cobserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        int height=tvcomment.getHeight();
+                        LinearLayout.LayoutParams pp= (LinearLayout.LayoutParams) ((TextView)findViewById(R.id.comment_label)).getLayoutParams();
+                        pp.height=height;
+                        comment_label.setLayoutParams(pp);
+                    }
+                });
+
+                dbruser.child(pid).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.child("info").hasChild("lati")){
+                            plat= (double) dataSnapshot.child("info").child("lati").getValue();
+                            plng= (double) dataSnapshot.child("info").child("longi").getValue();
+                        }
+                        else {
+                            plat = (double) dataSnapshot.child("lati").getValue();
+                            plng = (double) dataSnapshot.child("longi").getValue();
+                        }
+
+                        gmap.clear();
+                        final LatLng currentlocation=new LatLng(lat,lng);
+                        final LatLng providerlocation=new LatLng(plat,plng);
+
+                        MarkerOptions markerOptions=new MarkerOptions();
+                        markerOptions.position(currentlocation);
+                        markerOptions.title("My Location");
+                        gmap.addMarker(markerOptions);
+
+                        MarkerOptions provider=new MarkerOptions();
+                        provider.position(providerlocation);
+                        provider.title("Provider");
+                        gmap.addMarker(provider);
+
+                        Location locc=new Location("");
+                        locc.setLatitude(lat);
+                        locc.setLongitude(lng);
+
+                        Location locp=new Location("");
+                        locp.setLatitude(plat);
+                        locp.setLongitude(plng);
+
+                        distance=locc.distanceTo(locp)/1000;
+
+                        txtdistance.setText((int) distance+" Km");
+
+                        gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                        gmap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+                            @Override
+                            public void onCameraIdle() {
+                                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                            }
+                        });
+
+                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                        }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+        btngmap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(pending_order.this, "It's working", Toast.LENGTH_SHORT).show();
             }
         });
 

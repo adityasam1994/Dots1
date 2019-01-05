@@ -77,7 +77,7 @@ public class newdrawer extends AppCompatActivity
     Dialog dialog;
     String fname,email,activity="",piclink="",lname,cod="",orderpath="";
     Layout drawerhead;
-    Button lo,lifting,plumbing,electric;
+    Button lo,lifting,plumbing,electric,btnasprovider;
     DatabaseReference dbr;
     DatabaseReference dbrorder=FirebaseDatabase.getInstance().getReference("Orders");
     TextView tv;
@@ -105,7 +105,7 @@ public class newdrawer extends AppCompatActivity
         lifting=(Button)findViewById(R.id.btnlifting);
         plumbing=(Button)findViewById(R.id.btnplumbing);
         electric=(Button)findViewById(R.id.btnelectric);
-
+        //btnasprovider=(Button)findViewById(R.id.btnasprovider);
 
         dbr= FirebaseDatabase.getInstance().getReference("Users");
         tv=(TextView)findViewById(R.id.tv);
@@ -200,6 +200,8 @@ public class newdrawer extends AppCompatActivity
             }
         });
 
+
+
         /*QRGEncoder qrgEncoder=new QRGEncoder("Aditya Nath", null, QRGContents.Type.TEXT, 300);
         try{
             Bitmap bitmap=qrgEncoder.encodeAsBitmap();
@@ -248,6 +250,7 @@ public class newdrawer extends AppCompatActivity
                 });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -256,6 +259,17 @@ public class newdrawer extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        View header=navigationView.getHeaderView(0);
+        Button btnap=(Button)header.findViewById(R.id.btnasprovider);
+
+        btnap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("current_status").setValue("provider");
+
+                startActivity(new Intent(newdrawer.this, provider_home.class));
+            }
+        });
         //startService(new Intent(newdrawer.this,order_status_service.class));
 
         lines.setOnClickListener(new View.OnClickListener() {

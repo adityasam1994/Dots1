@@ -100,13 +100,13 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/textView10"
+                        android:id="@+id/loc_lab"
                         android:layout_width="56dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
                         android:layout_marginEnd="8dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
-                        android:layout_marginBottom="16dp"
                         android:text="Location"
                         android:textColor="#EEEEEE"
                         android:textStyle="bold" />
@@ -123,7 +123,7 @@
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/textView12"
+                        android:id="@+id/com_lab"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
@@ -276,13 +276,13 @@
                 android:id="@+id/btnaccept"
                 android:layout_width="wrap_content"
                 android:layout_height="71dp"
+                android:layout_gravity="center"
                 android:layout_marginBottom="8dp"
                 android:background="@android:color/transparent"
                 android:drawablePadding="-75dp"
                 android:drawableTop="@drawable/whiteb"
-                android:text="ACCEPT"
+                android:text="Accept"
                 android:textColor="#F3A360"
-                android:layout_gravity="center"
                 android:textSize="18sp" />
 
         </LinearLayout>

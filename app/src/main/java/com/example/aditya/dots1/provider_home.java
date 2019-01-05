@@ -48,7 +48,7 @@ public class provider_home extends AppCompatActivity
 
     LinearLayout.LayoutParams params;
     private IntentIntegrator qrScan;
-    Button bqrscan,btnstart,btncancel;
+    Button bqrscan,btnstart,btncancel, btnascustomer;
     EditText etcode;
     LinearLayout qrlayout,detailayout;
     ImageView lines,imgplay,getdirection;
@@ -75,6 +75,7 @@ public class provider_home extends AppCompatActivity
         qrlayout=(LinearLayout)findViewById(R.id.qrlayout);
         params= (LinearLayout.LayoutParams) qrlayout.getLayoutParams();
 
+        //btnascustomer=(Button)findViewById(R.id.btnascustomer);
         tvservicetype=(TextView)findViewById(R.id.tvaccess);
         getdirection=(ImageView)findViewById(R.id.getdirection);
         detailayout=(LinearLayout)findViewById(R.id.details);
@@ -109,6 +110,18 @@ public class provider_home extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        View header=navigationView.getHeaderView(0);
+        Button btnap=(Button)header.findViewById(R.id.btnascustomer);
+
+        btnap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("current_status").setValue("customer");
+
+                startActivity(new Intent(provider_home.this, newdrawer.class));
+            }
+        });
+
         tvctime.setText(ntime);
         tvcservice.setText(nservice);
         tvcode.setText(ncod);
@@ -117,81 +130,6 @@ public class provider_home extends AppCompatActivity
 
         cname=nusername+System.lineSeparator()+naddress;
         tvdetail.setText(cname);
-
-
-        /*SharedPreferences pref=getSharedPreferences("pref",0);
-        Boolean timeron=pref.getBoolean("timeron",false);
-
-        if(timeron.equals(true)){
-            Toast.makeText(this, "Timer runing", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(this, "Timer is stopped", Toast.LENGTH_SHORT).show();
-        }*/
-        //detailayout.setVisibility(View.VISIBLE);
-
-        /*dbrdetail.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    for (DataSnapshot d : ds.getChildren()){
-                        for (DataSnapshot dd : d.getChildren()){
-                            if(dd.getKey().equals(fauth.getCurrentUser().getUid())){
-                                if(dd.child("status").getValue().toString().equals("pending") || dd.child("status").getValue().toString().equals("accepted"))
-                                {
-                                    orderstatus=dd.child("status").getValue().toString();
-                                    lat= (double) d.child("latitude").getValue();
-                                    lng= (double) d.child("longitude").getValue();
-                                    username = d.child("username").getValue().toString();
-                                    cod = d.child("code").getValue().toString();
-                                    commen = d.child("ecomment").getValue().toString();
-                                    caddress = d.child("eaddress").getValue().toString();
-                                    cservice = d.child("service").getValue().toString();
-                                    tim = d.child("time").getValue().toString();
-                                    format = d.child("format").getValue().toString();
-                                    secretcode = d.child("qrcode").getValue().toString();
-                                    customerid=ds.getKey().toString();
-                                    order_path = ds.getKey().toString() + "/" + d.getKey().toString();
-
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if(cod != null)
-                {
-                    detailayout.setVisibility(View.VISIBLE);
-
-                tvctime.setText(tim);
-                tvcservice.setText(cservice);
-                tvcode.setText(cod);
-                tvccomment.setText(commen);
-
-                cname=username+System.lineSeparator()+caddress;
-                tvdetail.setText(cname);
-
-                storagevideo.child("order").child(customerid).getDownloadUrl()
-                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                videouri=uri;
-                            }
-                        });
-
-                if(!orderstatus.equals("") && orderstatus.equals("accepted")) {
-                    btnstart.setText("Start");
-                    qrlayout.setVisibility(View.VISIBLE);
-                    params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-                    ((ViewManager) btncancel.getParent()).removeView(btncancel);
-                }}
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });*/
 
 
 
@@ -209,7 +147,14 @@ public class provider_home extends AppCompatActivity
         });
 
 
+        /*btnascustomer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbruser.child(fauth.getCurrentUser().getUid()).child("current_status").setValue("customer");
 
+                startActivity(new Intent(provider_home.this, newdrawer.class));
+            }
+        });*/
 
         imgplay.setOnClickListener(new View.OnClickListener() {
             @Override

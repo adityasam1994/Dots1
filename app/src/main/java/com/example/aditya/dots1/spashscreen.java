@@ -35,10 +35,30 @@ public class spashscreen extends Activity {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
                     if(status.equals("customer")) {
-                        startActivity(new Intent(spashscreen.this, newdrawer.class));
+                        if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
+                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                                startActivity(new Intent(spashscreen.this, newdrawer.class));
+                            }
+                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                                startActivity(new Intent(spashscreen.this, provider_home.class));
+                            }
+                        }
+                        else {
+                            startActivity(new Intent(spashscreen.this, newdrawer.class));
+                        }
                     }
                     if(status.equals("provider")){
-                        startActivity(new Intent(spashscreen.this,provider_home.class));
+                        if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
+                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                                startActivity(new Intent(spashscreen.this, newdrawer.class));
+                            }
+                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                                startActivity(new Intent(spashscreen.this, provider_home.class));
+                            }
+                        }
+                        else {
+                            startActivity(new Intent(spashscreen.this, provider_home.class));
+                        }
                     }
                 }
 

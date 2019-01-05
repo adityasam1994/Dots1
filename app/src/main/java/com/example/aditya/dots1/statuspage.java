@@ -11,8 +11,10 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +40,7 @@ import java.util.Locale;
 public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
 
     GoogleMap gmap;
-    TextView tvid,tvservice,tvlocation,tvtime,tvcost,tvcomment,tvheading,txtdistance,tvstatus;
+    TextView tvid,tvservice,tvlocation,tvtime,tvcost,tvcomment,tvheading,txtdistance,tvstatus, loc_lab, com_lab;
     Button accept;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     FirebaseStorage firebaseStorage=FirebaseStorage.getInstance();
@@ -48,7 +50,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
     Uri filePath;
     ProgressDialog pd;
     ImageView btnback;
-    String code,username;
+    String code,username, myservice;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,7 +67,10 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         accept=(Button)findViewById(R.id.btnaccept);
         txtdistance=(TextView)findViewById(R.id.txtdistance);
         btnback=(ImageView)findViewById(R.id.btnback);
+        loc_lab=(TextView)findViewById(R.id.loc_lab);
+        com_lab=(TextView)findViewById(R.id.com_lab);
 
+        myservice=getIntent().getExtras().getString("heading");
         tvid.setText(getIntent().getExtras().getString("code"));
         tvheading.setText(getIntent().getExtras().getString("heading"));
         tvservice.setText(getIntent().getExtras().getString("service"));
@@ -87,6 +92,28 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
             }
         });
 
+        final ViewTreeObserver observer=tvlocation.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int height=tvlocation.getHeight();
+                LinearLayout.LayoutParams pp= (LinearLayout.LayoutParams) ((TextView)findViewById(R.id.loc_lab)).getLayoutParams();
+                pp.height=height;
+                loc_lab.setLayoutParams(pp);
+            }
+        });
+
+        final ViewTreeObserver cobserver=tvlocation.getViewTreeObserver();
+        cobserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int height=tvcomment.getHeight();
+                LinearLayout.LayoutParams pp= (LinearLayout.LayoutParams) ((TextView)findViewById(R.id.com_lab)).getLayoutParams();
+                pp.height=height;
+                com_lab.setLayoutParams(pp);
+            }
+        });
+
         MapFragment mapFragment=(MapFragment)getFragmentManager().findFragmentById(R.id.gmap);
         mapFragment.getMapAsync(this);
 
@@ -100,54 +127,82 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(accept.getText().toString().equals("Cancel")){
+                    dbr.child(fauth.getCurrentUser().getUid()).child(getIntent().getExtras().getString("code")).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for(DataSnapshot ds:dataSnapshot.getChildren()){
+                                int len=ds.getKey().toString().length();
+
+                                if(len>15){
+                                    String pis=ds.getKey().toString();
+                                    if(ds.child("status").getValue().toString().equals("pending")){
+                                        dbr.child(fauth.getCurrentUser().getUid()).child(getIntent().getExtras().getString("code"))
+                                                .child(pis).child("status").setValue("cancelled");
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+                if(accept.getText().toString().equals("Accept"))
+                {
                 pd.setMessage("Placing order...");
                 pd.show();
-                String service,time,ecomment,eaddress,format,codeforqr,servicetype;
-                double latitude,longitude;
-                codeforqr=getIntent().getExtras().getString("codeforqr");
-                servicetype=tvservice.getText().toString();
-                service=tvheading.getText().toString();
-                time=tvtime.getText().toString();
-                ecomment=tvcomment.getText().toString();
-                eaddress=tvlocation.getText().toString();
-                latitude=getIntent().getExtras().getDouble("lat");
-                longitude=getIntent().getExtras().getDouble("lng");
-                String uri=getIntent().getExtras().getString("filepath");
-                code=getIntent().getExtras().getString("code");
-                filePath=getIntent().getData();
-                format=getIntent().getExtras().getString("format");
+                String service, time, ecomment, eaddress, format, codeforqr, servicetype;
+                double latitude, longitude;
+                codeforqr = getIntent().getExtras().getString("codeforqr");
+                servicetype = tvservice.getText().toString();
+                service = tvheading.getText().toString();
+                time = tvtime.getText().toString();
+                ecomment = tvcomment.getText().toString();
+                eaddress = tvlocation.getText().toString();
+                latitude = getIntent().getExtras().getDouble("lat");
+                longitude = getIntent().getExtras().getDouble("lng");
+                String uri = getIntent().getExtras().getString("filepath");
+                code = getIntent().getExtras().getString("code");
+                filePath = getIntent().getData();
+                format = getIntent().getExtras().getString("format");
 
-                order o=new order(service,time,ecomment,eaddress,latitude,longitude,code,format,username,servicetype);
+                order o = new order(service, time, ecomment, eaddress, latitude, longitude, code, format, username, servicetype);
                 dbr.child(fauth.getCurrentUser().getUid()).child(code).setValue(o);
                 dbr.child(fauth.getCurrentUser().getUid()).child(code).child("qrcode").setValue(codeforqr);
 
-                Toast.makeText(statuspage.this, ""+filePath, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(statuspage.this, ""+filePath, Toast.LENGTH_SHORT).show();
 
-                StorageReference strf=storageReference.child("order").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(code);
+                StorageReference strf = storageReference.child("order").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(code);
                 strf.putFile(filePath)
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        pd.dismiss();
-                        Toast.makeText(statuspage.this, "Order Placed.", Toast.LENGTH_SHORT).show();
-                        accept.setText("Cancel");
-                        tvheading.setText("Pending");
-                        //findprovider();
-                        Intent intent=new Intent(statuspage.this,findprovider.class);
-                        intent.putExtra("tvservice",tvheading.getText().toString());
-                        intent.putExtra("lat",getIntent().getExtras().getDouble("lat"));
-                        intent.putExtra("lng",getIntent().getExtras().getDouble("lng"));
-                        intent.putExtra("code",code);
-                        startService(intent);
-                    }
-                });
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                pd.dismiss();
+                                Toast.makeText(statuspage.this, "Order Placed.", Toast.LENGTH_SHORT).show();
+                                accept.setText("Cancel");
+                                tvheading.setText("Pending");
+                                //findprovider();
+                                Intent intent = new Intent(statuspage.this, findprovider.class);
+                                intent.putExtra("tvservice", myservice);
+                                intent.putExtra("lat", getIntent().getExtras().getDouble("lat"));
+                                intent.putExtra("lng", getIntent().getExtras().getDouble("lng"));
+                                intent.putExtra("code", code);
+
+                                startService(intent);
+                            }
+                        });
 
             }
+        }
         });
     }
 
     private void findprovider() {
-        final double[] dist = {100000};
+        final double[] dist = {50000};
         final String[] fn = {""};
         final String[] age = {""};
         final String[] phone = {""};

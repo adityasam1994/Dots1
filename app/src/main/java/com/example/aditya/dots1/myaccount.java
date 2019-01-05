@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -76,6 +77,27 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         etphone = (EditText) findViewById(R.id.etphone);
 
         pd = new ProgressDialog(this);
+
+        final float density=getResources().getDisplayMetrics().density;
+
+        final Drawable fname=getResources().getDrawable(R.drawable.u30);
+        final Drawable phone=getResources().getDrawable(R.drawable.iconfinder_phone);
+        final Drawable home=getResources().getDrawable(R.drawable.hom);
+
+        final  int width=Math.round(24*density);
+        final int height=Math.round(24*density);
+
+        fname.setBounds(0,0,width,height);
+        etfname.setCompoundDrawables(fname,null,null,null);
+        etlname.setCompoundDrawables(fname,null,null,null);
+
+        home.setBounds(0,0,width,height);
+        etaddress.setCompoundDrawables(home,null,null,null);
+
+        phone.setBounds(0,0,width,height);
+        etphone.setCompoundDrawables(phone,null,null,null);
+
+
 
         requestlocation();
 

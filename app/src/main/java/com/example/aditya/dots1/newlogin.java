@@ -205,15 +205,31 @@ public class newlogin extends AppCompatActivity {
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         String st=dataSnapshot.child("status").getValue().toString();
 
-                                        if(st.equals("provider")){
-                                            pd.dismiss();
-                                            Intent inte=new Intent(newlogin.this, provider_home.class);
-                                            startActivity(inte);
+                                        if(status.equals("customer")) {
+                                            if(dataSnapshot.hasChild("current_status")){
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                                    startActivity(new Intent(newlogin.this, provider_home.class));
+                                                }
+                                            }
+                                            else {
+                                                startActivity(new Intent(newlogin.this, newdrawer.class));
+                                            }
                                         }
-                                        if(st.equals("customer")){
-                                            pd.dismiss();
-                                            Intent inte=new Intent(newlogin.this, newdrawer.class);
-                                            startActivity(inte);
+                                        if(status.equals("provider")){
+                                            if(dataSnapshot.hasChild("current_status")){
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                                    startActivity(new Intent(newlogin.this, provider_home.class));
+                                                }
+                                            }
+                                            else {
+                                                startActivity(new Intent(newlogin.this, provider_home.class));
+                                            }
                                         }
                                     }
 
@@ -297,15 +313,31 @@ public class newlogin extends AppCompatActivity {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             String st=dataSnapshot.child("status").getValue().toString();
 
-                            if(st.equals("provider")){
-                                pd.dismiss();
-                                Intent inte=new Intent(newlogin.this, provider_home.class);
-                                startActivity(inte);
+                            if(status.equals("customer")) {
+                                if(dataSnapshot.hasChild("current_status")){
+                                    if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                    }
+                                    if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                        startActivity(new Intent(newlogin.this, provider_home.class));
+                                    }
+                                }
+                                else {
+                                    startActivity(new Intent(newlogin.this, newdrawer.class));
+                                }
                             }
-                            if(st.equals("customer")){
-                                pd.dismiss();
-                                Intent inte=new Intent(newlogin.this, newdrawer.class);
-                                startActivity(inte);
+                            if(status.equals("provider")){
+                                if(dataSnapshot.hasChild("current_status")){
+                                    if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                    }
+                                    if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                        startActivity(new Intent(newlogin.this, provider_home.class));
+                                    }
+                                }
+                                else {
+                                    startActivity(new Intent(newlogin.this, provider_home.class));
+                                }
                             }
                         }
 
@@ -347,14 +379,30 @@ public class newlogin extends AppCompatActivity {
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
                                         if(status.equals("customer")) {
-                                            Intent intent = new Intent(newlogin.this, newdrawer.class);
-                                            pd.dismiss();
-                                            startActivity(intent);
+                                            if(dataSnapshot.hasChild("current_status")){
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                                    startActivity(new Intent(newlogin.this, provider_home.class));
+                                                }
+                                            }
+                                            else {
+                                                startActivity(new Intent(newlogin.this, newdrawer.class));
+                                            }
                                         }
                                         if(status.equals("provider")){
-                                            Intent intent = new Intent(newlogin.this, provider_home.class);
-                                            pd.dismiss();
-                                            startActivity(intent);
+                                            if(dataSnapshot.hasChild("current_status")){
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                }
+                                                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                                    startActivity(new Intent(newlogin.this, provider_home.class));
+                                                }
+                                            }
+                                            else {
+                                                startActivity(new Intent(newlogin.this, provider_home.class));
+                                            }
                                         }
 
                                     }

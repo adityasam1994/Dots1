@@ -24,27 +24,22 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/tbackground"
+            android:layout_height="40dp"
+            android:background="@drawable/t_stripe"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnmenu"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:background="@drawable/iconfinder_thlist_216422" />
 
             <TextView
                 android:id="@+id/tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginTop="8dp"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="Name"
@@ -54,12 +49,9 @@
 
             <ImageView
                 android:id="@+id/imageView6"
-                android:layout_width="47dp"
-                android:layout_height="40dp"
-                android:layout_marginBottom="8dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/settingicon" />
 

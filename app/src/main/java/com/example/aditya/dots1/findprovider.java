@@ -26,7 +26,7 @@ public class findprovider extends Service {
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     Boolean provider_found=false;
     Boolean request_rejected=false;
-    Boolean pending=true;
+    Boolean pending=true, order_cancelled=false;
     List<String> rejected_providers=new ArrayList<String>();
 
     public findprovider() {
@@ -40,6 +40,8 @@ public class findprovider extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+
+        //Toast.makeText(this, "Searching for provider", Toast.LENGTH_SHORT).show();
 
         co=intent.getExtras().getString("code");
         lati=intent.getExtras().getDouble("lat");
@@ -73,6 +75,14 @@ public class findprovider extends Service {
                                     startActivity(intent);
                                     stopSelf();
                                 }
+                                if(dd.child("status").getValue().toString().equals("cancelled")){
+                                    order_cancelled=true;
+                                    Toast.makeText(findprovider.this, "Order Cancelled!", Toast.LENGTH_SHORT).show();
+                                    Intent intent=new Intent(findprovider.this, newdrawer.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                    stopSelf();
+                                }
                                 if(dd.child("status").getValue().toString().equals("rejected")){
                                     rejected_providers.add(dd.getKey().toString());
                                     request_rejected=true;
@@ -87,7 +97,7 @@ public class findprovider extends Service {
 
                 }
 
-                if(provider_found.equals(false) && pending.equals(false)){
+                if(provider_found.equals(false) && pending.equals(false) && order_cancelled.equals(false)){
                     search_for_provider();
                 }
 
@@ -103,7 +113,7 @@ public class findprovider extends Service {
 
     private  void search_for_provider(){
 
-        final double[] dist = {100000};
+        final double[] dist = {50000};
 
         dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -111,11 +121,14 @@ public class findprovider extends Service {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String st = ds.child("status").getValue().toString();
 
+
+
                     if(provider_found.equals(false) && !rejected_providers.contains(ds.getKey().toString())) {
                         if (st.equals("provider")) {
                             String ser = ds.child("info").child("eservice").getValue().toString();
                             String rs = tvservice;
 
+                            //Toast.makeText(findprovider.this, ser+" "+rs, Toast.LENGTH_SHORT).show();
                             if (ser.equals(rs)) {
 
                                 double lat = (double) ds.child("lati").getValue();
