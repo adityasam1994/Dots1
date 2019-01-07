@@ -123,7 +123,7 @@ public class findprovider extends Service {
 
 
 
-                    if(provider_found.equals(false) && !rejected_providers.contains(ds.getKey().toString())) {
+                    if(provider_found.equals(false) && !rejected_providers.contains(ds.getKey().toString()) && !fauth.getCurrentUser().getUid().equals(ds.getKey().toString())) {
                         if (st.equals("provider")) {
                             String ser = ds.child("info").child("eservice").getValue().toString();
                             String rs = tvservice;

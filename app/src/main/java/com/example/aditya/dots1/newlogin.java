@@ -248,6 +248,8 @@ public class newlogin extends AppCompatActivity {
                 });
     }
 
+
+
     private String[] getnamewords(String name) {
         if(name != null){
             namewords=name.split("\\s+");
@@ -259,6 +261,7 @@ public class newlogin extends AppCompatActivity {
     public void openativity2(){
         Intent intent=new Intent(this, newsignup.class);
         startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     public void onClickfb(View view){
@@ -382,26 +385,32 @@ public class newlogin extends AppCompatActivity {
                                             if(dataSnapshot.hasChild("current_status")){
                                                 if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
                                                     startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                 }
                                                 if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
                                                     startActivity(new Intent(newlogin.this, provider_home.class));
+                                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                 }
                                             }
                                             else {
                                                 startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                             }
                                         }
                                         if(status.equals("provider")){
                                             if(dataSnapshot.hasChild("current_status")){
                                                 if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
                                                     startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                 }
                                                 if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
                                                     startActivity(new Intent(newlogin.this, provider_home.class));
+                                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                 }
                                             }
                                             else {
                                                 startActivity(new Intent(newlogin.this, provider_home.class));
+                                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                             }
                                         }
 

@@ -47,11 +47,13 @@ import android.widget.VideoView;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -356,11 +358,12 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         Toast.makeText(neworder.this, "Please select your prefered time", Toast.LENGTH_SHORT).show();
                     }
                     else {
+                        //Toast.makeText(neworder.this, "okay"+filePath, Toast.LENGTH_SHORT).show();
                         generatecode();
                         generatecodeforqr();
                         String ids=code;
                         String uri=filePath.toString();
-                        Intent intent = new Intent(neworder.this, statuspage.class);
+                        final Intent intent = new Intent(neworder.this, statuspage.class);
                         intent.putExtra("service", service);
                         intent.putExtra("time", time);
                         intent.putExtra("comment", ecomment);
@@ -368,14 +371,23 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         intent.putExtra("heading", servicename);
                         intent.putExtra("lat", latitude);
                         intent.putExtra("lng",longitude);
-                        intent.setData(filePath);
+                        //intent.setData(filePath);
                         intent.putExtra("distance",dis);
                         intent.putExtra("code",code);
                         intent.putExtra("codeforqr",codeforqr);
                         intent.putExtra("lastpage","neworder");
                         intent.putExtra("format",format);
-                        pd.dismiss();
-                        startActivity(intent);
+                        StorageReference strf=storageReference.child("order/"+fauth.getCurrentUser().getUid()).child(code);
+                        strf.putFile(filePath)
+                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        pd.dismiss();
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                    }
+                                });
+
                     }}}}
         });
     }
@@ -413,6 +425,12 @@ public class neworder extends AppCompatActivity implements LocationListener {
             builder.append(ALPHA_NUM.charAt(charecter));
             codeforqr=builder.toString();
         }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 
     private void camvideo() {
@@ -470,10 +488,6 @@ public class neworder extends AppCompatActivity implements LocationListener {
             }
             videoView.setVisibility(View.INVISIBLE);
             btnvideo.setVisibility(View.INVISIBLE);
-
-            StorageReference strf=storageReference.child("test");
-            Uri uri=Uri.parse("android:resource://com.example.aditya.dots1/drawable/cam");
-            strf.putFile(uri);
         }
         if(requestCode == capture_video && resultCode == RESULT_OK){
             filePath=data.getData();

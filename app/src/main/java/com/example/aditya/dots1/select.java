@@ -42,6 +42,7 @@ public class select extends AppCompatActivity {
                         pd.dismiss();
                         Intent intent=new Intent(select.this, newdrawer.class);
                         startActivity(intent);
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -65,6 +66,7 @@ public class select extends AppCompatActivity {
                     public void onSuccess(Void aVoid) {
                         pd.dismiss();
                         startActivity(new Intent(select.this,provider_detail.class));
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override

@@ -157,11 +157,18 @@ public class myorders extends AppCompatActivity {
                                 intent.putExtra("oid", ds.getKey().toString());
                                 intent.putExtra("lastpage", "myorders");
                                 startService(intent);
+                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                             }
+
+                            if(finalStatu.equals("Cancelled")){
+                                Toast.makeText(myorders.this, "This order was cancelled by you", Toast.LENGTH_SHORT).show();
+                            }
+
                             if (finalStatu.equals("Pending")) {
                                 Intent intent = new Intent(myorders.this, pending_order.class);
                                 intent.putExtra("oid", ds.getKey().toString());
                                 startActivity(intent);
+                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                             }
                             if (finalStatu.equals("Rejected")) {
                                 Toast.makeText(myorders.this, "No provider was found for this order", Toast.LENGTH_SHORT).show();
@@ -201,6 +208,12 @@ public class myorders extends AppCompatActivity {
         });
 
 
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 
     private void beginpayment(String cost, String servi) {

@@ -218,6 +218,7 @@ public class newdrawer extends AppCompatActivity
                 Intent intent=new Intent(newdrawer.this,neworder.class);
                 intent.putExtra("service","Lifting");
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 
@@ -227,6 +228,7 @@ public class newdrawer extends AppCompatActivity
                 Intent intent=new Intent(newdrawer.this,neworder.class);
                 intent.putExtra("service","Electric");
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 
@@ -236,6 +238,7 @@ public class newdrawer extends AppCompatActivity
                 Intent intent=new Intent(newdrawer.this,neworder.class);
                 intent.putExtra("service","Plumbing");
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 
@@ -379,11 +382,14 @@ public class newdrawer extends AppCompatActivity
             // Handle the camera action
         } else if (id == R.id.nav_orders) {
             startActivity(new Intent(newdrawer.this,myorders.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (id == R.id.nav_account) {
             startActivity(new Intent(newdrawer.this, myaccount.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         } else if (id == R.id.nav_report) {
             startActivity(new Intent(newdrawer.this, report_problem.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         } else if (id == R.id.nav_share) {
 
@@ -393,6 +399,7 @@ public class newdrawer extends AppCompatActivity
             FirebaseAuth.getInstance().signOut();
             Intent intent=new Intent(newdrawer.this,newlogin.class);
             startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

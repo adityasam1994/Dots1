@@ -619,6 +619,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
     public void openlogin(){
         Intent intent=new Intent(this,newlogin.class);
         startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     private  void requeststorage(){
@@ -698,6 +699,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                                     pd.dismiss();
                                     Intent intent = new Intent(newsignup.this, select.class);
                                     startActivity(intent);
+                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
                                 } else {
                                     Toast.makeText(newsignup.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
@@ -712,6 +714,12 @@ public class newsignup extends AppCompatActivity implements LocationListener {
 
     }
 
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
 
     @Override
     public void onLocationChanged(final Location location) {

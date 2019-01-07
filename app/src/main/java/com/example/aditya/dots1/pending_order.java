@@ -206,6 +206,12 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
     }
 
     @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         gmap=googleMap;
 

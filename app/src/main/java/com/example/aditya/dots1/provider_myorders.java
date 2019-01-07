@@ -41,7 +41,7 @@ public class provider_myorders extends AppCompatActivity {
                   for(DataSnapshot dd:ds.getChildren()){
                       for(DataSnapshot d:dd.getChildren()){
                           if(d.getKey().toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-                              final String status=d.child("status").getValue().toString();
+                              final String status=d.child("status").getValue().toString().toUpperCase();
                               String oid=dd.getKey().toString();
                               final String path=ds.getKey().toString()+"/"+dd.getKey().toString();
 
