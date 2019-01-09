@@ -1,8 +1,10 @@
 package com.example.aditya.dots1;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -44,13 +46,13 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
     Button accept;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     FirebaseStorage firebaseStorage=FirebaseStorage.getInstance();
-    DatabaseReference dbr=FirebaseDatabase.getInstance().getReference("Orders");
-    DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
-    StorageReference storageReference=firebaseStorage.getReferenceFromUrl("gs://dots-195d9.appspot.com");
+    DatabaseReference dbr;
+    DatabaseReference dbruser;
+    StorageReference storageReference;
     Uri filePath;
     ProgressDialog pd;
     ImageView btnback;
-    String code,username, myservice;
+    String code,username, myservice, distance;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,8 +79,12 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         tvlocation.setText(getIntent().getExtras().getString("location"));
         tvtime.setText(getIntent().getExtras().getString("time"));
         tvcomment.setText(getIntent().getExtras().getString("comment"));
-        txtdistance.setText(getIntent().getExtras().getString("distance"));
+        //txtdistance.setText(getIntent().getExtras().getString("distance"));
         tvcost.setText("20$");
+
+        dbr=FirebaseDatabase.getInstance().getReference("Orders");
+        dbruser=FirebaseDatabase.getInstance().getReference("Users");
+        storageReference=firebaseStorage.getReferenceFromUrl("gs://dots-195d9.appspot.com");
 
         dbruser.addValueEventListener(new ValueEventListener() {
             @Override
@@ -155,7 +161,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                 {
                 pd.setMessage("Placing order...");
                 pd.show();
-                String service, time, ecomment, eaddress, format, codeforqr, servicetype;
+                final String service, time, ecomment, eaddress, format, codeforqr, servicetype;
                 double latitude, longitude;
                 codeforqr = getIntent().getExtras().getString("codeforqr");
                 servicetype = tvservice.getText().toString();
@@ -171,8 +177,14 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                 format = getIntent().getExtras().getString("format");
 
                 order o = new order(service, time, ecomment, eaddress, latitude, longitude, code, format, username, servicetype);
-                dbr.child(fauth.getCurrentUser().getUid()).child(code).setValue(o);
-                dbr.child(fauth.getCurrentUser().getUid()).child(code).child("qrcode").setValue(codeforqr);
+                dbr.child(fauth.getCurrentUser().getUid()).child(code).setValue(o)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        dbr.child(fauth.getCurrentUser().getUid()).child(code).child("qrcode").setValue(codeforqr);
+                    }
+                });
+
 
                 //Toast.makeText(statuspage.this, ""+filePath, Toast.LENGTH_SHORT).show();
 
@@ -192,6 +204,10 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                                 intent.putExtra("lng", getIntent().getExtras().getDouble("lng"));
                                 intent.putExtra("code", code);
 
+                                IntentFilter intentFilter=new IntentFilter();
+                                intentFilter.addAction(findprovider.MY_ACTION);
+                                registerReceiver(broadcastReceiver, intentFilter);
+
                                 startService(intent);
                             }
                         });
@@ -201,7 +217,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         });
     }
 
-    private void findprovider() {
+    private void findprovier() {
         final double[] dist = {50000};
         final String[] fn = {""};
         final String[] age = {""};
@@ -301,4 +317,12 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
 
         gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
     }
+
+    BroadcastReceiver broadcastReceiver=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            distance=intent.getExtras().getString("dist");
+            txtdistance.setText(distance);
+        }
+    };
 }

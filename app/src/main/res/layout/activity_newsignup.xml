@@ -184,23 +184,34 @@
         app:layout_constraintTop_toBottomOf="@id/etphone"
         app:layout_constraintVertical_bias="0.0">
 
-        <EditText
-            android:id="@+id/etaddress"
+        <FrameLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/etphone"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="0dp"
-            android:layout_marginEnd="0dp"
-            android:layout_marginStart="0dp"
-            android:layout_weight="1"
-            android:backgroundTint="#EEEDEC"
-            android:drawableLeft="@drawable/hom"
-            android:drawablePadding="20dp"
-            android:ems="10"
-            android:hint="Address/Current Location"
-            android:inputType="none"
-            android:textColorHint="#EEEDEC" />
+            android:layout_weight="1">
+
+            <EditText
+                android:id="@+id/etaddress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/etphone"
+                android:layout_centerHorizontal="true"
+                android:backgroundTint="#EEEDEC"
+                android:drawableLeft="@drawable/hom"
+                android:drawablePadding="20dp"
+                android:ems="10"
+                android:hint="Address/Current Location"
+                android:inputType="none"
+                android:textColorHint="#EEEDEC" />
+
+            <Button
+                android:id="@+id/btnchangeaddress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginRight="20dp"
+                android:background="@color/zxing_transparent"
+                android:visibility="invisible" />
+
+        </FrameLayout>
 
         <Button
             android:id="@+id/btnloc"

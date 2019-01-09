@@ -42,10 +42,6 @@ public class home extends AppCompatActivity {
         android.support.v7.widget.Toolbar toolbar=(android.support.v7.widget.Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        lifting=(Button)findViewById(R.id.btnlifting);
-        plumbing=(Button)findViewById(R.id.btnplumbing);
-        electric=(Button)findViewById(R.id.btnelectric);
-
         dbr= FirebaseDatabase.getInstance().getReference("Users");
         tv=(TextView)findViewById(R.id.tv);
 

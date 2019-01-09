@@ -109,6 +109,7 @@ public class myorders extends AppCompatActivity {
 
                             if (st.equals("rejected")) {
                                 statu = "Rejected";
+                                break;
                             }
                         }
                     }

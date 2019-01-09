@@ -86,7 +86,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
     CallbackManager callbackManager;
     GoogleApiClient googleApiClient;
     AccessToken accessToken;
-    Button btnreg, btnloc;
+    Button btnreg, btnloc, btnchangeaddress;
     ImageButton btnimage, btnfblogin;
     ImageView ivprofile;
     int PICK_IMAGE_REQUEST = 111, TAKE_PICTURE = 0;
@@ -101,10 +101,10 @@ public class newsignup extends AppCompatActivity implements LocationListener {
     ImageButton gsign;
     FirebaseAuth.AuthStateListener authStateListener;
     GoogleSignInClient mGoogleSignInClient;
-    public String name,lname,fname;
+    public String name,lname,fname="";
     private RequestQueue requestQueue;
     private LocationManager locationManager;
-    public boolean showaddress=false;
+    public boolean showaddress=false, addressfound=false;
     double latitude,longitude;
 
     //creating reference to firebase storage
@@ -128,6 +128,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
         mydialogue = new Dialog(this);
         gsign = (ImageButton) findViewById(R.id.gsign);
         btnloc = (Button) findViewById(R.id.btnloc);
+        btnchangeaddress=(Button)findViewById(R.id.btnchangeaddress);
 
         btnfblogin=(ImageButton)findViewById(R.id.fsigninbutton);
         flogin = (LoginButton) findViewById(R.id.fsignin);
@@ -298,8 +299,8 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                 else{
                     etaddress.setText("");
                     showaddress=true;
-                    //etaddress.setEnabled(false);
-                    etaddress.setFocusable(false);
+                    etaddress.setEnabled(false);
+                    btnchangeaddress.setVisibility(View.VISIBLE);
                     pd.setMessage("Fetching Location...");
                     pd.show();
                 }
@@ -325,6 +326,30 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                         }
                     });
                 }
+            }
+        });
+
+        btnchangeaddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnchangeaddress.setVisibility(View.INVISIBLE);
+                etaddress.setFocusable(true);AlertDialog.Builder add_builder = new AlertDialog.Builder(newsignup.this);
+                add_builder.setTitle("Change address");
+                add_builder.setMessage("Do you want to change the address");
+                add_builder.setPositiveButton("Change address", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        etaddress.setEnabled(true);
+                        btnchangeaddress.setVisibility(View.INVISIBLE);
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(newsignup.this, "Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                add_builder.show();
+
             }
         });
     }
@@ -656,52 +681,54 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    String fname, lname, ph, address;
-                                    double lati=0,longi=0;
+                                    String fnam, lname, ph, address;
+                                    double lati = 0, longi = 0;
 
-                                    if(etaddress.isFocusable()){
-                                        Geocoder geocoder=new Geocoder(newsignup.this.getApplicationContext(),Locale.getDefault());
+                                    if (etaddress.isFocusable()) {
+                                        Geocoder geocoder = new Geocoder(newsignup.this.getApplicationContext(), Locale.getDefault());
                                         List<Address> addresses;
                                         try {
-                                            addresses=geocoder.getFromLocationName(etaddress.getText().toString(),1);
-                                            if(addresses.size()>0){
-                                                lati=addresses.get(0).getLatitude();
-                                                longi=addresses.get(0).getLongitude();
-                                            }
-                                            else {
+                                            addresses = geocoder.getFromLocationName(etaddress.getText().toString(), 1);
+                                            if (addresses.size() > 0) {
+                                                lati = addresses.get(0).getLatitude();
+                                                longi = addresses.get(0).getLongitude();
+                                                addressfound = true;
+                                            } else {
                                                 Toast.makeText(newsignup.this, "Address not found", Toast.LENGTH_SHORT).show();
+                                                addressfound = false;
                                             }
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
+                                    } else {
+                                        lati = latitude;
+                                        longi = longitude;
                                     }
-                                    else {
-                                        lati=latitude;
-                                        longi=longitude;
+                                    if (addressfound || !etaddress.isEnabled()) {
+                                        String fnames = etfname.getText().toString().trim();
+                                        lname = etlname.getText().toString().trim();
+                                        ph = etphone.getText().toString().trim();
+                                        address = etaddress.getText().toString().trim();
+                                        usersignup usignup = new usersignup(fnames, lname, ph, address, lati, longi);
+
+                                        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(usignup);
+                                        StorageReference childRef = storageRef.child("images/" + FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                        //uploading the image
+                                        if (filePath != null) {
+                                            childRef.putFile(filePath);
+                                        } else {
+                                            Uri uri = Uri.parse("android:resource://com.example.aditya.dots1/drawable/cam");
+                                            childRef.putFile(uri);
+                                        }
+
+                                        /*fauth.signInWithEmailAndPassword(email,pass);*/
+                                        pd.dismiss();
+                                        Intent intent = new Intent(newsignup.this, select.class);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
                                     }
-                                    fname = etfname.getText().toString().trim();
-                                    lname = etlname.getText().toString().trim();
-                                    ph = etphone.getText().toString().trim();
-                                    address = etaddress.getText().toString().trim();
-                                    usersignup usignup = new usersignup(fname, lname, ph, address, lati, longi);
-
-                                    dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(usignup);
-                                    StorageReference childRef = storageRef.child("images/"+ FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                    //uploading the image
-                                    if(filePath != null ) {
-                                        childRef.putFile(filePath);
-                                    }else {
-                                        Uri uri=Uri.parse("android:resource://com.example.aditya.dots1/drawable/cam");
-                                        childRef.putFile(uri);
-                                    }
-
-                                    /*fauth.signInWithEmailAndPassword(email,pass);*/
-                                    pd.dismiss();
-                                    Intent intent = new Intent(newsignup.this, select.class);
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-
-                                } else {
+                                }else {
                                     Toast.makeText(newsignup.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                     pd.dismiss();
                                 }

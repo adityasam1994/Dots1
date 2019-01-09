@@ -264,7 +264,8 @@
                         android:id="@+id/btngmap"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/zxing_transparent"/>
+                        android:background="@color/zxing_transparent"
+                        android:visibility="invisible" />
 
                     <fragment
                         android:id="@+id/gmap"

@@ -3,7 +3,9 @@ package com.example.aditya.dots1;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
@@ -15,16 +17,25 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class findprovider extends Service {
 
+    final static String MY_ACTION= "MY_ACTION";
+    private Timer mytimer;
     String tvservice,co,uids;
+    long StartTime;
+    Boolean killtimer=false;
     double lati,longi;
-    DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Orders");
-    DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
+    DatabaseReference dbr;
+    DatabaseReference dbruser;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     Boolean provider_found=false;
+    final double[] dist = {50000};
     Boolean request_rejected=false;
     Boolean pending=true, order_cancelled=false;
     List<String> rejected_providers=new ArrayList<String>();
@@ -47,6 +58,9 @@ public class findprovider extends Service {
         lati=intent.getExtras().getDouble("lat");
         longi=intent.getExtras().getDouble("lng");
         tvservice=intent.getExtras().getString("tvservice");
+
+        dbr=FirebaseDatabase.getInstance().getReference("Orders");
+        dbruser=FirebaseDatabase.getInstance().getReference("Users");
 
         search_for_provider();
 
@@ -113,8 +127,7 @@ public class findprovider extends Service {
 
     private  void search_for_provider(){
 
-        final double[] dist = {50000};
-
+        uids=null;
         dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -122,15 +135,16 @@ public class findprovider extends Service {
                     String st = ds.child("status").getValue().toString();
 
 
+                    if(provider_found.equals(false) && !rejected_providers.contains(ds.getKey().toString())
+                            && !fauth.getCurrentUser().getUid().equals(ds.getKey().toString())) {
 
-                    if(provider_found.equals(false) && !rejected_providers.contains(ds.getKey().toString()) && !fauth.getCurrentUser().getUid().equals(ds.getKey().toString())) {
                         if (st.equals("provider")) {
                             String ser = ds.child("info").child("eservice").getValue().toString();
                             String rs = tvservice;
 
                             //Toast.makeText(findprovider.this, ser+" "+rs, Toast.LENGTH_SHORT).show();
                             if (ser.equals(rs)) {
-
+                                Toast.makeText(findprovider.this, "Provider found"+ser, Toast.LENGTH_SHORT).show();
                                 double lat = (double) ds.child("lati").getValue();
                                 double lng = (double) ds.child("longi").getValue();
 
@@ -155,16 +169,90 @@ public class findprovider extends Service {
                             }
                         }
                     }
-
                 }
                 String code = co;
-                dbr.child(fauth.getCurrentUser().getUid()).child(code).child(uids).child("status").setValue("pending");
-                request_rejected=false;
+                if(uids != null) {
+                    dbr.child(fauth.getCurrentUser().getUid()).child(code).child(uids).child("status").setValue("pending");
+                    StartTime= SystemClock.uptimeMillis();
+                    request_rejected = false;
+                    killtimer=false;
+                    Timer();
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+        Mthread mthread=new Mthread();
+        mthread.start();
+    }
+
+    public class Mthread extends Thread{
+        @Override
+        public void run() {
+            try {
+
+                int delay=1000;
+                int period=2*1000;
+                mytimer = new Timer();
+                mytimer.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Intent intent=new Intent();
+                        intent.setAction(MY_ACTION);
+
+                        double diss=dist[0]/1000;
+                        diss=diss*100;
+                        diss=Math.round(diss);
+                        diss=diss/100;
+                        String d=""+diss +" Km";
+
+                        if(uids != null){
+                            intent.putExtra("dist", d);
+                        }
+                        else {
+                            intent.putExtra("dist", "Sorry! Currently no provider is avilable");
+                        }
+                        sendBroadcast(intent);
+                    }
+                },delay,period);
+
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void Timer(){
+        final Handler handler=new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                //Toast.makeText(findprovider.this, ""+(SystemClock.uptimeMillis()-StartTime), Toast.LENGTH_SHORT).show();
+
+                if((SystemClock.uptimeMillis() - StartTime) > 60000 && killtimer.equals(false)){
+
+                    DatabaseReference d = dbr.child(fauth.getCurrentUser().getUid()).child(co).child(uids);
+
+                    Map<String, Object> updates=new HashMap<String, Object>();
+
+                    updates.put("status","rejected");
+
+                    d.updateChildren(updates);
+
+                    killtimer=true;
+                }
+
+                handler.postDelayed(this, 100);
+
+                if(killtimer.equals(true)){
+                    handler.removeCallbacks(this);
+                }
             }
         });
     }

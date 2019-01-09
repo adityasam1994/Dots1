@@ -49,8 +49,11 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -80,11 +83,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
     Uri filePath;
     EditText comment, address;
     Spinner spinner_service, spinner_time;
-    Button submit, btnlocation,btnvideo;
+    Button submit, btnlocation,btnvideo, btnchangeaddress;
     ProgressDialog pd;
     private RequestQueue requestQueue;
     private LocationManager locationManager;
-    boolean showaddress=false;
+    boolean showaddress=false, addressfound=false;
     boolean addressprint=false;
     int Takepic;
     String code,format,codeforqr,servicename;
@@ -95,6 +98,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
     FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
     StorageReference storageReference = firebaseStorage.getReferenceFromUrl("gs://dots-195d9.appspot.com");
     DatabaseReference dbr = FirebaseDatabase.getInstance().getReference("Orders");
+    DatabaseReference dbrservice=FirebaseDatabase.getInstance().getReference("services");
     private FusedLocationProviderClient client;
 
     @Override
@@ -102,6 +106,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_neworder);
 
+        btnchangeaddress=(Button)findViewById(R.id.btneditaddress);
         btnvideo=(Button)findViewById(R.id.btnvideo);
         btnback=(ImageView)findViewById(R.id.btnback);
         videoView=(VideoView)findViewById(R.id.videoView);
@@ -137,29 +142,33 @@ public class neworder extends AppCompatActivity implements LocationListener {
         String head = getIntent().getExtras().getString("service");
         heading.setText(head);
 
-        ArrayList<String> list_lifting = new ArrayList<>();
+        dbrservice.child(getIntent().getExtras().getString("service")).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<String> list_myservice = new ArrayList<>();
 
-        list_lifting.add("Select service type...");
-        list_lifting.add("Light");
-        list_lifting.add("Medium");
-        list_lifting.add("Heavy");
-        list_lifting.add("Other");
+                    list_myservice.add("Select service type...");
 
-        ArrayList<String> list_plumbing = new ArrayList<>();
+                    for(DataSnapshot dd:dataSnapshot.getChildren()){
+                        list_myservice.add(dd.getKey().toString());
+                    }
 
-        list_plumbing.add("Select service type...");
-        list_plumbing.add("Water Leakage");
-        list_plumbing.add("Pipe Fitting");
-        list_plumbing.add("Sink or Basin problem");
-        list_plumbing.add("Other");
+                    list_myservice.add("Other");
 
-        ArrayList<String> list_electric = new ArrayList<>();
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(neworder.this,
+                            android.R.layout.simple_spinner_dropdown_item, list_myservice);
 
-        list_electric.add("Select service type...");
-        list_electric.add("Switch Board");
-        list_electric.add("Appliance");
-        list_electric.add("Short circuit");
-        list_electric.add("Other");
+                    spinner.setAdapter(adapter);
+                    adapter.setDropDownViewResource(R.layout.activity_spinner_item);
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         ArrayList<String> list2 = new ArrayList<>();
 
@@ -168,29 +177,6 @@ public class neworder extends AppCompatActivity implements LocationListener {
         list2.add("1pm-4pm");
         list2.add("4pm-7pm");
         list2.add("No preference");
-
-        if(servicename.equals("Lifting")) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_spinner_dropdown_item, list_lifting);
-
-            spinner.setAdapter(adapter);
-            adapter.setDropDownViewResource(R.layout.activity_spinner_item);
-        }
-
-        if(servicename.equals("Plumbing")) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_spinner_dropdown_item, list_plumbing);
-
-            spinner.setAdapter(adapter);
-            adapter.setDropDownViewResource(R.layout.activity_spinner_item);
-        }
-        if(servicename.equals("Electric")) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_spinner_dropdown_item, list_electric);
-
-            spinner.setAdapter(adapter);
-            adapter.setDropDownViewResource(R.layout.activity_spinner_item);
-        }
 
         ArrayAdapter<String> adapter1 = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, list2);
@@ -293,11 +279,34 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     address.setText("");
                     showaddress=true;
                     address.setEnabled(false);
+                    btnchangeaddress.setVisibility(View.VISIBLE);
                     pd.setMessage("Fetching Location...");
                     pd.show();
                 }
             }
             });
+
+        btnchangeaddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder add_builder = new AlertDialog.Builder(neworder.this);
+                add_builder.setTitle("Change address");
+                add_builder.setMessage("Do you want to change the address");
+                add_builder.setPositiveButton("Change address", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        address.setEnabled(true);
+                        btnchangeaddress.setVisibility(View.INVISIBLE);
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(neworder.this, "Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                add_builder.show();
+            }
+        });
 
 
         submit.setOnClickListener(new View.OnClickListener() {
@@ -316,9 +325,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         if(addresses.size()>0){
                             latitude=addresses.get(0).getLatitude();
                             longitude=addresses.get(0).getLongitude();
+                            addressfound = true;
                         }
                         else {
-                            Toast.makeText(neworder.this, "Address not found", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(neworder.this, "Address not found", Toast.LENGTH_SHORT).show();
+                            addressfound = false;
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -358,7 +369,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         Toast.makeText(neworder.this, "Please select your prefered time", Toast.LENGTH_SHORT).show();
                     }
                     else {
-                        //Toast.makeText(neworder.this, "okay"+filePath, Toast.LENGTH_SHORT).show();
+                        if(addressfound || !address.isEnabled()){
+                        //Toast.makeText(neworder.this, "okay"+addressfound, Toast.LENGTH_SHORT).show();
                         generatecode();
                         generatecodeforqr();
                         String ids=code;
@@ -371,24 +383,23 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         intent.putExtra("heading", servicename);
                         intent.putExtra("lat", latitude);
                         intent.putExtra("lng",longitude);
-                        //intent.setData(filePath);
+                        intent.setData(filePath);
                         intent.putExtra("distance",dis);
                         intent.putExtra("code",code);
                         intent.putExtra("codeforqr",codeforqr);
                         intent.putExtra("lastpage","neworder");
                         intent.putExtra("format",format);
-                        StorageReference strf=storageReference.child("order/"+fauth.getCurrentUser().getUid()).child(code);
-                        strf.putFile(filePath)
-                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        pd.dismiss();
-                                        startActivity(intent);
-                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                                    }
-                                });
+                        pd.dismiss();
+                        startActivity(intent);
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
-                    }}}}
+                    }
+                    else if(addressfound == false && address.isEnabled()){
+                            Toast.makeText(neworder.this, "The address entered was not found", Toast.LENGTH_SHORT).show();
+                            pd.dismiss();
+                        }
+                    }
+                }}}
         });
     }
 

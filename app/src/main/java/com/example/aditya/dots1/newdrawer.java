@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,9 +17,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
@@ -37,7 +41,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.vision.text.Line;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -73,6 +79,7 @@ public class newdrawer extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
+    LinearLayout servicelist;
     Uri profile;
     Dialog dialog;
     String fname,email,activity="",piclink="",lname,cod="",orderpath="";
@@ -80,6 +87,7 @@ public class newdrawer extends AppCompatActivity
     Button lo,lifting,plumbing,electric,btnasprovider;
     DatabaseReference dbr;
     DatabaseReference dbrorder=FirebaseDatabase.getInstance().getReference("Orders");
+    DatabaseReference dbrservices=FirebaseDatabase.getInstance().getReference("services");
     TextView tv;
     Boolean fbpic=false;
     FirebaseStorage storage=FirebaseStorage.getInstance();
@@ -101,10 +109,8 @@ public class newdrawer extends AppCompatActivity
         new Random().nextBytes(array);
         String generatedString=new String(array, Charset.forName("UTF-8"));
 
+        servicelist=(LinearLayout)findViewById(R.id.service_layout);
         lines=(Button)findViewById(R.id.btnmenu);
-        lifting=(Button)findViewById(R.id.btnlifting);
-        plumbing=(Button)findViewById(R.id.btnplumbing);
-        electric=(Button)findViewById(R.id.btnelectric);
         //btnasprovider=(Button)findViewById(R.id.btnasprovider);
 
         dbr= FirebaseDatabase.getInstance().getReference("Users");
@@ -128,6 +134,71 @@ public class newdrawer extends AppCompatActivity
                 }
 
                 }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        dbrservices.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (final DataSnapshot ds:dataSnapshot.getChildren()){
+
+                    float dip_mt=8f;
+                    Resources r=getResources();
+                    float px_mt= TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP, dip_mt, r.getDisplayMetrics()
+                    );
+
+                    float dip_pl=20f;
+                    float px_pl= TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP, dip_pl, r.getDisplayMetrics()
+                    );
+
+                    float dip_h=35f;
+                    float px_h= TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
+                    );
+
+                    float dip_ts=8f;
+                    float px_ts= TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP, dip_ts, r.getDisplayMetrics()
+                    );
+
+                    final LinearLayout layout = new LinearLayout(newdrawer.this);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) px_h);
+                    params.setMargins(0, (int) px_mt, 0, 0);
+                    layout.setLayoutParams(params);
+                    layout.setOrientation(LinearLayout.HORIZONTAL);
+                    layout.setBackground(ContextCompat.getDrawable(newdrawer.this, R.drawable.t_stripe));
+
+                    Button mybutton=new Button(newdrawer.this);
+                    mybutton.setText(ds.getKey().toString());
+                    mybutton.setTextSize(px_ts);
+                    mybutton.setTypeface(null, Typeface.BOLD);
+                    mybutton.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
+                    LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+                    mybutton.setLayoutParams(para);
+                    mybutton.setPadding((int) px_pl,0,0,0);
+                    mybutton.setBackground(ContextCompat.getDrawable(newdrawer.this, R.color.zxing_transparent));
+
+                    layout.addView(mybutton);
+                    servicelist.addView(layout);
+
+
+                    mybutton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent=new Intent(newdrawer.this,neworder.class);
+                            intent.putExtra("service",ds.getKey().toString());
+                            startActivity(intent);
+                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                        }
+                    });
+                }
+            }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -211,36 +282,6 @@ public class newdrawer extends AppCompatActivity
             e.printStackTrace();
         }*/
 
-
-        lifting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent=new Intent(newdrawer.this,neworder.class);
-                intent.putExtra("service","Lifting");
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }
-        });
-
-        electric.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent=new Intent(newdrawer.this,neworder.class);
-                intent.putExtra("service","Electric");
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }
-        });
-
-        plumbing.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent=new Intent(newdrawer.this,neworder.class);
-                intent.putExtra("service","Plumbing");
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }
-        });
 
 
 
