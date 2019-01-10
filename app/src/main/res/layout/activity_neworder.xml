@@ -231,25 +231,16 @@
         <Button
             android:id="@+id/btnstart"
             android:layout_width="wrap_content"
-            android:layout_height="81dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="0dp"
-            android:background="@android:color/transparent"
+            android:background="@drawable/whiteb"
             android:drawablePadding="-75dp"
-            android:drawableTop="@drawable/whiteb"
             android:text="SUBMIT"
             android:textColor="#F3A360"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
-            app:layout_constraintVertical_bias="0.0" />
+            android:textSize="20sp" />
 
         </LinearLayout>
         </ScrollView>

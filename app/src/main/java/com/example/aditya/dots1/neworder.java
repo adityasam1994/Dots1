@@ -9,7 +9,9 @@ import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.location.Address;
@@ -20,9 +22,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.Image;
 import android.media.MediaPlayer;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -47,6 +51,7 @@ import android.widget.VideoView;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -55,11 +60,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,6 +89,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
     TextView heading, tvgps;
     ImageView btnimage, btnback;
     Uri filePath;
+    String result;
     EditText comment, address;
     Spinner spinner_service, spinner_time;
     Button submit, btnlocation,btnvideo, btnchangeaddress;
@@ -89,10 +98,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
     private LocationManager locationManager;
     boolean showaddress=false, addressfound=false;
     boolean addressprint=false;
-    int Takepic;
+    int Takepic=1234;
     String code,format,codeforqr,servicename;
     private  File output;
-    Uri fileuri;
+    String imagepath;
+    Uri fileuri, outputfileuri;
 
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
@@ -105,6 +115,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_neworder);
+
+        ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},8);
 
         btnchangeaddress=(Button)findViewById(R.id.btneditaddress);
         btnvideo=(Button)findViewById(R.id.btnvideo);
@@ -124,6 +136,37 @@ public class neworder extends AppCompatActivity implements LocationListener {
         submit = (Button) findViewById(R.id.btnstart);
 
         servicename=getIntent().getExtras().getString("service");
+        String mpath=Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DCIM
+        ).getAbsolutePath();
+
+        String imagepath=mpath+"/Camera/temp/test.jpg";
+
+        File myfile=new File(imagepath);
+
+        //btnimage.setImageURI(Uri.fromFile(myfile));
+
+        /*storageReference.child("test").putFile(Uri.fromFile(myfile))
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Toast.makeText(neworder.this, "Done", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                .getTotalByteCount());
+                        pd.setMessage("Uploaded "+(int)progress+"%");
+                    }
+                })
+        .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(neworder.this, "Failed to upload "+e, Toast.LENGTH_SHORT).show();
+            }
+        });*/
 
         requestlocation();
 
@@ -135,7 +178,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
 
         Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
         String provider = locationManager.getBestProvider(criteria, true);
         locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
 
@@ -389,6 +432,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         intent.putExtra("codeforqr",codeforqr);
                         intent.putExtra("lastpage","neworder");
                         intent.putExtra("format",format);
+                        //intent.putExtra("result", result);
                         pd.dismiss();
                         startActivity(intent);
                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -454,7 +498,15 @@ public class neworder extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 format="image";
+                File storagedir=Environment.getExternalStorageDirectory();
+                File dir=new File(storagedir+"/Dot/");
+                dir.mkdirs();
+
+                File file=new File(dir, "mypic.jpg");
+
+                outputfileuri=Uri.fromFile(file);
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
                 startActivityForResult(intent, Takepic);
                 dialog.dismiss();
             }
@@ -465,6 +517,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
             public void onClick(View v) {
                 format="video";
                 Intent intent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
+                intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
                 startActivityForResult(intent, capture_video);
                 dialog.dismiss();
             }
@@ -479,10 +533,17 @@ public class neworder extends AppCompatActivity implements LocationListener {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == Takepic && resultCode == RESULT_OK){
-            filePath=data.getData();
+            filePath=outputfileuri;
+            Bitmap bitmap=null;
+            try {
+                bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             btnimage.setVisibility(View.VISIBLE);
-            //Bitmap bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(),filePath);
-            Bitmap bitmap=(Bitmap)data.getExtras().get("data");
+
+            //Bitmap bitmap=(Bitmap)data.getExtras().get("data");
             int w=bitmap.getWidth();
             int h=bitmap.getHeight();
             int neww=w/2;
@@ -494,15 +555,45 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 Bitmap news=Bitmap.createBitmap(bitmap,0,0,w,h,matrix,true);
                 btnimage.setImageBitmap(news);
             }else {
-                Bitmap photo=(Bitmap)data.getExtras().get("data");
-                btnimage.setImageBitmap(photo);
+                btnimage.setImageBitmap(bitmap);
             }
             videoView.setVisibility(View.INVISIBLE);
             btnvideo.setVisibility(View.INVISIBLE);
+
+            ByteArrayOutputStream stream=new ByteArrayOutputStream();
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50,stream);
+
+            byte[] byteArray = stream.toByteArray();
+
+            Bitmap compressedBitmap=BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+            File mpath=Environment.getExternalStorageDirectory();
+
+            File dir=new File(mpath+"/Dot/");
+            dir.mkdirs();
+
+            File file=new File(dir, "mycompressedpic.jpg");
+
+            OutputStream out=null;
+            try {
+                out=new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
+                Toast.makeText(this, "Image saved", Toast.LENGTH_SHORT).show();
+                out.flush();
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         if(requestCode == capture_video && resultCode == RESULT_OK){
             filePath=data.getData();
-            videoView.setVisibility(View.VISIBLE);
+
+            result=filePath.getPath();
+
+            /*videoView.setVisibility(View.VISIBLE);
             btnvideo.setVisibility(View.VISIBLE);
             videoView.setVideoURI(filePath);
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -511,9 +602,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     mp.setLooping(true);
                 }
             });
-            videoView.start();
+            videoView.start();*/
 
-            btnimage.setVisibility(View.INVISIBLE);
+            //btnimage.setVisibility(View.INVISIBLE);
+            Bitmap bmm= ThumbnailUtils.createVideoThumbnail(filePath.getPath(), MediaStore.Images.Thumbnails.MINI_KIND);
+            btnimage.setImageBitmap(bmm);
 
         }
     }

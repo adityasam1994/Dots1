@@ -35,9 +35,9 @@ public class findprovider extends Service {
     DatabaseReference dbruser;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     Boolean provider_found=false;
-    final double[] dist = {50000};
     Boolean request_rejected=false;
     Boolean pending=true, order_cancelled=false;
+    double provider_distance;
     List<String> rejected_providers=new ArrayList<String>();
 
     public findprovider() {
@@ -88,6 +88,7 @@ public class findprovider extends Service {
                                     intent.putExtra("oid",co);
                                     startActivity(intent);
                                     stopSelf();
+
                                 }
                                 if(dd.child("status").getValue().toString().equals("cancelled")){
                                     order_cancelled=true;
@@ -126,14 +127,14 @@ public class findprovider extends Service {
     }
 
     private  void search_for_provider(){
-
+        final double[] dist = {50000};
         uids=null;
         dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String st = ds.child("status").getValue().toString();
-
 
                     if(provider_found.equals(false) && !rejected_providers.contains(ds.getKey().toString())
                             && !fauth.getCurrentUser().getUid().equals(ds.getKey().toString())) {
@@ -142,9 +143,8 @@ public class findprovider extends Service {
                             String ser = ds.child("info").child("eservice").getValue().toString();
                             String rs = tvservice;
 
-                            //Toast.makeText(findprovider.this, ser+" "+rs, Toast.LENGTH_SHORT).show();
                             if (ser.equals(rs)) {
-                                Toast.makeText(findprovider.this, "Provider found"+ser, Toast.LENGTH_SHORT).show();
+
                                 double lat = (double) ds.child("lati").getValue();
                                 double lng = (double) ds.child("longi").getValue();
 
@@ -163,6 +163,7 @@ public class findprovider extends Service {
 
                                 if (distance < dist[0]) {
                                     dist[0] = distance;
+                                    provider_distance=dist[0];
                                     uids = ds.getKey().toString();
                                 }
 
@@ -204,7 +205,7 @@ public class findprovider extends Service {
                         Intent intent=new Intent();
                         intent.setAction(MY_ACTION);
 
-                        double diss=dist[0]/1000;
+                        double diss=provider_distance/1000;
                         diss=diss*100;
                         diss=Math.round(diss);
                         diss=diss/100;

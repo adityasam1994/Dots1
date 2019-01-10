@@ -34,6 +34,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -52,7 +53,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
     Uri filePath;
     ProgressDialog pd;
     ImageView btnback;
-    String code,username, myservice, distance;
+    String code,username, myservice, distance, result;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +82,12 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         tvcomment.setText(getIntent().getExtras().getString("comment"));
         //txtdistance.setText(getIntent().getExtras().getString("distance"));
         tvcost.setText("20$");
+
+        //result=getIntent().getExtras().getString("result");
+
+        //filePath=Uri.parse(result);
+
+        filePath=getIntent().getData();
 
         dbr=FirebaseDatabase.getInstance().getReference("Orders");
         dbruser=FirebaseDatabase.getInstance().getReference("Users");
@@ -171,9 +178,8 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                 eaddress = tvlocation.getText().toString();
                 latitude = getIntent().getExtras().getDouble("lat");
                 longitude = getIntent().getExtras().getDouble("lng");
-                String uri = getIntent().getExtras().getString("filepath");
+
                 code = getIntent().getExtras().getString("code");
-                filePath = getIntent().getData();
                 format = getIntent().getExtras().getString("format");
 
                 order o = new order(service, time, ecomment, eaddress, latitude, longitude, code, format, username, servicetype);
@@ -210,7 +216,15 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
 
                                 startService(intent);
                             }
-                        });
+                        })
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                .getTotalByteCount());
+                        pd.setMessage("Uploaded "+(int)progress+"%");
+                    }
+                });
 
             }
         }
