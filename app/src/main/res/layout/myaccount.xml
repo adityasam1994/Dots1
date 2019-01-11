@@ -137,23 +137,37 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/etaddress"
+                    <FrameLayout
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="0dp"
-                        android:layout_marginEnd="0dp"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginTop="0dp"
                         android:layout_weight="1"
-                        android:backgroundTint="#ECECEC"
-                        android:drawableLeft="@drawable/hom"
-                        android:drawablePadding="8dp"
-                        android:ems="10"
-                        android:inputType="textPersonName"
-                        android:paddingLeft="8dp"
-                        android:text="Address"
-                        android:textColorHint="#ECECEC" />
+                        android:layout_height="wrap_content">
+
+                        <Button
+                            android:id="@+id/btnchangeadd"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginRight="20dp"
+                            android:background="@color/zxing_transparent"
+                            android:visibility="invisible" />
+
+                        <EditText
+                            android:id="@+id/etaddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="0dp"
+                            android:layout_marginEnd="0dp"
+                            android:layout_marginStart="0dp"
+                            android:layout_marginTop="0dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="#ECECEC"
+                            android:drawableLeft="@drawable/hom"
+                            android:drawablePadding="8dp"
+                            android:ems="10"
+                            android:inputType="textPersonName"
+                            android:paddingLeft="8dp"
+                            android:text="Address"
+                            android:textColorHint="#ECECEC" />
+                    </FrameLayout>
 
                     <ImageView
                         android:id="@+id/getloc"

@@ -78,10 +78,14 @@ import java.util.List;
 import java.util.Locale;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.example.aditya.dots1.newsignup.CAMERA_PERMISSION_REQUEST;
 
 public class neworder extends AppCompatActivity implements LocationListener {
 
+    public static final int WRITE_STORAGE_PERMISSION = 9876;
+    public static final int READ_STORAGE_PERMISSION = 9890;
     VideoView videoView;
     int capture_video=3;
     double lat=0.00,lng=0.00;
@@ -117,6 +121,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
         setContentView(R.layout.activity_neworder);
 
         ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},8);
+        ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},6);
+        ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.CAMERA},7);
 
         btnchangeaddress=(Button)findViewById(R.id.btneditaddress);
         btnvideo=(Button)findViewById(R.id.btnvideo);
@@ -136,51 +142,29 @@ public class neworder extends AppCompatActivity implements LocationListener {
         submit = (Button) findViewById(R.id.btnstart);
 
         servicename=getIntent().getExtras().getString("service");
-        String mpath=Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DCIM
-        ).getAbsolutePath();
 
-        String imagepath=mpath+"/Camera/temp/test.jpg";
-
-        File myfile=new File(imagepath);
-
-        //btnimage.setImageURI(Uri.fromFile(myfile));
-
-        /*storageReference.child("test").putFile(Uri.fromFile(myfile))
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Toast.makeText(neworder.this, "Done", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                .getTotalByteCount());
-                        pd.setMessage("Uploaded "+(int)progress+"%");
-                    }
-                })
-        .addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(neworder.this, "Failed to upload "+e, Toast.LENGTH_SHORT).show();
-            }
-        });*/
-
+        requeststorage();
         requestlocation();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+
+            }
+            else {
+                requestlocation();
+            }
         }
 
 
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        String provider = locationManager.getBestProvider(criteria, true);
-        locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+
 
         String head = getIntent().getExtras().getString("service");
         heading.setText(head);
@@ -264,12 +248,13 @@ public class neworder extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                        camvideo();
+                    if((checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)) {
+                                camvideo();
                     }
                     else {
                         String[] pemissionRequest={Manifest.permission.CAMERA};
                         requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
+
                     }
                 }
             }
@@ -280,7 +265,13 @@ public class neworder extends AppCompatActivity implements LocationListener {
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                        camvideo();
+                        if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                                && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            camvideo();
+                        }
+                        else {
+                            requeststorage();
+                        }
                     }
                     else {
                         String[] pemissionRequest={Manifest.permission.CAMERA};
@@ -406,10 +397,12 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 String dis=""+df2.format(distance)+" "+"Km";
                 if(service == "Select service type..."){
                     Toast.makeText(neworder.this, "Please select a service type", Toast.LENGTH_SHORT).show();
+                    pd.dismiss();
                 }
                 else{
                     if(time == "Select prefered time..."){
                         Toast.makeText(neworder.this, "Please select your prefered time", Toast.LENGTH_SHORT).show();
+                        pd.dismiss();
                     }
                     else {
                         if(addressfound || !address.isEnabled()){
@@ -486,6 +479,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    private void requeststorage(){
+        ActivityCompat.requestPermissions(this,new String[]{WRITE_EXTERNAL_STORAGE},7896);
+        ActivityCompat.requestPermissions(this,new String[]{READ_EXTERNAL_STORAGE},8769);
     }
 
     private void camvideo() {
@@ -579,7 +577,6 @@ public class neworder extends AppCompatActivity implements LocationListener {
             try {
                 out=new FileOutputStream(file);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
-                Toast.makeText(this, "Image saved", Toast.LENGTH_SHORT).show();
                 out.flush();
                 out.close();
             } catch (FileNotFoundException e) {
@@ -593,7 +590,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
             result=filePath.getPath();
 
-            /*videoView.setVisibility(View.VISIBLE);
+            videoView.setVisibility(View.VISIBLE);
             btnvideo.setVisibility(View.VISIBLE);
             videoView.setVideoURI(filePath);
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -602,11 +599,10 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     mp.setLooping(true);
                 }
             });
-            videoView.start();*/
+            videoView.start();
 
-            //btnimage.setVisibility(View.INVISIBLE);
-            Bitmap bmm= ThumbnailUtils.createVideoThumbnail(filePath.getPath(), MediaStore.Images.Thumbnails.MINI_KIND);
-            btnimage.setImageBitmap(bmm);
+            btnimage.setVisibility(View.INVISIBLE);
+
 
         }
     }

@@ -178,11 +178,12 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                 eaddress = tvlocation.getText().toString();
                 latitude = getIntent().getExtras().getDouble("lat");
                 longitude = getIntent().getExtras().getDouble("lng");
+                String cost="20$";
 
                 code = getIntent().getExtras().getString("code");
                 format = getIntent().getExtras().getString("format");
 
-                order o = new order(service, time, ecomment, eaddress, latitude, longitude, code, format, username, servicetype);
+                order o = new order(service, time, ecomment, eaddress, latitude, longitude, code, format, username, servicetype, cost);
                 dbr.child(fauth.getCurrentUser().getUid()).child(code).setValue(o)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override

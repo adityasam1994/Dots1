@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,10 +29,11 @@ import org.w3c.dom.Text;
 
 public class provider_order_accepted extends AppCompatActivity {
 
-    String path, secretcode;
+    String path, secretcode, nformat;
     TextView tvservice,tvservicetype, tvtime, tvcode, tvuserdetail, tvcomment, tvid, tvname, etcode;
     ImageView imgplay, getdiection, btnback;
     double lat, lng;
+    Uri videouri;
     Button btnstart,scanqr;
     DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Orders");
@@ -53,12 +55,12 @@ public class provider_order_accepted extends AppCompatActivity {
         tvcomment=(TextView)findViewById(R.id.tvccomment);
         getdiection=(ImageView)findViewById(R.id.getdirection);
         imgplay=(ImageView) findViewById(R.id.imgplay);
-        btnback=(ImageView)findViewById(R.id.btnback);
+        btnback=(ImageView)findViewById(R.id.lines);
 
-        dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
+        dbruser.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                tvname.setText(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("fname").getValue().toString());
+                tvname.setText(dataSnapshot.child("fname").getValue().toString());
             }
 
             @Override
@@ -80,6 +82,7 @@ public class provider_order_accepted extends AppCompatActivity {
                 String service=dataSnapshot.child("service").getValue().toString();
                 secretcode=dataSnapshot.child("qrcode").getValue().toString();
                 String code=dataSnapshot.getKey().toString();
+                nformat = dataSnapshot.child("format").getValue().toString();
                 lat= (double) dataSnapshot.child("latitude").getValue();
                 lng= (double) dataSnapshot.child("longitude").getValue();
 
@@ -98,6 +101,35 @@ public class provider_order_accepted extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+        strf.child("order").child(path).getDownloadUrl()
+                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        videouri=uri;
+                        Toast.makeText(provider_order_accepted.this, ""+videouri, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        imgplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(nformat.equals("video")) {
+                    if (videouri != null) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(videouri, "video/*");
+                        startActivity(Intent.createChooser(intent, "Play Video Using"));
+                    }
+                }
+                if(nformat.equals("image")) {
+                    if (videouri != null) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(videouri, "image/*");
+                        startActivity(Intent.createChooser(intent, "Open image Using"));
+                    }
+                }
             }
         });
 

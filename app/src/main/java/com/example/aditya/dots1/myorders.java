@@ -62,7 +62,7 @@ public class myorders extends AppCompatActivity {
         btnback=(ImageView)findViewById(R.id.btnback);
         parent = (LinearLayout) findViewById(R.id.myorders);
 
-        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 

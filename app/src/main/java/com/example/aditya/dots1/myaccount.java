@@ -1,5 +1,6 @@
 package com.example.aditya.dots1;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,11 +9,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,11 +47,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class myaccount extends AppCompatActivity implements LocationListener {
 
-    Button saveaccount;
+    Button saveaccount, changeaddress;
     EditText etfname, etlname, etaddress, etphone;
     ImageView profilepic, getloc, btnback;
     Uri profile, filePath;
@@ -56,7 +62,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
     String piclink;
-    Boolean pickfromlink = false;
+    Boolean pickfromlink = false, addressfound=false;
     ProgressDialog pd;
     double lat = 0, lng = 0;
     Boolean showaddress = false;
@@ -67,6 +73,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.myaccount);
 
+        changeaddress=(Button)findViewById(R.id.btnchangeadd);
         btnback=(ImageView)findViewById(R.id.btnback);
         getloc = (ImageView) findViewById(R.id.getloc);
         profilepic = (ImageView) findViewById(R.id.profilepic);
@@ -99,21 +106,24 @@ public class myaccount extends AppCompatActivity implements LocationListener {
 
 
 
-        requestlocation();
+        //requestlocation();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+            }
+            else {
+                //requestlocation();
+            }
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
 
         dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -202,9 +212,32 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 else{
                     showaddress=true;
                     etaddress.setEnabled(false);
+                    changeaddress.setVisibility(View.VISIBLE);
                     pd.setMessage("Fetching Location...");
                     pd.show();
                 }
+            }
+        });
+
+        changeaddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder add_builder = new AlertDialog.Builder(myaccount.this);
+                add_builder.setTitle("Change address");
+                add_builder.setMessage("Do you want to change the address");
+                add_builder.setPositiveButton("Change address", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        etaddress.setEnabled(true);
+                        changeaddress.setVisibility(View.INVISIBLE);
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(myaccount.this, "Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                add_builder.show();
             }
         });
 
@@ -224,6 +257,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                         if(addresses.size()>0){
                             latitude=addresses.get(0).getLatitude();
                             longitude=addresses.get(0).getLongitude();
+                            addressfound=true;
                         }
                         else {
                             Toast.makeText(myaccount.this, "Address not found", Toast.LENGTH_SHORT).show();
@@ -237,65 +271,80 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     longitude=lng;
                 }
 
-                String fname, lname, address, phone;
-                fname=etfname.getText().toString().trim();
-                lname=etlname.getText().toString().trim();
-                address=etaddress.getText().toString().trim();
-                phone=etphone.getText().toString().trim();
+                if(addressfound == true || !etaddress.isEnabled()) {
 
-                dbr.child(fauth.getCurrentUser().getUid()).child("fname").setValue(fname);
-                dbr.child(fauth.getCurrentUser().getUid()).child("lname").setValue(lname);
-                dbr.child(fauth.getCurrentUser().getUid()).child("address").setValue(address);
-                dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue(phone);
-                dbr.child(fauth.getCurrentUser().getUid()).child("lati").setValue(latitude);
-                dbr.child(fauth.getCurrentUser().getUid()).child("longi").setValue(longitude);
+                    String fname, lname, address, phone;
+                    fname = etfname.getText().toString().trim();
+                    lname = etlname.getText().toString().trim();
+                    address = etaddress.getText().toString().trim();
+                    phone = etphone.getText().toString().trim();
 
-                StorageReference strf=storageReference.child("images/"+fauth.getCurrentUser().getUid());
-                strf.putFile(filePath)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    dbr.child(fauth.getCurrentUser().getUid()).child("fname").setValue(fname);
+                    dbr.child(fauth.getCurrentUser().getUid()).child("lname").setValue(lname);
+                    dbr.child(fauth.getCurrentUser().getUid()).child("address").setValue(address);
+                    dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue(phone);
+                    dbr.child(fauth.getCurrentUser().getUid()).child("lati").setValue(latitude);
+                    dbr.child(fauth.getCurrentUser().getUid()).child("longi").setValue(longitude);
 
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(myaccount.this, "Failed to update account!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    StorageReference strf = storageReference.child("images/" + fauth.getCurrentUser().getUid());
+                    strf.putFile(filePath)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                strf.getDownloadUrl()
-                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String linktopic=uri.toString();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(myaccount.this, "Failed to update account!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
 
-                        dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").setValue(linktopic);
-                        pd.dismiss();
-                        Toast.makeText(myaccount.this, "Account updated successfully", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    strf.getDownloadUrl()
+                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String linktopic = uri.toString();
 
+                                    dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").setValue(linktopic);
+                                    pd.dismiss();
+                                    Toast.makeText(myaccount.this, "Account updated successfully", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
             }
         });
 
         profilepic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //requeststorage();
-                CropImage.activity()
-                        .setAspectRatio(1,1)
-                        .setRequestedSize(500,500)
-                        .setCropShape(CropImageView.CropShape.OVAL)
-                        .start(myaccount.this);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                            && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        CropImage.activity()
+                                .setAspectRatio(1, 1)
+                                .setRequestedSize(500, 500)
+                                .setCropShape(CropImageView.CropShape.OVAL)
+                                .start(myaccount.this);
+                    }
+                    else {
+                        //requeststorage();
+                    }
+                }
             }
         });
     }
 
     private void requestlocation() {
-        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},587687);
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_COARSE_LOCATION},98769);
     }
+
+    /*private void requeststorage(){
+        ActivityCompat.requestPermissions(this,new String[]{READ_EXTERNAL_STORAGE},7988);
+        ActivityCompat.requestPermissions(this,new String[]{WRITE_EXTERNAL_STORAGE},7981);
+    }*/
 
     @Override
     public void finish() {

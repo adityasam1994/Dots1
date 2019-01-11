@@ -75,12 +75,15 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-public class newsignup extends AppCompatActivity implements LocationListener {
+public class newsignup extends AppCompatActivity implements LocationListener, View.OnClickListener {
 
     public static final int CAMERA_PERMISSION_REQUEST = 12345678;
+    public static final int REQUSET_FINE_LOCATION = 9999;
+    public static final int REQUEST_COARSE_LOCATION = 8888;
     String[] namewords;
     LoginButton flogin;
     CallbackManager callbackManager;
@@ -101,11 +104,11 @@ public class newsignup extends AppCompatActivity implements LocationListener {
     ImageButton gsign;
     FirebaseAuth.AuthStateListener authStateListener;
     GoogleSignInClient mGoogleSignInClient;
-    public String name,lname,fname="";
+    public String name, lname, fname = "";
     private RequestQueue requestQueue;
     private LocationManager locationManager;
-    public boolean showaddress=false, addressfound=false;
-    double latitude,longitude;
+    public boolean showaddress = false, addressfound = false;
+    double latitude, longitude;
 
     //creating reference to firebase storage
     StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -114,6 +117,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newsignup);
+
         pd = new ProgressDialog(this);
         li = (TextView) findViewById(R.id.btnstart);
         ivprofile = (ImageView) findViewById(R.id.profilepic);
@@ -128,9 +132,10 @@ public class newsignup extends AppCompatActivity implements LocationListener {
         mydialogue = new Dialog(this);
         gsign = (ImageButton) findViewById(R.id.gsign);
         btnloc = (Button) findViewById(R.id.btnloc);
-        btnchangeaddress=(Button)findViewById(R.id.btnchangeaddress);
+        btnchangeaddress = (Button) findViewById(R.id.btnchangeaddress);
+        ivprofile.setClickable(true);
 
-        btnfblogin=(ImageButton)findViewById(R.id.fsigninbutton);
+        btnfblogin = (ImageButton) findViewById(R.id.fsigninbutton);
         flogin = (LoginButton) findViewById(R.id.fsignin);
 
         requestQueue = Volley.newRequestQueue(this);
@@ -156,6 +161,10 @@ public class newsignup extends AppCompatActivity implements LocationListener {
             }
         });
 
+       /* ActivityCompat.requestPermissions(newsignup.this, new String[]{Manifest.permission.CAMERA}, 34);
+        ActivityCompat.requestPermissions(newsignup.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 349);
+        ActivityCompat.requestPermissions(newsignup.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 3445);*/
+
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -173,31 +182,39 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                 .requestEmail()
                 .build();
 
-        LoginManager.getInstance().logOut();
+        //LoginManager.getInstance().logOut();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        googleApiClient=new GoogleApiClient.Builder(this)
+        googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-
+        requestlocation();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+            }
+            else {
+                requestlocation();
+            }
         }
 
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String provider = locationManager.getBestProvider(criteria, true);
-        locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
-
-        requestlocation();
 
 
-        final ConstraintLayout constraintLayout=(ConstraintLayout)findViewById(R.id.signupcontraint);
+
+
+        //final ConstraintLayout constraintLayout=(ConstraintLayout)findViewById(R.id.signupcontraint);
         final float density=getResources().getDisplayMetrics().density;
         final Drawable fname=getResources().getDrawable(R.drawable.u30);
         final Drawable lname=getResources().getDrawable(R.drawable.u30);
@@ -265,7 +282,8 @@ public class newsignup extends AppCompatActivity implements LocationListener {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                        takepicture();
+                            takepicture();
+
                     }
                     else {
                         String[] pemissionRequest={Manifest.permission.CAMERA};
@@ -275,59 +293,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
             }
         });
 
-        btnloc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(newsignup.this);
-                    builder.setTitle("GPS Disabled!");
-                    builder.setMessage("GPS should be enabled to get your location");
-                    builder.setPositiveButton("Enable GPS", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            startActivity(intent);
-                        }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(newsignup.this, "Okay", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    builder.show();
-                }
-                else{
-                    etaddress.setText("");
-                    showaddress=true;
-                    etaddress.setEnabled(false);
-                    btnchangeaddress.setVisibility(View.VISIBLE);
-                    pd.setMessage("Fetching Location...");
-                    pd.show();
-                }
-            }
-        });
-
-        etaddress.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(etaddress.isFocusable()) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(newsignup.this);
-                    builder.setTitle("Edit Address");
-                    builder.setMessage("Do you want to enter the address manually?");
-                    builder.setPositiveButton("Edit address", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            etaddress.setFocusable(true);
-                        }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(newsignup.this, "Cancelled", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-        });
+        btnloc.setOnClickListener(this);
 
         btnchangeaddress.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -353,6 +319,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
             }
         });
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -381,11 +348,12 @@ public class newsignup extends AppCompatActivity implements LocationListener {
 
     private void requestlocation() {
         ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_COARSE_LOCATION},980);
     }
 
 
 
-    @Override
+    /*@Override
     protected void onStart() {
         super.onStart();
         googleApiClient.disconnect();
@@ -393,12 +361,12 @@ public class newsignup extends AppCompatActivity implements LocationListener {
         //we will close this activity
         //and take the user to profile activity
         if (fauth.getCurrentUser() != null) {
-            /*finish();
-            startActivity(new Intent(this, home.class));*/
+            *//*finish();
+            startActivity(new Intent(this, home.class));*//*
             Toast.makeText(this, "Already Logged in", Toast.LENGTH_SHORT).show();
 
         }
-    }
+    }*/
 
 
     @Override
@@ -537,7 +505,6 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                     }
                 });
     }
-
     private void firebaseAuthWithGoogle(final GoogleSignInAccount account) {
 
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
@@ -570,10 +537,6 @@ public class newsignup extends AppCompatActivity implements LocationListener {
 
                                 Intent intent = new Intent(newsignup.this, select.class);
                                 startActivity(intent);
-
-                            /*StorageReference childRef = storageRef.child("images/"+FirebaseAuth.getInstance().getCurrentUser().getUid());
-                            childRef.putFile(photouri);*/
-
 
                             }
                             else {
@@ -651,6 +614,8 @@ public class newsignup extends AppCompatActivity implements LocationListener {
         ActivityCompat.requestPermissions(this,new String[]{READ_EXTERNAL_STORAGE},1);
     }
 
+
+
     public  void registeruser(){
         pd.setMessage("Registering....");
         pd.show();
@@ -721,7 +686,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
                                             childRef.putFile(uri);
                                         }
 
-                                        /*fauth.signInWithEmailAndPassword(email,pass);*/
+                                        //*fauth.signInWithEmailAndPassword(email,pass);*//*
                                         pd.dismiss();
                                         Intent intent = new Intent(newsignup.this, select.class);
                                         startActivity(intent);
@@ -747,6 +712,7 @@ public class newsignup extends AppCompatActivity implements LocationListener {
         super.finish();
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
+
 
     @Override
     public void onLocationChanged(final Location location) {
@@ -806,5 +772,39 @@ public class newsignup extends AppCompatActivity implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "GPS service is disabled", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btnloc:
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(newsignup.this);
+                    builder.setTitle("GPS Disabled!");
+                    builder.setMessage("GPS should be enabled to get your location");
+                    builder.setPositiveButton("Enable GPS", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(intent);
+                        }
+                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(newsignup.this, "Okay", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    builder.show();
+                }
+                else{
+                    etaddress.setText("");
+                    showaddress=true;
+                    etaddress.setEnabled(false);
+                    btnchangeaddress.setVisibility(View.VISIBLE);
+                    pd.setMessage("Fetching Location...");
+                    pd.show();
+                }
+                break;
+        }
     }
 }

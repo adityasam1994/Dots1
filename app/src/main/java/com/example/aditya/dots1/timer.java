@@ -1,6 +1,7 @@
 package com.example.aditya.dots1;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -34,17 +35,29 @@ public class timer extends AppCompatActivity {
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     DatabaseReference dbr=FirebaseDatabase.getInstance().getReference("Orders");
     String orderpath,time, status="";
+    SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
 
-        orderpath=getIntent().getExtras().getString("orderpath");
+        sharedPreferences=getSharedPreferences("TimerData", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edi=sharedPreferences.edit();
+
+        Intent intent=getIntent();
+        if(intent != null) {
+            orderpath = getIntent().getExtras().getString("orderpath");
+        }
+        else {
+            orderpath = sharedPreferences.getString("orderpath", "");
+        }
+
         btnstart=(Button)findViewById(R.id.btnpay);
         timer=(TextView) findViewById(R.id.tvTimer);
         pref = getSharedPreferences("pref", 0);
         Timer();
-        Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
+
+        //Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
 
         btnstart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,5 +146,13 @@ public class timer extends AppCompatActivity {
 
         });
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences.Editor edi=sharedPreferences.edit();
+        edi.putString("orderpath", orderpath);
+        edi.commit();
     }
 }

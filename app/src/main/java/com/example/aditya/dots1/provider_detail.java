@@ -1,5 +1,6 @@
 package com.example.aditya.dots1;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentProvider;
@@ -14,6 +15,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -42,24 +44,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 public class provider_detail extends AppCompatActivity implements LocationListener {
 
     Spinner service, avilable;
     EditText address, comment, age;
     TextView uname;
-    Button save, btngetloc;
+    Button save, btngetloc, btneditaddress;
     ProgressDialog pd;
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     DatabaseReference dbr, dbruser;
     LocationManager locationManager;
     double lat, lng;
-    Boolean showaddress=false;
+    Boolean showaddress=false, addressfound=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_provider_detail);
 
+        btneditaddress=(Button)findViewById(R.id.btneditaddress);
         btngetloc = (Button) findViewById(R.id.btngetloc);
         uname = (TextView) findViewById(R.id.tvname);
         age = (EditText) findViewById(R.id.etage);
@@ -77,21 +83,19 @@ public class provider_detail extends AppCompatActivity implements LocationListen
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String provider = locationManager.getBestProvider(criteria, true);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+            }
+            else {
+                requestlocation();
+            }
+        }
         dbruser.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -163,6 +167,28 @@ public class provider_detail extends AppCompatActivity implements LocationListen
             }
         });
 
+        btneditaddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder add_builder = new AlertDialog.Builder(provider_detail.this);
+                add_builder.setTitle("Change address");
+                add_builder.setMessage("Do you want to change the address");
+                add_builder.setPositiveButton("Change address", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        address.setEnabled(true);
+                        btneditaddress.setVisibility(View.INVISIBLE);
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(provider_detail.this, "Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                add_builder.show();
+            }
+        });
+
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -178,6 +204,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                         if(addresses.size()>0){
                             lati=addresses.get(0).getLatitude();
                             longi=addresses.get(0).getLongitude();
+                            addressfound=true;
                         }
                         else {
                             Toast.makeText(provider_detail.this, "Address not found", Toast.LENGTH_SHORT).show();
@@ -190,6 +217,8 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                     lati=lat;
                     longi=lng;
                 }
+
+                if(addressfound == true && !address.isEnabled()){
 
                 String eaddress,eservice,eage,eavilable,ecomment;
                 eaddress=address.getText().toString().trim();
@@ -214,7 +243,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                         Toast.makeText(provider_detail.this, "Failed to save details "+e, Toast.LENGTH_SHORT).show();
                     }
                 });
-            }
+            }}
         });
 
         btngetloc.setOnClickListener(new View.OnClickListener() {
@@ -242,6 +271,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                     address.setText("");
                     showaddress=true;
                     address.setEnabled(false);
+                    btneditaddress.setVisibility(View.VISIBLE);
                     pd.setMessage("Fetching Location...");
                     pd.show();
                 }
@@ -249,6 +279,11 @@ public class provider_detail extends AppCompatActivity implements LocationListen
         });
 
 
+    }
+
+    private void requestlocation() {
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
+        ActivityCompat.requestPermissions(this,new String[]{ACCESS_COARSE_LOCATION},980);
     }
 
     @Override

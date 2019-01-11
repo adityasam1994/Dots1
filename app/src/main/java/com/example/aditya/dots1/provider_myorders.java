@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -41,7 +42,7 @@ public class provider_myorders extends AppCompatActivity {
                   for(DataSnapshot dd:ds.getChildren()){
                       for(DataSnapshot d:dd.getChildren()){
                           if(d.getKey().toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-                              final String status=d.child("status").getValue().toString().toUpperCase();
+                              final String status=d.child("status").getValue().toString();
                               String oid=dd.getKey().toString();
                               final String path=ds.getKey().toString()+"/"+dd.getKey().toString();
 
@@ -60,7 +61,7 @@ public class provider_myorders extends AppCompatActivity {
                               service.setLayoutParams(para);
 
                               final TextView order1=new TextView(provider_myorders.this);
-                              order1.setText(status);
+                              order1.setText(status.toUpperCase());
                               order1.setTextSize(18);
                               order1.setGravity(Gravity.CENTER_HORIZONTAL| Gravity.CENTER_VERTICAL);
                               order1.setTypeface(null, Typeface.BOLD);
@@ -79,6 +80,12 @@ public class provider_myorders extends AppCompatActivity {
                                           Intent intent=new Intent(provider_myorders.this, provider_order_accepted.class);
                                           intent.putExtra("path",path);
                                           startActivity(intent);
+                                      }
+                                      if(status.equals("rejected")){
+                                          Toast.makeText(provider_myorders.this, "This order was rejected", Toast.LENGTH_SHORT).show();
+                                      }
+                                      if(status.equals("completed")){
+                                          Toast.makeText(provider_myorders.this, "This order has been completed", Toast.LENGTH_SHORT).show();
                                       }
                                   }
                               });

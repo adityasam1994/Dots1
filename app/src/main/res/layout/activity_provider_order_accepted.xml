@@ -53,7 +53,8 @@
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
 
         <LinearLayout
             android:id="@+id/details"
@@ -65,7 +66,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="10dp"
                 android:background="@drawable/tbackground"
                 android:orientation="horizontal">
 
@@ -115,6 +115,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginTop="5dp"
+                    android:layout_marginRight="20dp"
                     android:inputType="textMultiLine"
                     android:text="customer detail" />
 
@@ -150,6 +151,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginTop="5dp"
+                    android:layout_marginRight="20dp"
                     android:text="comments" />
 
                 <TextView

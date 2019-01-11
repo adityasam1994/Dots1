@@ -2,10 +2,10 @@ package com.example.aditya.dots1;
 
 public class order {
 
-    String service,time,ecomment,eaddress,code,format,username,servicetype;
+    String service,time,ecomment,eaddress,code,format,username,servicetype, cost;
     double latitude,longitude;
 
-    public order(String service, String time, String ecomment, String eaddress, double latitude, double longitude, String code, String format, String username, String servicetype) {
+    public order(String service, String time, String ecomment, String eaddress, double latitude, double longitude, String code, String format, String username, String servicetype, String cost) {
         this.service = service;
         this.time = time;
         this.ecomment = ecomment;
@@ -16,6 +16,7 @@ public class order {
         this.format=format;
         this.username=username;
         this.servicetype=servicetype;
+        this.cost=cost;
     }
 
     public String getService() {
@@ -96,5 +97,13 @@ public class order {
 
     public void setServicetype(String servicetype) {
         this.servicetype = servicetype;
+    }
+
+    public String getCost() {
+        return cost;
+    }
+
+    public void setCost(String cost) {
+        this.cost = cost;
     }
 }
