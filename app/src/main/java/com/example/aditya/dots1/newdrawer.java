@@ -218,17 +218,25 @@ public class newdrawer extends AppCompatActivity
                                 if(dd.hasChild("state")){
                                     if(!dd.child("state").getValue().toString().equals("approved")){
 
-                                orderpath=FirebaseAuth.getInstance().getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+dd.getKey().toString();
-                                final String time=ds.child("stopwatch").child("time").getValue().toString();
-                                final String cost=ds.child("cost").getValue().toString();
-                                final String serv=ds.child("service").getValue().toString();
-                                dialog=new Dialog(newdrawer.this);
-                                dialog.setContentView(R.layout.job_done_notification);
-                                dialog.show();
-                                Button pay=dialog.findViewById(R.id.btnpay);
-                                TextView timer=dialog.findViewById(R.id.tvTimer);
+                                        orderpath=FirebaseAuth.getInstance().getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+dd.getKey().toString();
+                                        dialog=new Dialog(newdrawer.this);
+                                        dialog.setContentView(R.layout.job_done_notification);
+                                        dialog.show();
 
-                                timer.setText(time);
+                                        final String time=ds.child("stopwatch").child("time").getValue().toString();
+                                        final String cost=ds.child("cost").getValue().toString();
+                                        final String serv=ds.child("service").getValue().toString();
+                                        final String oid=ds.child("code").getValue().toString();
+
+                                        Button pay=dialog.findViewById(R.id.btnpay);
+                                        TextView timer=dialog.findViewById(R.id.tvTimer);
+                                        TextView service=dialog.findViewById(R.id.tvservicename);
+                                        TextView tvcost=dialog.findViewById(R.id.tvcost);
+
+                                        service.setText("(" + oid+ ") " + serv + ":");
+                                        tvcost.setText(cost+"$");
+
+                                        timer.setText(time);
 
                                 pay.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -238,17 +246,26 @@ public class newdrawer extends AppCompatActivity
                                 });
 
                                     }
+
                                 }
                                 else {
                                     orderpath=FirebaseAuth.getInstance().getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+dd.getKey().toString();
-                                    final String time=ds.child("stopwatch").child("time").getValue().toString();
-                                    final String cost=ds.child("cost").getValue().toString();
-                                    final String serv=ds.child("service").getValue().toString();
                                     dialog=new Dialog(newdrawer.this);
                                     dialog.setContentView(R.layout.job_done_notification);
                                     dialog.show();
+
+                                    final String time=ds.child("stopwatch").child("time").getValue().toString();
+                                    final String cost=ds.child("cost").getValue().toString();
+                                    final String serv=ds.child("service").getValue().toString();
+                                    final String oid=ds.child("code").getValue().toString();
+
                                     Button pay=dialog.findViewById(R.id.btnpay);
                                     TextView timer=dialog.findViewById(R.id.tvTimer);
+                                    TextView service=dialog.findViewById(R.id.tvservicename);
+                                    TextView tvcost=dialog.findViewById(R.id.tvcost);
+
+                                    service.setText("(" + oid+ ") " + serv + ":");
+                                    tvcost.setText(cost+"$");
 
                                     timer.setText(time);
 

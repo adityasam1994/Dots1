@@ -87,6 +87,7 @@ public class findprovider extends Service {
                                     intent.putExtra("pid", dd.getKey().toString());
                                     intent.putExtra("oid",co);
                                     startActivity(intent);
+                                    killtimer=true;
                                     stopSelf();
 
                                 }
@@ -96,6 +97,7 @@ public class findprovider extends Service {
                                     Intent intent=new Intent(findprovider.this, newdrawer.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
+                                    killtimer=true;
                                     stopSelf();
                                 }
                                 if(dd.child("status").getValue().toString().equals("rejected")){
@@ -236,7 +238,7 @@ public class findprovider extends Service {
             public void run() {
                 //Toast.makeText(findprovider.this, ""+(SystemClock.uptimeMillis()-StartTime), Toast.LENGTH_SHORT).show();
 
-                if((SystemClock.uptimeMillis() - StartTime) > 60000 && killtimer.equals(false)){
+                if((SystemClock.uptimeMillis() - StartTime) > 20000 && killtimer.equals(false)){
 
                     DatabaseReference d = dbr.child(fauth.getCurrentUser().getUid()).child(co).child(uids);
 

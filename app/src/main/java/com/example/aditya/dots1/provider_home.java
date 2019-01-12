@@ -101,6 +101,13 @@ public class provider_home extends AppCompatActivity
             btncancel.setVisibility(View.VISIBLE);
         }
 
+        SharedPreferences sharedPreferences=getSharedPreferences("TimeData",Context.MODE_PRIVATE);
+        Boolean timerrunning=sharedPreferences.getBoolean("timerrunning",false);
+        if(timerrunning == true){
+            Intent intent=new Intent(provider_home.this, timer.class);
+            startActivity(intent);
+        }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);

@@ -46,7 +46,7 @@ public class myorders extends AppCompatActivity {
     DatabaseReference dbr = FirebaseDatabase.getInstance().getReference("Orders");
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     LinearLayout parent;
-    String time,oredrpath="",cost,servi;
+    String time,oredrpath="",cost,servi,state;
     Dialog dialog;
     ImageView btnback;
 
@@ -62,7 +62,7 @@ public class myorders extends AppCompatActivity {
         btnback=(ImageView)findViewById(R.id.btnback);
         parent = (LinearLayout) findViewById(R.id.myorders);
 
-        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -103,6 +103,10 @@ public class myorders extends AppCompatActivity {
                                 oredrpath=fauth.getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+d.getKey().toString();
                                 cost=ds.child("cost").getValue().toString();
                                 servi=ds.child("service").getValue().toString();
+                                if(d.hasChild("state")){
+                                    state=d.child("state").getValue().toString();
+                                    //Toast.makeText(myorders.this, state, Toast.LENGTH_SHORT).show();
+                                }
                                 break;
                             }
 
@@ -175,20 +179,30 @@ public class myorders extends AppCompatActivity {
                                 Toast.makeText(myorders.this, "No provider was found for this order", Toast.LENGTH_SHORT).show();
                             }
                             if (finalStatu.equals("Completed")) {
-                                dialog = new Dialog(myorders.this);
-                                dialog.setContentView(R.layout.job_done_notification);
-                                dialog.show();
-                                Button pay = dialog.findViewById(R.id.btnpay);
-                                TextView timer = dialog.findViewById(R.id.tvTimer);
+                                    if (state.equals("approved")) {
+                                        Toast.makeText(myorders.this, "This order has been completed and paid", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        dialog = new Dialog(myorders.this);
+                                        dialog.setContentView(R.layout.job_done_notification);
+                                        dialog.show();
+                                        final String oid = ds.getKey().toString();
+                                        Button pay = dialog.findViewById(R.id.btnpay);
+                                        TextView timer = dialog.findViewById(R.id.tvTimer);
+                                        TextView service = dialog.findViewById(R.id.tvservicename);
+                                        TextView tvcost = dialog.findViewById(R.id.tvcost);
 
-                                timer.setText(time);
+                                        service.setText("(" + oid + ") " + servi + ":");
+                                        tvcost.setText(cost + "$");
 
-                                pay.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        beginpayment(cost,servi);
+                                        timer.setText(time);
+
+                                        pay.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                beginpayment(cost, servi);
+                                            }
+                                        });
                                     }
-                                });
                             }
                         }
                     });
@@ -218,6 +232,7 @@ public class myorders extends AppCompatActivity {
     }
 
     private void beginpayment(String cost, String servi) {
+        dialog.dismiss();
         Intent serviceConfig = new Intent(this, PayPalService.class);
         serviceConfig.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
         startService(serviceConfig);

@@ -43,21 +43,16 @@ public class timer extends AppCompatActivity {
 
         sharedPreferences=getSharedPreferences("TimerData", Context.MODE_PRIVATE);
         SharedPreferences.Editor edi=sharedPreferences.edit();
+        edi.putBoolean("timerrunning", true);
+        edi.commit();
 
-        Intent intent=getIntent();
-        if(intent != null) {
-            orderpath = getIntent().getExtras().getString("orderpath");
-        }
-        else {
-            orderpath = sharedPreferences.getString("orderpath", "");
-        }
+        orderpath=getIntent().getExtras().getString("path");
+        Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
 
         btnstart=(Button)findViewById(R.id.btnpay);
         timer=(TextView) findViewById(R.id.tvTimer);
         pref = getSharedPreferences("pref", 0);
         Timer();
-
-        //Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
 
         btnstart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,6 +74,7 @@ public class timer extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 pref.edit().remove("endtime").commit();
+                sharedPreferences.edit().putBoolean("timerrunning",false).commit();
                 killrun=true;
                 dialog.dismiss();
 

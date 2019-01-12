@@ -87,6 +87,11 @@ public class provider_myorders extends AppCompatActivity {
                                       if(status.equals("completed")){
                                           Toast.makeText(provider_myorders.this, "This order has been completed", Toast.LENGTH_SHORT).show();
                                       }
+                                      if(status.equals("in_progress")){
+                                          Intent intent=new Intent(provider_myorders.this, timer.class);
+                                          intent.putExtra("path",path);
+                                          startActivity(intent);
+                                      }
                                   }
                               });
 

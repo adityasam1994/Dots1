@@ -1,91 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="300dp"
-    android:layout_height="300dp"
+    android:layout_height="350dp"
     android:background="@drawable/bground"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/commentborder"
-            android:backgroundTint="#ECECEC"
-            android:gravity="center"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="10dp"
-            android:text="Job Completed"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:paddingRight="8dp"
+            android:paddingLeft="8dp">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="20dp"
+                android:paddingLeft="16dp"
+                android:layout_gravity="center"
+                android:paddingRight="16dp"
+                android:background="@drawable/commentborder"
+                android:backgroundTint="#ECECEC"
                 android:gravity="center"
-                android:text="Hours"
+                android:text="Job Completed"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="0dp"
+            <FrameLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Minutes"
-                android:textStyle="bold" />
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="left|top"
+                    android:text="Hours"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_gravity="center|top"
+                    android:text="Minutes"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginRight="8dp"
+                    android:layout_gravity="right|top"
+                    android:text="Seconds"
+                    android:textStyle="bold" />
+
 
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/tvTimer"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/commentborder"
+                android:backgroundTint="#ECECEC"
+                android:padding="10dp"
                 android:gravity="center"
-                android:text="Seconds"
+                android:layout_gravity="center"
+                android:paddingBottom="50dp"
+                android:text="00:00:00"
+                android:textColor="#000000"
+                android:textSize="60dp"
                 android:textStyle="bold" />
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvservicename"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/commentborder"
+                    android:backgroundTint="#ECECEC"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="2dp"
+                    android:text="(GDTYU3)Service:"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvcost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right|center_vertical"
+                    android:background="@drawable/commentborder"
+                    android:backgroundTint="#ECECEC"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="2dp"
+                    android:text="Cost"
+                    android:textColor="#000000"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+
+            </LinearLayout>
         </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:paddingBottom="50dp"
-        android:text="00:00:00"
-        android:textColor="#000000"
-        android:textSize="60dp"
-        android:textStyle="bold"
-        android:background="@drawable/commentborder"
-        android:padding="10dp"
-        android:backgroundTint="#ECECEC" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/btnpay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/whiteb"
-        android:text="Pay"
-        android:textSize="18sp" />
+        <Button
+            android:id="@+id/btnpay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/whiteb"
+            android:text="Pay"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
