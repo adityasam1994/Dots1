@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
@@ -118,8 +119,14 @@ public class myorders extends AppCompatActivity {
                         }
                     }
 
+                    float dip_h=35f;
+                    Resources r=getResources();
+                    float px_h= TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
+                    );
+
                     final LinearLayout layout = new LinearLayout(myorders.this);
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 90);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) px_h);
                     params.setMargins(0, 20, 0, 0);
                     layout.setLayoutParams(params);
                     layout.setOrientation(LinearLayout.HORIZONTAL);

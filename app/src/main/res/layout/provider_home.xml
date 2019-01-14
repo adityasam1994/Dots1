@@ -10,7 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -39,7 +40,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="Name"
-                android:textSize="18dp"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
             <ImageView
@@ -54,182 +55,195 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:id="@+id/details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="invisible">
-
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/tbackground"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvcservice"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="10dp"
-                    android:layout_weight="1"
-                    android:text="Service"
-                    android:textSize="20dp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvcode"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginEnd="10dp"
-                    android:layout_weight="1"
-                    android:gravity="end"
-                    android:text="Code"
-                    android:textSize="16dp" />
-
-            </LinearLayout>
-
-            <LinearLayout
+                android:id="@+id/details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/tbackground"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="visible">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
                     android:layout_marginTop="10dp"
-                    android:text="Customer Detail"
-                    android:textSize="18dp"
-                    android:textStyle="bold" />
+                    android:background="@drawable/tbackground"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/tvcdetail"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="5dp"
-                    android:inputType="textMultiLine"
-                    android:text="customer detail" />
+                    <TextView
+                        android:id="@+id/tvcservice"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="10dp"
+                        android:layout_weight="1"
+                        android:text="Service"
+                        android:textSize="20dp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Time"
-                    android:textSize="18dp"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvcode"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="Code"
+                        android:textSize="16dp" />
 
-                <TextView
-                    android:id="@+id/tvctime"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="5dp"
-                    android:text="time" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Comments"
-                    android:textSize="18dp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvccomment"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="5dp"
-                    android:text="comments" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Service Type"
-                    android:textSize="18dp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvaccess"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="5dp"
-                    android:text="Service Type" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/tbackground"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="10dp"
+                        android:text="Customer Detail"
+                        android:textSize="18dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvcdetail"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="5dp"
+                        android:inputType="textMultiLine"
+                        android:text="customer detail" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Time"
+                        android:textSize="18dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvctime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="5dp"
+                        android:text="time" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Comments"
+                        android:textSize="18dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvccomment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="5dp"
+                        android:text="comments" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="20dp"
+                        android:text="Service Type"
+                        android:textSize="18dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvaccess"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginTop="5dp"
+                        android:text="Service Type" />
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:orientation="vertical">
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginTop="20dp"
-                            android:text="Caution"
-                            android:textSize="18dp"
-                            android:textStyle="bold" />
+                            android:layout_weight="2"
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="match_parent"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="20dp"
+                                android:text="Caution"
+                                android:textSize="18dp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="20dp"
+                                android:layout_marginLeft="20dp"
+                                android:layout_marginTop="5dp"
+                                android:text="Caution" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="20dp"
-                            android:layout_marginLeft="20dp"
-                            android:layout_marginTop="5dp"
-                            android:text="Caution" />
+                            android:layout_gravity="center"
+                            android:layout_weight="1">
+
+                            <ImageView
+                                android:id="@+id/getdirection"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_weight="1"
+                                android:src="@drawable/gps" />
+
+                            <FrameLayout
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_weight="1">
+
+                                <ImageView
+                                    android:id="@+id/imgplay"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/iconfinder_download"/>
+
+                                <ImageView
+                                    android:id="@+id/imgplaynow"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/play"
+                                    android:visibility="invisible" />
+
+                            </FrameLayout>
+                        </LinearLayout>
+
                     </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:id="@+id/getdirection"
-                            android:layout_width="60dp"
-                            android:layout_height="60dp"
-                            android:layout_weight="1"
-                            android:src="@drawable/gps" />
-
-                        <ImageView
-                            android:id="@+id/imgplay"
-                            android:layout_width="60dp"
-                            android:layout_height="60dp"
-                            android:layout_weight="1"
-                            android:src="@drawable/play" />
-                    </LinearLayout>
-
                 </LinearLayout>
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/qrlayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="visible">
+                <LinearLayout
+                    android:id="@+id/qrlayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
 
-                <!--<Button
+                    <!--<Button
                 android:id="@+id/qrscan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -247,53 +261,53 @@
                 android:gravity="center"
                 android:layout_marginTop="10dp"/>-->
 
-                <EditText
-                    android:id="@+id/etcode"
-                    android:layout_width="0dp"
+                    <EditText
+                        android:id="@+id/etcode"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="8"
+                        android:backgroundTint="#ECECEC"
+                        android:hint="Enter/Scan ID" />
+
+                    <Button
+                        android:id="@+id/scanqr"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/qricon" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="8"
-                    android:backgroundTint="#ECECEC"
-                    android:hint="Enter/Scan ID" />
-
-                <Button
-                    android:id="@+id/scanqr"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/qricon" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btncancel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_weight="1"
-                    android:background="@drawable/blueb"
                     android:gravity="center"
-                    android:text="Cancel"
-                    android:textSize="18sp" />
+                    android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/btnstart"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_weight="1"
-                    android:background="@drawable/whiteb"
-                    android:gravity="center"
-                    android:text="Accept"
-                    android:textSize="18sp" />
+                    <Button
+                        android:id="@+id/btncancel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:background="@drawable/blueb"
+                        android:gravity="center"
+                        android:text="Cancel"
+                        android:textSize="18sp" />
 
+                    <Button
+                        android:id="@+id/btnstart"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:background="@drawable/whiteb"
+                        android:gravity="center"
+                        android:text="Accept"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
 
         </ScrollView>
 

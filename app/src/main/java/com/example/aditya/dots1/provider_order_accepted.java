@@ -1,7 +1,9 @@
 package com.example.aditya.dots1;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,20 +22,27 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+
 public class provider_order_accepted extends AppCompatActivity {
 
-    String path, secretcode, nformat;
+    String path, secretcode, nformat,code;
     TextView tvservice,tvservicetype, tvtime, tvcode, tvuserdetail, tvcomment, tvid, tvname, etcode;
-    ImageView imgplay, getdiection, btnback;
+    ImageView imgplay, getdiection, btnback, btnplaynow;
     double lat, lng;
     Uri videouri;
+    ProgressDialog pd;
     Button btnstart,scanqr;
     DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Orders");
@@ -43,6 +52,8 @@ public class provider_order_accepted extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_provider_order_accepted);
 
+        btnplaynow=(ImageView)findViewById(R.id.imgplaynow);
+        pd=new ProgressDialog(this);
         etcode=(EditText)findViewById(R.id.etcode);
         btnstart=(Button)findViewById(R.id.btnstart);
         scanqr=(Button)findViewById(R.id.scanqr);
@@ -81,7 +92,7 @@ public class provider_order_accepted extends AppCompatActivity {
                 String servicetype=dataSnapshot.child("servicetype").getValue().toString();
                 String service=dataSnapshot.child("service").getValue().toString();
                 secretcode=dataSnapshot.child("qrcode").getValue().toString();
-                String code=dataSnapshot.getKey().toString();
+                code=dataSnapshot.getKey().toString();
                 nformat = dataSnapshot.child("format").getValue().toString();
                 lat= (double) dataSnapshot.child("latitude").getValue();
                 lng= (double) dataSnapshot.child("longitude").getValue();
@@ -96,6 +107,34 @@ public class provider_order_accepted extends AppCompatActivity {
 
                 tvuserdetail.setText(cname);
 
+                if(nformat.equals("video")){
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=code+".mp4";
+                    File file=new File(dir, filename);
+
+                    if(file.exists()){
+                        btnplaynow.setVisibility(View.VISIBLE);
+                        imgplay.setVisibility(View.INVISIBLE);
+                    }
+                }
+
+                if(nformat.equals("image")){
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=code+".jpg";
+                    File file=new File(dir, filename);
+
+                    if(file.exists()){
+                        btnplaynow.setVisibility(View.VISIBLE);
+                        imgplay.setVisibility(View.INVISIBLE);
+                    }
+                }
+
             }
 
             @Override
@@ -104,31 +143,114 @@ public class provider_order_accepted extends AppCompatActivity {
             }
         });
 
-        strf.child("order").child(path).getDownloadUrl()
+       /* strf.child("order").child(path).getDownloadUrl()
                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
                         videouri=uri;
                         Toast.makeText(provider_order_accepted.this, ""+videouri, Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
 
         imgplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(nformat.equals("video")) {
-                    if (videouri != null) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        pd.setMessage("Downloading...");
+                        pd.show();
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=code+".mp4";
+                    File file=new File(dir, filename);
+
+                    strf.child("order").child(path).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            Toast.makeText(provider_order_accepted.this, "Download complete", Toast.LENGTH_SHORT).show();
+                            pd.dismiss();
+                            btnplaynow.setVisibility(View.VISIBLE);
+                            imgplay.setVisibility(View.INVISIBLE);
+                        }
+                    }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                    .getTotalByteCount());
+                            pd.setMessage("Downloading "+(int)progress+"%");
+                        }
+                    });
+
+                        /*Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setDataAndType(videouri, "video/*");
-                        startActivity(Intent.createChooser(intent, "Play Video Using"));
-                    }
+                        startActivity(Intent.createChooser(intent, "Play Video Using"));*/
                 }
                 if(nformat.equals("image")) {
-                    if (videouri != null) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                        pd.setMessage("Downloading...");
+                        pd.show();
+                        File mpath= Environment.getExternalStorageDirectory();
+
+                        File dir=new File(mpath+"/Dot/");
+                        dir.mkdirs();
+                        String filename=code+".jpg";
+                        File file=new File(dir, filename);
+
+                        strf.child("order").child(path).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                Toast.makeText(provider_order_accepted.this, "Download complete", Toast.LENGTH_SHORT).show();
+                                btnplaynow.setVisibility(View.VISIBLE);
+                                imgplay.setVisibility(View.INVISIBLE);
+                                pd.dismiss();
+                            }
+                        }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                        .getTotalByteCount());
+                                pd.setMessage("Downloading "+(int)progress+"%");
+                            }
+                        });
+                        /*Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setDataAndType(videouri, "image/*");
-                        startActivity(Intent.createChooser(intent, "Open image Using"));
-                    }
+                        startActivity(Intent.createChooser(intent, "Open image Using"));*/
+                }
+            }
+        });
+
+        btnplaynow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(nformat.equals("video")){
+
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=code+".mp4";
+                    File file=new File(dir, filename);
+
+                    Uri filepath=Uri.fromFile(file);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(filepath, "video/*");
+                    startActivity(Intent.createChooser(intent, "Open video Using"));
+                }
+
+                if(nformat.equals("image")){
+
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=code+".jpg";
+                    File file=new File(dir, filename);
+
+                    Uri filepath=Uri.fromFile(file);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(filepath, "image/*");
+                    startActivity(Intent.createChooser(intent, "Open image Using"));
                 }
             }
         });

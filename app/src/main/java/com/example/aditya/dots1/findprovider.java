@@ -1,12 +1,19 @@
 package com.example.aditya.dots1;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.RingtoneManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,6 +30,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.example.aditya.dots1.App.CHANNEL_ID;
+
 public class findprovider extends Service {
 
     final static String MY_ACTION= "MY_ACTION";
@@ -36,7 +45,8 @@ public class findprovider extends Service {
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     Boolean provider_found=false;
     Boolean request_rejected=false;
-    Boolean pending=true, order_cancelled=false;
+    Boolean pending=true, order_cancelled=false, appopen;
+    SharedPreferences sharedPreferences;
     double provider_distance;
     List<String> rejected_providers=new ArrayList<String>();
 
@@ -52,7 +62,7 @@ public class findprovider extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
-        //Toast.makeText(this, "Searching for provider", Toast.LENGTH_SHORT).show();
+        sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
 
         co=intent.getExtras().getString("code");
         lati=intent.getExtras().getDouble("lat");
@@ -66,6 +76,14 @@ public class findprovider extends Service {
 
         order_accept();
 
+        Notification builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.iconfinder_notification)
+                .setContentTitle("Order status")
+                .setContentText("Searching for provider...")
+                .build();
+
+        startForeground(1, builder);
+
         return START_STICKY;
 
     }
@@ -74,7 +92,7 @@ public class findprovider extends Service {
         dbr.child(fauth.getCurrentUser().getUid()).child(co).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
+                appopen = sharedPreferences.getBoolean("customer_at_home", false);
                 for(DataSnapshot dd : dataSnapshot.getChildren()) {
 
                             int na=dd.getKey().toString().length();
@@ -82,11 +100,30 @@ public class findprovider extends Service {
                             if(na > 20) {
                                 if (dd.child("status").getValue().toString().equals("accepted")) {
                                     provider_found = true;
-                                    Intent intent = new Intent(findprovider.this, order_accepted.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    intent.putExtra("pid", dd.getKey().toString());
-                                    intent.putExtra("oid",co);
-                                    startActivity(intent);
+                                    if(appopen == true) {
+                                        Intent intent = new Intent(findprovider.this, order_accepted.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        intent.putExtra("pid", dd.getKey().toString());
+                                        intent.putExtra("oid", co);
+                                        startActivity(intent);
+                                    }
+                                    else {
+                                        final Intent intent1 = new Intent(findprovider.this, order_accepted.class);
+                                        intent1.putExtra("pid", dd.getKey().toString());
+                                        intent1.putExtra("oid", co);
+                                        final PendingIntent pendingIntent = PendingIntent.getActivity(findprovider.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
+                                                .setSmallIcon(R.drawable.iconfinder_notification)
+                                                .setContentTitle("Order Status")
+                                                .setContentText("Provider is found for your order")
+                                                .setAutoCancel(true)
+                                                .setContentIntent(pendingIntent)
+                                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+                                        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                        notificationManager.cancelAll();
+                                        notificationManager.notify(5, builder.build());
+                                    }
                                     killtimer=true;
                                     stopSelf();
 
@@ -238,7 +275,7 @@ public class findprovider extends Service {
             public void run() {
                 //Toast.makeText(findprovider.this, ""+(SystemClock.uptimeMillis()-StartTime), Toast.LENGTH_SHORT).show();
 
-                if((SystemClock.uptimeMillis() - StartTime) > 20000 && killtimer.equals(false)){
+                if((SystemClock.uptimeMillis() - StartTime) > 60000 && killtimer.equals(false)){
 
                     DatabaseReference d = dbr.child(fauth.getCurrentUser().getUid()).child(co).child(uids);
 

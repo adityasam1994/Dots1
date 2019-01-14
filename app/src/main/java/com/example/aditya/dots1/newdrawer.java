@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -82,13 +83,14 @@ public class newdrawer extends AppCompatActivity
     LinearLayout servicelist;
     Uri profile;
     Dialog dialog;
-    String fname,email,activity="",piclink="",lname,cod="",orderpath="";
+    String fname,email,activity="",piclink="",lname,cod="",orderpath="", time,cost, serv, oid;
     Layout drawerhead;
     Button lo,lifting,plumbing,electric,btnasprovider;
     DatabaseReference dbr;
     DatabaseReference dbrorder=FirebaseDatabase.getInstance().getReference("Orders");
     DatabaseReference dbrservices=FirebaseDatabase.getInstance().getReference("services");
     TextView tv;
+    SharedPreferences sharedPreferences;
     Boolean fbpic=false;
     FirebaseStorage storage=FirebaseStorage.getInstance();
     StorageReference storageReference=storage.getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -104,6 +106,11 @@ public class newdrawer extends AppCompatActivity
         setContentView(R.layout.activity_newdrawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("customer_at_home", true);
+        editor.commit();
 
         byte[] array=new byte[7];
         new Random().nextBytes(array);
@@ -162,9 +169,9 @@ public class newdrawer extends AppCompatActivity
                             TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
                     );
 
-                    float dip_ts=8f;
+                    float dip_ts=10f;
                     float px_ts= TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_SP, dip_ts, r.getDisplayMetrics()
+                            TypedValue.COMPLEX_UNIT_DIP, dip_ts, r.getDisplayMetrics()
                     );
 
                     final LinearLayout layout = new LinearLayout(newdrawer.this);
@@ -217,64 +224,27 @@ public class newdrawer extends AppCompatActivity
 
                                 if(dd.hasChild("state")){
                                     if(!dd.child("state").getValue().toString().equals("approved")){
-
                                         orderpath=FirebaseAuth.getInstance().getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+dd.getKey().toString();
-                                        dialog=new Dialog(newdrawer.this);
-                                        dialog.setContentView(R.layout.job_done_notification);
-                                        dialog.show();
 
-                                        final String time=ds.child("stopwatch").child("time").getValue().toString();
-                                        final String cost=ds.child("cost").getValue().toString();
-                                        final String serv=ds.child("service").getValue().toString();
-                                        final String oid=ds.child("code").getValue().toString();
+                                        time=ds.child("stopwatch").child("time").getValue().toString();
+                                        cost=ds.child("cost").getValue().toString();
+                                        serv=ds.child("service").getValue().toString();
+                                        oid=ds.getKey().toString();
 
-                                        Button pay=dialog.findViewById(R.id.btnpay);
-                                        TextView timer=dialog.findViewById(R.id.tvTimer);
-                                        TextView service=dialog.findViewById(R.id.tvservicename);
-                                        TextView tvcost=dialog.findViewById(R.id.tvcost);
-
-                                        service.setText("(" + oid+ ") " + serv + ":");
-                                        tvcost.setText(cost+"$");
-
-                                        timer.setText(time);
-
-                                pay.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        beginpayment(cost, serv);
-                                    }
-                                });
-
+                                        show_dialogue();
                                     }
 
                                 }
                                 else {
                                     orderpath=FirebaseAuth.getInstance().getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+dd.getKey().toString();
-                                    dialog=new Dialog(newdrawer.this);
-                                    dialog.setContentView(R.layout.job_done_notification);
-                                    dialog.show();
 
-                                    final String time=ds.child("stopwatch").child("time").getValue().toString();
-                                    final String cost=ds.child("cost").getValue().toString();
-                                    final String serv=ds.child("service").getValue().toString();
-                                    final String oid=ds.child("code").getValue().toString();
+                                    time=ds.child("stopwatch").child("time").getValue().toString();
+                                    cost=ds.child("cost").getValue().toString();
+                                    serv=ds.child("service").getValue().toString();
+                                    oid=ds.getKey().toString();
 
-                                    Button pay=dialog.findViewById(R.id.btnpay);
-                                    TextView timer=dialog.findViewById(R.id.tvTimer);
-                                    TextView service=dialog.findViewById(R.id.tvservicename);
-                                    TextView tvcost=dialog.findViewById(R.id.tvcost);
+                                    show_dialogue();
 
-                                    service.setText("(" + oid+ ") " + serv + ":");
-                                    tvcost.setText(cost+"$");
-
-                                    timer.setText(time);
-
-                                    pay.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            beginpayment(cost, serv);
-                                        }
-                                    });
                                 }
                             }
                         }
@@ -354,6 +324,30 @@ public class newdrawer extends AppCompatActivity
                 } else {
                     drawer.openDrawer((int)GravityCompat.START);
                 }
+            }
+        });
+    }
+
+
+    private void show_dialogue(){
+        dialog=new Dialog(newdrawer.this);
+        dialog.setContentView(R.layout.job_done_notification);
+        dialog.show();
+
+        Button pay=dialog.findViewById(R.id.btnpay);
+        TextView timer=dialog.findViewById(R.id.tvTimer);
+        TextView service=dialog.findViewById(R.id.tvservicename);
+        TextView tvcost=dialog.findViewById(R.id.tvcost);
+
+        service.setText("(" + oid+ ") " + serv + ":");
+        tvcost.setText(cost+"$");
+
+        timer.setText(time);
+
+        pay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                beginpayment(cost, serv);
             }
         });
     }
@@ -517,6 +511,11 @@ public class newdrawer extends AppCompatActivity
     @Override
     public void onDestroy(){
         stopService(new Intent(this, PayPalService.class));
+
+        sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("customer_at_home", false);
+        editor.commit();
         super.onDestroy();
     }
 }

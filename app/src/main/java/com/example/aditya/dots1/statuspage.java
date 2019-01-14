@@ -223,7 +223,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
                                 .getTotalByteCount());
-                        pd.setMessage("Uploaded "+(int)progress+"%");
+                        pd.setMessage("Placing order... "+(int)progress+"%");
                     }
                 });
 

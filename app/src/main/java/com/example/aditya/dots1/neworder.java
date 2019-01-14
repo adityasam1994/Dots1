@@ -325,7 +325,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
             public void onClick(View v) {
                 AlertDialog.Builder add_builder = new AlertDialog.Builder(neworder.this);
                 add_builder.setTitle("Change address");
-                add_builder.setMessage("Do you want to change the address");
+                add_builder.setMessage("Do you want to change the address?");
                 add_builder.setPositiveButton("Change address", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -496,9 +496,9 @@ public class neworder extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 format="image";
-                File storagedir=Environment.getExternalStorageDirectory();
+                String storagedir=Environment.getExternalStorageDirectory().getAbsolutePath();
                 File dir=new File(storagedir+"/Dot/");
-                dir.mkdirs();
+                //dir.mkdirs();
 
                 File file=new File(dir, "mypic.jpg");
 

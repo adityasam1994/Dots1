@@ -12,7 +12,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -22,8 +23,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="@drawable/tbackground"
             android:layout_marginTop="8dp"
+            android:background="@drawable/t_stripe"
             android:orientation="horizontal">
 
             <ImageView
@@ -41,13 +42,13 @@
                 android:id="@+id/tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="Name"
                 android:textColor="#000000"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:layout_gravity="center"
                 app:layout_constraintBottom_toBottomOf="@+id/imageView5"
                 app:layout_constraintEnd_toEndOf="@+id/imageView5"
                 app:layout_constraintStart_toStartOf="@+id/imageView5"
@@ -70,179 +71,181 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center">
-            <ImageView
-                android:id="@+id/btnimage"
-                android:layout_width="200dp"
-                android:layout_height="115dp"
-                android:layout_below="@+id/spinner_time"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center"
-                android:background="@drawable/imageborder"
-                android:maxHeight="10dp"
-                android:maxWidth="100dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/cam"
-                android:visibility="visible" />
-
-                <VideoView
-                    android:id="@+id/videoView"
-                    android:layout_width="200dp"
-                    android:layout_height="115dp"
-                    android:layout_centerInParent="true"
-                    android:layout_gravity="center"
-                    android:visibility="invisible" />
-
-                <Button
-                    android:id="@+id/btnvideo"
-                    android:layout_width="200dp"
-                    android:layout_height="115dp"
-                    android:background="@color/zxing_transparent" />
-            </FrameLayout>
-
-        <Spinner
-            android:id="@+id/spinner_service"
-            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:theme="@style/ThemeSpinner"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnvideo"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <Spinner
-            android:id="@+id/spinner_time"
-            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/spinner_service"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:theme="@style/ThemeSpinner"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_service"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <EditText
-            android:id="@+id/etcomment"
-            android:layout_width="match_parent"
-            android:layout_height="138dp"
-            android:layout_above="@+id/etaddress"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/commentborder"
-            android:backgroundTint="#EEEDEC"
-            android:ems="10"
-            android:gravity="top"
-            android:hint=" Extra Comments"
-            android:inputType="textMultiLine"
-            android:paddingLeft="10dp"
-            android:textColor="#3b3b3b"
-            android:textColorHint="#EEEDEC"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_time"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <LinearLayout
-            android:id="@+id/linearLayout4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/etcomment"
-            app:layout_constraintVertical_bias="0.0">
-
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/etaddress"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="0dp"
-                android:layout_marginStart="0dp"
-                android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/hom"
-                android:drawablePadding="20dp"
-                android:ems="10"
-                android:hint="Address/Current Location"
-                android:inputType="textPersonName"
-                android:textColor="#3b3b3b"
-                android:textColorHint="#EEEDEC" />
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center">
+
+                    <ImageView
+                        android:id="@+id/btnimage"
+                        android:layout_width="200dp"
+                        android:layout_height="115dp"
+                        android:layout_below="@+id/spinner_time"
+                        android:layout_centerHorizontal="true"
+                        android:layout_gravity="center"
+                        android:background="@drawable/imageborder"
+                        android:maxHeight="10dp"
+                        android:maxWidth="100dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/cam"
+                        android:visibility="visible" />
+
+                    <VideoView
+                        android:id="@+id/videoView"
+                        android:layout_width="200dp"
+                        android:layout_height="115dp"
+                        android:layout_centerInParent="true"
+                        android:layout_gravity="center"
+                        android:visibility="invisible" />
+
+                    <Button
+                        android:id="@+id/btnvideo"
+                        android:layout_width="200dp"
+                        android:layout_height="115dp"
+                        android:background="@color/zxing_transparent" />
+                </FrameLayout>
+
+                <Spinner
+                    android:id="@+id/spinner_service"
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:theme="@style/ThemeSpinner"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/btnvideo"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <Spinner
+                    android:id="@+id/spinner_time"
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/spinner_service"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:theme="@style/ThemeSpinner"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/spinner_service"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <EditText
+                    android:id="@+id/etcomment"
+                    android:layout_width="match_parent"
+                    android:layout_height="138dp"
+                    android:layout_above="@+id/etaddress"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/commentborder"
+                    android:backgroundTint="#EEEDEC"
+                    android:ems="10"
+                    android:gravity="top"
+                    android:hint=" Extra Comments"
+                    android:inputType="textMultiLine"
+                    android:paddingLeft="10dp"
+                    android:textColor="#3b3b3b"
+                    android:textColorHint="#EEEDEC"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/spinner_time"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <LinearLayout
+                    android:id="@+id/linearLayout4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/etcomment"
+                    app:layout_constraintVertical_bias="0.0">
+
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <EditText
+                            android:id="@+id/etaddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginEnd="0dp"
+                            android:layout_marginStart="0dp"
+                            android:backgroundTint="#EEEDEC"
+                            android:drawableLeft="@drawable/hom"
+                            android:drawablePadding="20dp"
+                            android:ems="10"
+                            android:hint="Address/Current Location"
+                            android:inputType="textPersonName"
+                            android:textColor="#3b3b3b"
+                            android:textColorHint="#EEEDEC" />
+
+                        <Button
+                            android:id="@+id/btneditaddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="20dp"
+                            android:background="@color/zxing_transparent"
+                            android:visibility="invisible" />
+                    </FrameLayout>
+
+                    <Button
+                        android:id="@+id/btnlocation"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="0dp"
+                        android:layout_marginStart="0dp"
+                        android:layout_marginTop="0dp"
+                        android:background="@drawable/gps" />
+
+                </LinearLayout>
 
                 <Button
-                    android:id="@+id/btneditaddress"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="20dp"
-                    android:background="@color/zxing_transparent"
-                    android:visibility="invisible" />
-            </FrameLayout>
+                    android:id="@+id/btnstart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="0dp"
+                    android:background="@drawable/whiteb"
+                    android:drawablePadding="-75dp"
+                    android:text="SUBMIT"
+                    android:textColor="#F3A360"
+                    android:textSize="20sp" />
 
-            <Button
-                android:id="@+id/btnlocation"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="0dp"
-                android:layout_marginStart="0dp"
-                android:layout_marginTop="0dp"
-                android:background="@drawable/gps" />
-
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnstart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="0dp"
-            android:background="@drawable/whiteb"
-            android:drawablePadding="-75dp"
-            android:text="SUBMIT"
-            android:textColor="#F3A360"
-            android:textSize="20sp" />
-
-        </LinearLayout>
+            </LinearLayout>
         </ScrollView>
     </LinearLayout>
 

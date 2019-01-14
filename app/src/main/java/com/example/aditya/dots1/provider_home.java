@@ -1,5 +1,7 @@
 package com.example.aditya.dots1;
 
+import android.app.ActivityManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -35,12 +38,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.Locale;
 
 public class provider_home extends AppCompatActivity
@@ -51,7 +57,7 @@ public class provider_home extends AppCompatActivity
     Button bqrscan,btnstart,btncancel, btnascustomer;
     EditText etcode;
     LinearLayout qrlayout,detailayout;
-    ImageView lines,imgplay,getdirection;
+    ImageView lines,imgplay,getdirection, btnplaynow;
     String fname="",emailid,cod,detail,tim,commen,cname="",caddress,cservice,uids,format,username,order_path,secretcode="",orderstatus="",customerid="";
     String nusername="",ntime="",ncommen="",naddress="",nservice="", nservicetype="",
             norderstatus="",ncod="",nformat="",nsercretcode="",ncustomerid="",norderpath="";
@@ -64,6 +70,9 @@ public class provider_home extends AppCompatActivity
     DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
     StorageReference storageReference= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
     StorageReference storagevideo= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
+    SharedPreferences sharedPreferences;
+    StorageReference strf= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
+    ProgressDialog pd;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,11 +80,25 @@ public class provider_home extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        if(!isMyServiceRunning(testsevice.class)){
+            final Context context=getBaseContext();
+            Intent intent=new Intent(context,testsevice.class);
+            intent.putExtra("receive", false);
+            startService(intent);
+        }
+
+        sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("provider_at_home", true);
+        editor.commit();
+
         //startService(new Intent(provider_home.this,testsevice.class));
         qrlayout=(LinearLayout)findViewById(R.id.qrlayout);
         params= (LinearLayout.LayoutParams) qrlayout.getLayoutParams();
 
         //btnascustomer=(Button)findViewById(R.id.btnascustomer);
+        pd=new ProgressDialog(this);
+        btnplaynow=(ImageView)findViewById(R.id.imgplaynow);
         tvservicetype=(TextView)findViewById(R.id.tvaccess);
         getdirection=(ImageView)findViewById(R.id.getdirection);
         detailayout=(LinearLayout)findViewById(R.id.details);
@@ -163,7 +186,7 @@ public class provider_home extends AppCompatActivity
             }
         });*/
 
-        imgplay.setOnClickListener(new View.OnClickListener() {
+        /*imgplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(nformat.equals("video")) {
@@ -181,7 +204,7 @@ public class provider_home extends AppCompatActivity
                     }
                 }
             }
-        });
+        });*/
 
         storageReference.child("images/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).getDownloadUrl()
                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -397,6 +420,107 @@ public class provider_home extends AppCompatActivity
 
             if(!ncod.equals("")) {
 
+                if(nformat.equals("video")){
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=ncod+".mp4";
+                    File file=new File(dir, filename);
+
+                    if(file.exists()){
+                        btnplaynow.setVisibility(View.VISIBLE);
+                        imgplay.setVisibility(View.INVISIBLE);
+                    }
+                }
+
+                if(nformat.equals("image")){
+                    File mpath= Environment.getExternalStorageDirectory();
+
+                    File dir=new File(mpath+"/Dot/");
+                    dir.mkdirs();
+                    String filename=ncod+".jpg";
+                    File file=new File(dir, filename);
+
+                    if(file.exists()){
+                        btnplaynow.setVisibility(View.VISIBLE);
+                        imgplay.setVisibility(View.INVISIBLE);
+                    }
+                }
+
+                imgplay.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(nformat.equals("video")) {
+                            pd.setMessage("Downloading...");
+                            pd.show();
+                            File mpath= Environment.getExternalStorageDirectory();
+
+                            File dir=new File(mpath+"/Dot/");
+                            dir.mkdirs();
+                            String filename=ncod+".mp4";
+                            File file=new File(dir, filename);
+
+                            strf.child("order").child(ncustomerid).child(ncod).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    Toast.makeText(provider_home.this, "Download complete", Toast.LENGTH_SHORT).show();
+                                    pd.dismiss();
+                                    btnplaynow.setVisibility(View.VISIBLE);
+                                    imgplay.setVisibility(View.INVISIBLE);
+                                    playfile();
+                                }
+                            }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                            .getTotalByteCount());
+                                    pd.setMessage("Downloading "+(int)progress+"%");
+                                }
+                            });
+                        }
+
+
+                        if(nformat.equals("image")) {
+                            pd.setMessage("Downloading...");
+                            pd.show();
+                            File mpath= Environment.getExternalStorageDirectory();
+
+                            File dir=new File(mpath+"/Dot/");
+                            dir.mkdirs();
+                            String filename=ncod+".jpg";
+                            File file=new File(dir, filename);
+
+                            strf.child("order").child(ncustomerid).child(ncod).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    Toast.makeText(provider_home.this, "Download complete", Toast.LENGTH_SHORT).show();
+                                    pd.dismiss();
+                                    btnplaynow.setVisibility(View.VISIBLE);
+                                    imgplay.setVisibility(View.INVISIBLE);
+                                    playfile();
+                                }
+                            }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                            .getTotalByteCount());
+                                    pd.setMessage("Downloading "+(int)progress+"%");
+                                }
+                            });
+                        }
+                    }
+                });
+
+                btnplaynow.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        playfile();
+                    }
+                });
+
+
+
                 detailayout.setVisibility(View.VISIBLE);
 
                 tvctime.setText(ntime);
@@ -431,4 +555,56 @@ public class provider_home extends AppCompatActivity
             }
         }
     };
+
+    private void playfile() {
+        if(nformat.equals("video")){
+
+            File mpath= Environment.getExternalStorageDirectory();
+
+            File dir=new File(mpath+"/Dot/");
+            dir.mkdirs();
+            String filename=ncod+".mp4";
+            File file=new File(dir, filename);
+
+            Uri filepath=Uri.fromFile(file);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(filepath, "video/*");
+            startActivity(Intent.createChooser(intent, "Open video Using"));
+        }
+
+        if(nformat.equals("image")){
+
+            File mpath= Environment.getExternalStorageDirectory();
+
+            File dir=new File(mpath+"/Dot/");
+            dir.mkdirs();
+            String filename=ncod+".jpg";
+            File file=new File(dir, filename);
+
+            Uri filepath=Uri.fromFile(file);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(filepath, "image/*");
+            startActivity(Intent.createChooser(intent, "Open image Using"));
+        }
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass){
+        ActivityManager manager=(ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+        for(ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if(serviceClass.getName().equals(service.service.getClassName())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("provider_at_home", false);
+        editor.commit();
+    }
 }
