@@ -1,5 +1,6 @@
 package com.example.aditya.dots1;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -23,7 +24,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +41,7 @@ public class findprovider extends Service {
 
     final static String MY_ACTION= "MY_ACTION";
     private Timer mytimer;
-    String tvservice,co,uids;
+    String tvservice,co,uids, message, nordertime;
     long StartTime;
     Boolean killtimer=false;
     double lati,longi;
@@ -47,7 +52,10 @@ public class findprovider extends Service {
     Boolean request_rejected=false;
     Boolean pending=true, order_cancelled=false, appopen;
     SharedPreferences sharedPreferences;
+    SharedPreferences spref;
     double provider_distance;
+    long sec = 0;
+    Mthread mthread;
     List<String> rejected_providers=new ArrayList<String>();
 
     public findprovider() {
@@ -63,7 +71,7 @@ public class findprovider extends Service {
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
         sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
-
+        spref=getSharedPreferences("cnotification", Context.MODE_PRIVATE);
         co=intent.getExtras().getString("code");
         lati=intent.getExtras().getDouble("lat");
         longi=intent.getExtras().getDouble("lng");
@@ -73,16 +81,20 @@ public class findprovider extends Service {
         dbruser=FirebaseDatabase.getInstance().getReference("Users");
 
         search_for_provider();
-
         order_accept();
 
-        Notification builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.iconfinder_notification)
-                .setContentTitle("Order status")
-                .setContentText("Searching for provider...")
-                .build();
+        message="Searching for provider...";
+        //if(!spref.getString("text","").equals(message)) {
+            Notification builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.iconfinder_notification)
+                    .setContentTitle("Order status")
+                    .setContentText(message)
+                    .build();
 
-        startForeground(1, builder);
+            startForeground(1, builder);
+
+           // spref.edit().putString("text", message).commit();
+
 
         return START_STICKY;
 
@@ -101,30 +113,47 @@ public class findprovider extends Service {
                                 if (dd.child("status").getValue().toString().equals("accepted")) {
                                     provider_found = true;
                                     if(appopen == true) {
-                                        Intent intent = new Intent(findprovider.this, order_accepted.class);
+                                        stopForeground(true);
+                                        rejected_providers=null;
+                                        Intent intent = new Intent(getApplicationContext(), order_accepted.class);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         intent.putExtra("pid", dd.getKey().toString());
                                         intent.putExtra("oid", co);
+                                        intent.putExtra("lastpage", "statuspage");
                                         startActivity(intent);
                                     }
                                     else {
                                         final Intent intent1 = new Intent(findprovider.this, order_accepted.class);
                                         intent1.putExtra("pid", dd.getKey().toString());
                                         intent1.putExtra("oid", co);
-                                        final PendingIntent pendingIntent = PendingIntent.getActivity(findprovider.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
-                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
-                                                .setSmallIcon(R.drawable.iconfinder_notification)
-                                                .setContentTitle("Order Status")
-                                                .setContentText("Provider is found for your order")
-                                                .setAutoCancel(true)
-                                                .setContentIntent(pendingIntent)
-                                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
-                                        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                                        notificationManager.cancelAll();
-                                        notificationManager.notify(5, builder.build());
+                                        stopForeground(true);
+
+                                        message="Provider is found for your order";
+                                       // if(!spref.getString("text", "").equals(message)) {
+                                            final PendingIntent pendingIntent = PendingIntent.getActivity(findprovider.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+                                            NotificationCompat.Builder builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
+                                                    .setSmallIcon(R.drawable.iconfinder_notification)
+                                                    .setContentTitle("Order Status")
+                                                    .setContentText(message)
+                                                    .setAutoCancel(true)
+                                                    .setContentIntent(pendingIntent)
+                                                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+                                            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                            notificationManager.cancelAll();
+                                            notificationManager.notify(5, builder.build());
+
+                                            //spref.edit().putString("text", message).commit();
+                                        rejected_providers=null;
+                                            /*Intent intent = new Intent(getApplicationContext(), findprovider.class);
+                                            PendingIntent pintent=PendingIntent.getService(getApplicationContext(), 0,intent,0);
+                                            AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                                            alarm.cancel(pintent);*/
+
                                     }
                                     killtimer=true;
+
                                     stopSelf();
 
                                 }
@@ -135,11 +164,14 @@ public class findprovider extends Service {
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
                                     killtimer=true;
+                                    rejected_providers=null;
+                                    stopForeground(true);
                                     stopSelf();
                                 }
                                 if(dd.child("status").getValue().toString().equals("rejected")){
                                     rejected_providers.add(dd.getKey().toString());
                                     request_rejected=true;
+
                                 }
                                 if(dd.child("status").getValue().toString().equals("pending")){
                                     pending=true;
@@ -212,12 +244,19 @@ public class findprovider extends Service {
                 }
                 String code = co;
                 if(uids != null) {
+                    SimpleDateFormat forma=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+                    Date cd= Calendar.getInstance().getTime();
+                    final String dt=forma.format(cd);
+
                     dbr.child(fauth.getCurrentUser().getUid()).child(code).child(uids).child("status").setValue("pending");
+                    dbr.child(fauth.getCurrentUser().getUid()).child(code).child(uids).child("time").setValue(dt);
+
                     StartTime= SystemClock.uptimeMillis();
                     request_rejected = false;
                     killtimer=false;
                     Timer();
                 }
+
             }
 
             @Override
@@ -226,44 +265,66 @@ public class findprovider extends Service {
             }
         });
 
-        Mthread mthread=new Mthread();
+        mthread=new Mthread();
         mthread.start();
     }
 
     public class Mthread extends Thread{
         @Override
         public void run() {
-            try {
+                try {
 
-                int delay=1000;
-                int period=2*1000;
-                mytimer = new Timer();
-                mytimer.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        Intent intent=new Intent();
-                        intent.setAction(MY_ACTION);
+                    int delay = 1000;
+                    int period = 2 * 1000;
+                    mytimer = new Timer();
+                    mytimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            Intent intent = new Intent();
+                            intent.setAction(MY_ACTION);
 
-                        double diss=provider_distance/1000;
-                        diss=diss*100;
-                        diss=Math.round(diss);
-                        diss=diss/100;
-                        String d=""+diss +" Km";
+                            double diss = provider_distance / 1000;
+                            diss = diss * 100;
+                            diss = Math.round(diss);
+                            diss = diss / 100;
+                            String d = "" + diss + " Km";
 
-                        if(uids != null){
-                            intent.putExtra("dist", d);
+                            if (uids != null) {
+                                intent.putExtra("dist", d);
+                            } else {
+                                message = "Sorry! Currently no provider is avilable";
+
+                                if(!spref.getString("text","").equals(message)) {
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(findprovider.this, CHANNEL_ID)
+                                            .setSmallIcon(R.drawable.iconfinder_notification)
+                                            .setContentTitle("Order Status")
+                                            .setContentText(message)
+                                            .setAutoCancel(true)
+                                            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+                                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                    notificationManager.cancelAll();
+                                    notificationManager.notify(5, builder.build());
+                                }
+                                spref.edit().putString("text", message).commit();
+
+                                /*Intent inten = new Intent(getApplicationContext(), findprovider.class);
+                                PendingIntent pintent=PendingIntent.getService(getApplicationContext(), 0,inten,0);
+                                AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                                alarm.cancel(pintent);*/
+                                rejected_providers=null;
+                                stopForeground(true);
+                                stopSelf();
+
+                                intent.putExtra("dist", "Sorry! Currently no provider is avilable");
+                            }
+                            sendBroadcast(intent);
                         }
-                        else {
-                            intent.putExtra("dist", "Sorry! Currently no provider is avilable");
-                        }
-                        sendBroadcast(intent);
-                    }
-                },delay,period);
+                    }, delay, period);
 
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         }
     }
 
@@ -273,9 +334,9 @@ public class findprovider extends Service {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                //Toast.makeText(findprovider.this, ""+(SystemClock.uptimeMillis()-StartTime), Toast.LENGTH_SHORT).show();
 
-                if((SystemClock.uptimeMillis() - StartTime) > 60000 && killtimer.equals(false)){
+
+                if((SystemClock.uptimeMillis() - StartTime) > 10000 && killtimer.equals(false)){
 
                     DatabaseReference d = dbr.child(fauth.getCurrentUser().getUid()).child(co).child(uids);
 
@@ -286,6 +347,7 @@ public class findprovider extends Service {
                     d.updateChildren(updates);
 
                     killtimer=true;
+
                 }
 
                 handler.postDelayed(this, 100);

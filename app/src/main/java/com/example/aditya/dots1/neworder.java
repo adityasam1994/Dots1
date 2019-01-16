@@ -33,6 +33,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -496,15 +497,24 @@ public class neworder extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 format="image";
-                String storagedir=Environment.getExternalStorageDirectory().getAbsolutePath();
-                File dir=new File(storagedir+"/Dot/");
-                //dir.mkdirs();
+                String storagedir=Environment.getExternalStorageDirectory().getAbsolutePath()+"/Dot/mypic.jpg";
+                File dir=new File(storagedir);
+                if(!dir.exists()) {
+                    dir.mkdirs();
+                }
 
                 File file=new File(dir, "mypic.jpg");
-
-                outputfileuri=Uri.fromFile(file);
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                    outputfileuri = FileProvider.getUriForFile(neworder.this,"com.example.aditya.dots1", dir);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+                else {
+                    outputfileuri = Uri.fromFile(dir);
+                }
+
+                intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputfileuri);
                 startActivityForResult(intent, Takepic);
                 dialog.dismiss();
             }
@@ -529,9 +539,9 @@ public class neworder extends AppCompatActivity implements LocationListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        filePath=outputfileuri;
         if(requestCode == Takepic && resultCode == RESULT_OK){
-            filePath=outputfileuri;
+
             Bitmap bitmap=null;
             try {
                 bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
@@ -566,10 +576,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
             Bitmap compressedBitmap=BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-            File mpath=Environment.getExternalStorageDirectory();
-
+            String mpath=Environment.getExternalStorageDirectory().getAbsolutePath();
             File dir=new File(mpath+"/Dot/");
-            dir.mkdirs();
+            if(!dir.exists()) {
+                dir.mkdirs();
+            }
 
             File file=new File(dir, "mycompressedpic.jpg");
 
@@ -579,11 +590,13 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
                 out.flush();
                 out.close();
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            filePath=Uri.fromFile(file);
         }
         if(requestCode == capture_video && resultCode == RESULT_OK){
             filePath=data.getData();

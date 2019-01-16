@@ -29,6 +29,13 @@ import com.google.zxing.WriterException;
 
 import org.w3c.dom.Text;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import androidmads.library.qrgenearator.QRGContents;
 import androidmads.library.qrgenearator.QRGEncoder;
 
@@ -58,6 +65,11 @@ public class order_accepted extends AppCompatActivity {
 
         pid=getIntent().getExtras().getString("pid");
         oid=getIntent().getExtras().getString("oid");
+
+        SimpleDateFormat format=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+        Date cd=Calendar.getInstance().getTime();
+        String dt=format.format(cd);
+
 
         dbr.child(pid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -147,10 +159,16 @@ public class order_accepted extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        lastpage=getIntent().getExtras().getString("lastpage");
+        Intent intent=getIntent();
+        if(intent != null) {
+            lastpage = getIntent().getExtras().getString("lastpage");
+        }
 
-        if(lastpage.equals("neworder")) {
+        if(lastpage.equals("statuspage")) {
             startActivity(new Intent(order_accepted.this, newdrawer.class));
+        }
+        if(lastpage.equals("myorders")){
+            finish();
         }
     }
 }

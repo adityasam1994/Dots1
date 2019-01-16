@@ -78,11 +78,12 @@ public class myorders extends AppCompatActivity {
                     for (DataSnapshot d : ds.getChildren()) {
                         int l = d.getKey().toString().length();
 
-                        if (statu.equals("Rejected")) {
-                            statu = "Pending";
-                        }
-
                         if (l > 15) {
+
+                            if (statu.equals("Rejected")) {
+                                statu = "Pending";
+                            }
+
                             String st = d.child("status").getValue().toString();
                             if (st.equals("accepted")) {
                                 statu = "Accepted";
@@ -114,7 +115,6 @@ public class myorders extends AppCompatActivity {
 
                             if (st.equals("rejected")) {
                                 statu = "Rejected";
-                                break;
                             }
                         }
                     }
@@ -280,7 +280,9 @@ public class myorders extends AppCompatActivity {
                         dbr.child(oredrpath).child("create_time").setValue(create_time);
                         dbr.child(oredrpath).child("state").setValue(state);
 
-                        Toast.makeText(this, "Payment was successfull", Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(myorders.this, rating.class);
+                        intent.putExtra("orderpath", oredrpath);
+                        startActivity(intent);
                     }
                     else {
                         Toast.makeText(this, "Payment was not approved!", Toast.LENGTH_SHORT).show();

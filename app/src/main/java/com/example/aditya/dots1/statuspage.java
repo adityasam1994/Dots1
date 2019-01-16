@@ -1,10 +1,13 @@
 package com.example.aditya.dots1;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -38,6 +41,9 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
@@ -51,6 +57,8 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
     DatabaseReference dbruser;
     StorageReference storageReference;
     Uri filePath;
+    SharedPreferences spref;
+    SharedPreferences sharedPreferences;
     ProgressDialog pd;
     ImageView btnback;
     String code,username, myservice, distance, result;
@@ -59,6 +67,8 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statuspage);
 
+        sharedPreferences=getSharedPreferences("cnotification", Context.MODE_PRIVATE);
+        spref=getSharedPreferences("appopen",Context.MODE_PRIVATE);
         pd=new ProgressDialog(this);
         tvid=(TextView)findViewById(R.id.tvid);
         tvservice=(TextView)findViewById(R.id.tvservice);
@@ -178,10 +188,14 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                 eaddress = tvlocation.getText().toString();
                 latitude = getIntent().getExtras().getDouble("lat");
                 longitude = getIntent().getExtras().getDouble("lng");
-                String cost="20$";
+                String cost="20";
 
                 code = getIntent().getExtras().getString("code");
                 format = getIntent().getExtras().getString("format");
+
+                    SimpleDateFormat forma=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+                    Date cd= Calendar.getInstance().getTime();
+                    final String dt=forma.format(cd);
 
                 order o = new order(service, time, ecomment, eaddress, latitude, longitude, code, format, username, servicetype, cost);
                 dbr.child(fauth.getCurrentUser().getUid()).child(code).setValue(o)
@@ -189,13 +203,14 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                     @Override
                     public void onSuccess(Void aVoid) {
                         dbr.child(fauth.getCurrentUser().getUid()).child(code).child("qrcode").setValue(codeforqr);
+                        dbr.child(fauth.getCurrentUser().getUid()).child(code).child("Date").setValue(dt);
                     }
                 });
 
 
                 //Toast.makeText(statuspage.this, ""+filePath, Toast.LENGTH_SHORT).show();
 
-                StorageReference strf = storageReference.child("order").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(code);
+                StorageReference strf = storageReference.child("order/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).child(code);
                 strf.putFile(filePath)
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
@@ -211,10 +226,16 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                                 intent.putExtra("lng", getIntent().getExtras().getDouble("lng"));
                                 intent.putExtra("code", code);
 
+                                /*PendingIntent pintent=PendingIntent.getService(statuspage.this, 0,intent,0);
+                                AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                                alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);*/
+
                                 IntentFilter intentFilter=new IntentFilter();
                                 intentFilter.addAction(findprovider.MY_ACTION);
                                 registerReceiver(broadcastReceiver, intentFilter);
 
+                                spref.edit().putBoolean("searching", false).commit();
+                                sharedPreferences.edit().putString("text", "").commit();
                                 startService(intent);
                             }
                         })
@@ -230,68 +251,6 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
             }
         }
         });
-    }
-
-    private void findprovier() {
-        final double[] dist = {50000};
-        final String[] fn = {""};
-        final String[] age = {""};
-        final String[] phone = {""};
-        dbruser.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    String st=ds.child("status").getValue().toString();
-
-                    if(st.equals("provider")){
-                        String ser=ds.child("eservice").getValue().toString();
-                        String rs=tvservice.getText().toString();
-
-                        if(ser.equals(rs)){
-
-                        double lat= (double) ds.child("lati").getValue();
-                        double lng= (double) ds.child("longi").getValue();
-
-                        double clat=getIntent().getExtras().getDouble("lat");
-                        double clng=getIntent().getExtras().getDouble("lng");
-
-                        Location locc=new Location("");
-                        locc.setLatitude(clat);
-                        locc.setLongitude(clng);
-
-                        Location locp=new Location("");
-                        locp.setLatitude(lat);
-                        locp.setLongitude(lng);
-
-                        double distance=locc.distanceTo(locp);
-
-                        if(distance < dist[0]) {
-                            dist[0] =distance;
-                            String uids=ds.getKey();
-                            dbr.child(fauth.getCurrentUser().getUid()).child(code).child(uids).child("status").setValue("pending");
-
-                            fn[0] = ds.child("fname").getValue().toString();
-                            age[0] = ds.child("age").getValue().toString();
-                            phone[0] = ds.child("ph").getValue().toString();
-
-                        }
-
-                    }}
-
-                }
-
-
-            }
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-
     }
 
     @Override
@@ -337,7 +296,11 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         @Override
         public void onReceive(Context context, Intent intent) {
             distance=intent.getExtras().getString("dist");
+            txtdistance.setVisibility(View.VISIBLE);
             txtdistance.setText(distance);
+            if(distance == "Sorry! Currently no provider is avilable"){
+                stopService(new Intent(statuspage.this, findprovider.class));
+            }
         }
     };
 }

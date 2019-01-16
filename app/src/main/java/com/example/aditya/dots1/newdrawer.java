@@ -107,14 +107,12 @@ public class newdrawer extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        stopService(new Intent(this, testsevice.class));
+
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putBoolean("customer_at_home", true);
         editor.commit();
-
-        byte[] array=new byte[7];
-        new Random().nextBytes(array);
-        String generatedString=new String(array, Charset.forName("UTF-8"));
 
         servicelist=(LinearLayout)findViewById(R.id.service_layout);
         lines=(Button)findViewById(R.id.btnmenu);
@@ -414,12 +412,12 @@ public class newdrawer extends AppCompatActivity
     @Override
     protected void onStart() {
 
-        IntentFilter intentFilter=new IntentFilter();
+        /*IntentFilter intentFilter=new IntentFilter();
         intentFilter.addAction(provider_home_service.MY_ACTION);
-        registerReceiver(broadcastReceiver, intentFilter);
+        registerReceiver(broadcastReceiver, intentFilter);*/
 
-        Intent intent=new Intent(newdrawer.this, customer_notification_service.class);
-        startService(intent);
+        /*Intent intent=new Intent(newdrawer.this, customer_notification_service.class);
+        startService(intent);*/
 
         super.onStart();
     }
@@ -489,7 +487,9 @@ public class newdrawer extends AppCompatActivity
                         dbrorder.child(orderpath).child("state").setValue(state);
 
                         dialog.dismiss();
-                        Toast.makeText(this, "Payment was successfull", Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(newdrawer.this, rating.class);
+                        intent.putExtra("orderpath", orderpath);
+                        startActivity(intent);
                     }
                     else {
                         dialog.dismiss();

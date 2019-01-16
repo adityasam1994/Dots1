@@ -28,7 +28,7 @@ public class provider_home_service extends Service {
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Orders");
     String fname="",emailid="",cod="",detail="",
             tim="",commen="",cname="",caddress="",cservice="",uids="",format="",username="",
-            order_path="",secretcode="",orderstatus="",customerid="", servicetype="";
+            order_path="",secretcode="",orderstatus="",customerid="", servicetype="", ordertime="";
     double lat=0,lng=0;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     public provider_home_service() {
@@ -67,6 +67,7 @@ public class provider_home_service extends Service {
                                     secretcode = d.child("qrcode").getValue().toString();
                                     customerid=ds.getKey().toString();
                                     order_path = ds.getKey().toString() + "/" + d.getKey().toString();
+                                    ordertime=d.child("Date").getValue().toString();
 
                                     break useridloop;
 
@@ -123,6 +124,7 @@ public class provider_home_service extends Service {
                             intent.putExtra("customerid", customerid);
                             intent.putExtra("order_path", order_path);
                             intent.putExtra("servicetype",servicetype);
+                            intent.putExtra("ordertime", ordertime);
                         }
                         sendBroadcast(intent);
                     }

@@ -234,7 +234,8 @@
                 android:layout_marginTop="4dp"
                 android:text="2 Miles : 15 Min"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="invisible" />
 
             <View
                 android:id="@+id/view"

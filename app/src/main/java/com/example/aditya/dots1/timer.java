@@ -23,6 +23,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 public class timer extends AppCompatActivity {
 
     SharedPreferences pref;
@@ -34,6 +38,7 @@ public class timer extends AppCompatActivity {
     int Seconds,Minutes,MilliSeconds,hours,Second;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     DatabaseReference dbr=FirebaseDatabase.getInstance().getReference("Orders");
+    DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
     String orderpath,time, status="";
     SharedPreferences sharedPreferences;
     @Override
@@ -42,12 +47,20 @@ public class timer extends AppCompatActivity {
         setContentView(R.layout.activity_timer);
 
         sharedPreferences=getSharedPreferences("TimerData", Context.MODE_PRIVATE);
-        SharedPreferences.Editor edi=sharedPreferences.edit();
+        /*SharedPreferences.Editor edi=sharedPreferences.edit();
         edi.putBoolean("timerrunning", true);
-        edi.commit();
+        edi.commit();*/
 
-        orderpath=getIntent().getExtras().getString("path");
-        Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
+        orderpath=getIntent().getExtras().getString("orderpath");
+        //Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
+
+        SimpleDateFormat forma=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+        Date cd= Calendar.getInstance().getTime();
+        final String dt=forma.format(cd);
+
+        dbruser.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("order_in_progress").setValue(orderpath);
+
+        dbr.child(orderpath).child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("start_time").setValue(dt);
 
         btnstart=(Button)findViewById(R.id.btnpay);
         timer=(TextView) findViewById(R.id.tvTimer);
@@ -74,7 +87,14 @@ public class timer extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 pref.edit().remove("endtime").commit();
-                sharedPreferences.edit().putBoolean("timerrunning",false).commit();
+                //sharedPreferences.edit().putBoolean("timerrunning",false).commit();
+
+                SimpleDateFormat forma=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+                Date cd= Calendar.getInstance().getTime();
+                final String dt=forma.format(cd);
+
+                dbr.child(orderpath).child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("end_time").setValue(dt);
+
                 killrun=true;
                 dialog.dismiss();
 
@@ -96,6 +116,7 @@ public class timer extends AppCompatActivity {
                 });
 
                 dbr.child(orderpath).child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status").setValue("completed");
+                dbruser.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("order_in_progress").removeValue();
             }
         });
 
@@ -150,5 +171,13 @@ public class timer extends AppCompatActivity {
         SharedPreferences.Editor edi=sharedPreferences.edit();
         edi.putString("orderpath", orderpath);
         edi.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Intent intent=new Intent(this, provider_home.class);
+        startActivity(intent);
     }
 }

@@ -1,6 +1,10 @@
 package com.example.aditya.dots1;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -47,7 +52,13 @@ import com.google.zxing.integration.android.IntentResult;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
+
+import static com.example.aditya.dots1.App.CHANNEL_ID;
 
 public class provider_home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,10 +71,11 @@ public class provider_home extends AppCompatActivity
     ImageView lines,imgplay,getdirection, btnplaynow;
     String fname="",emailid,cod,detail,tim,commen,cname="",caddress,cservice,uids,format,username,order_path,secretcode="",orderstatus="",customerid="";
     String nusername="",ntime="",ncommen="",naddress="",nservice="", nservicetype="",
-            norderstatus="",ncod="",nformat="",nsercretcode="",ncustomerid="",norderpath="";
+            norderstatus="",ncod="",nformat="",nsercretcode="",ncustomerid="",norderpath="", nordertime="", current_order_path;
     double lat,lng, nlat=0,nlng=0;
     Uri filepath=null, videouri=null;
-    TextView tvname,tvcode,tvdetail,tvctime,tvccomment,tvcservice, tvservicetype;
+    FloatingActionButton fbclock;
+    TextView tvname,tvcode,tvdetail,tvctime,tvccomment,tvcservice, tvservicetype, tvtimeremaining;
     FirebaseAuth fauth=FirebaseAuth.getInstance();
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Users");
     DatabaseReference dbrdetail=FirebaseDatabase.getInstance().getReference("Orders");
@@ -80,12 +92,23 @@ public class provider_home extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if(!isMyServiceRunning(testsevice.class)){
-            final Context context=getBaseContext();
-            Intent intent=new Intent(context,testsevice.class);
-            intent.putExtra("receive", false);
-            startService(intent);
-        }
+
+        stopService(new Intent(this, findprovider.class));
+            /*final Context context=getBaseContext();
+            Intent inten=new Intent(context,testsevice.class);
+            inten.putExtra("receive", false);
+            startService(inten);*/
+
+        Intent intent=new Intent(provider_home.this, testsevice.class);
+        PendingIntent pintent=PendingIntent.getService(provider_home.this, 0,intent,0);
+        AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30000, pintent);
+
+
+
+
+        /*Intent intent = new Intent(provider_home.this, testsevice.class);
+        startService(intent);*/
 
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
@@ -96,7 +119,8 @@ public class provider_home extends AppCompatActivity
         qrlayout=(LinearLayout)findViewById(R.id.qrlayout);
         params= (LinearLayout.LayoutParams) qrlayout.getLayoutParams();
 
-        //btnascustomer=(Button)findViewById(R.id.btnascustomer);
+        fbclock=(FloatingActionButton)findViewById(R.id.fbtimer);
+        tvtimeremaining=(TextView)findViewById(R.id.tvtimeremaining);
         pd=new ProgressDialog(this);
         btnplaynow=(ImageView)findViewById(R.id.imgplaynow);
         tvservicetype=(TextView)findViewById(R.id.tvaccess);
@@ -124,12 +148,30 @@ public class provider_home extends AppCompatActivity
             btncancel.setVisibility(View.VISIBLE);
         }
 
-        SharedPreferences sharedPreferences=getSharedPreferences("TimeData",Context.MODE_PRIVATE);
-        Boolean timerrunning=sharedPreferences.getBoolean("timerrunning",false);
-        if(timerrunning == true){
-            Intent intent=new Intent(provider_home.this, timer.class);
-            startActivity(intent);
-        }
+        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("RestrictedApi")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild("order_in_progress")) {
+                    current_order_path = dataSnapshot.child("order_in_progress").getValue().toString();
+                    fbclock.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        fbclock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(provider_home.this, timer.class);
+                intent.putExtra("orderpath", current_order_path);
+                startActivity(intent);
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -301,14 +343,9 @@ public class provider_home extends AppCompatActivity
 
     @Override
     protected void onStart() {
-
-        IntentFilter intentFilter=new IntentFilter();
-        intentFilter.addAction(provider_home_service.MY_ACTION);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(testsevice.MY_ACTIONS);
         registerReceiver(broadcastReceiver, intentFilter);
-
-        Intent intent=new Intent(provider_home.this, provider_home_service.class);
-        startService(intent);
-
         super.onStart();
     }
 
@@ -417,6 +454,29 @@ public class provider_home extends AppCompatActivity
             nservicetype=intent.getExtras().getString("servicetype");
             nlat=intent.getExtras().getDouble("lat");
             nlng=intent.getExtras().getDouble("lng");
+            nordertime=intent.getExtras().getString("ordertime");
+
+            SimpleDateFormat forma=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+            Date cd= Calendar.getInstance().getTime();
+            final String ct=forma.format(cd);
+
+
+            Date d1=null;
+            Date d2=null;
+
+            try {
+                d1=forma.parse(nordertime);
+                d2=forma.parse(ct);
+
+                long millis=d1.getTime()+600000 - d2.getTime();
+                long sec=millis/100%60;
+                long mins=millis/(60*1000)%60;
+
+                tvtimeremaining.setText("Will be rejected in: "+mins+" Mins");
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
 
             if(!ncod.equals("")) {
 
