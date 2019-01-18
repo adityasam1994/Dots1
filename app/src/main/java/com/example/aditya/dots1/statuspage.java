@@ -8,26 +8,32 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Camera;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,9 +48,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
 
@@ -61,12 +71,17 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
     SharedPreferences sharedPreferences;
     ProgressDialog pd;
     ImageView btnback;
+    double plat=0, plng=0;
+    FrameLayout frameLayout;
     String code,username, myservice, distance, result;
+    Intent mServiceIntent;
+    private testcounterservice mYourService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statuspage);
 
+        frameLayout=(FrameLayout)findViewById(R.id.frameLayout);
         sharedPreferences=getSharedPreferences("cnotification", Context.MODE_PRIVATE);
         spref=getSharedPreferences("appopen",Context.MODE_PRIVATE);
         pd=new ProgressDialog(this);
@@ -93,9 +108,16 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         //txtdistance.setText(getIntent().getExtras().getString("distance"));
         tvcost.setText("20$");
 
-        //result=getIntent().getExtras().getString("result");
-
-        //filePath=Uri.parse(result);
+        final ViewTreeObserver frameobserver=frameLayout.getViewTreeObserver();
+        frameobserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int width=frameLayout.getWidth();
+                LinearLayout.LayoutParams ppframe= (LinearLayout.LayoutParams) ((FrameLayout)findViewById(R.id.frameLayout)).getLayoutParams();
+                ppframe.height=width;
+                frameLayout.setLayoutParams(ppframe);
+            }
+        });
 
         filePath=getIntent().getData();
 
@@ -143,7 +165,12 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         btnback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                if(accept.getText().toString().equals("Cancel")){
+                    startActivity(new Intent(statuspage.this, newdrawer.class));
+                }
+                else {
+                    finish();
+                }
             }
         });
 
@@ -177,6 +204,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                 if(accept.getText().toString().equals("Accept"))
                 {
                 pd.setMessage("Placing order...");
+                pd.setCancelable(false);
                 pd.show();
                 final String service, time, ecomment, eaddress, format, codeforqr, servicetype;
                 double latitude, longitude;
@@ -220,23 +248,28 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                                 accept.setText("Cancel");
                                 tvheading.setText("Pending");
                                 //findprovider();
-                                Intent intent = new Intent(statuspage.this, findprovider.class);
-                                intent.putExtra("tvservice", myservice);
-                                intent.putExtra("lat", getIntent().getExtras().getDouble("lat"));
-                                intent.putExtra("lng", getIntent().getExtras().getDouble("lng"));
-                                intent.putExtra("code", code);
-
-                                /*PendingIntent pintent=PendingIntent.getService(statuspage.this, 0,intent,0);
-                                AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
-                                alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);*/
+                                final Context context=getBaseContext();
+                                mServiceIntent = new Intent(context, customer_notification_service.class);
+                                mServiceIntent.putExtra("tvservice", myservice);
+                                mServiceIntent.putExtra("lat", getIntent().getExtras().getDouble("lat"));
+                                mServiceIntent.putExtra("lng", getIntent().getExtras().getDouble("lng"));
+                                mServiceIntent.putExtra("code", code);
 
                                 IntentFilter intentFilter=new IntentFilter();
-                                intentFilter.addAction(findprovider.MY_ACTION);
+                                intentFilter.addAction(customer_notification_service.MY_ACTION);
                                 registerReceiver(broadcastReceiver, intentFilter);
 
-                                spref.edit().putBoolean("searching", false).commit();
-                                sharedPreferences.edit().putString("text", "").commit();
-                                startService(intent);
+                                List<String> rej=new ArrayList<>();
+                                Set<String> taskset = new HashSet<String>(rej);
+                                spref.edit().putStringSet("rej", taskset).commit();
+                                spref.edit().putLong("StartTime", SystemClock.uptimeMillis()).commit();
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    startForegroundService(mServiceIntent );
+                                }
+                                else {
+                                    startService(mServiceIntent);
+                                }
                             }
                         })
                 .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -265,42 +298,112 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
     public void onMapReady(GoogleMap googleMap) {
         gmap=googleMap;
 
-         gmap.clear();
+        gmap.clear();
         double lat,lng;
         lat=getIntent().getExtras().getDouble("lat");
         lng=getIntent().getExtras().getDouble("lng");
         final LatLng currentlocation=new LatLng(lat,lng);
 
-        final LatLng cp=new LatLng(26.8576,83.74758);
+        //plat=Double.longBitsToDouble(spref.getLong("lat", 0));
+        //plng=Double.longBitsToDouble(spref.getLong("lng", 0));
+
+        /*final LatLng cp=new LatLng(plat, plng);
         MarkerOptions mk2=new MarkerOptions();
         mk2.position(cp);
         mk2.title("Provider");
-        gmap.addMarker(mk2);
+        gmap.addMarker(mk2);*/
 
         MarkerOptions markerOptions=new MarkerOptions();
         markerOptions.position(currentlocation);
         markerOptions.title("I'm here");
         gmap.addMarker(markerOptions);
         gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        /*LatLngBounds.Builder builder=new LatLngBounds.Builder();
+        builder.include(mk2.getPosition());
+        builder.include(markerOptions.getPosition());
+
+        LatLngBounds bounds=builder.build();
+
+        int width=getResources().getDisplayMetrics().widthPixels;
+        int height=getResources().getDisplayMetrics().heightPixels;
+        int padding=(int)(width * 0.2);
+*/
+  //      final CameraUpdate cu=CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+
+        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+
         gmap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation, 17.0f));
             }
         });
-
-        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
     }
 
     BroadcastReceiver broadcastReceiver=new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             distance=intent.getExtras().getString("dist");
+            plat=intent.getExtras().getDouble("lat");
+            plng=intent.getExtras().getDouble("lng");
+
             txtdistance.setVisibility(View.VISIBLE);
             txtdistance.setText(distance);
-            if(distance == "Sorry! Currently no provider is avilable"){
-                stopService(new Intent(statuspage.this, findprovider.class));
+
+            if(distance.equals("Not found")){
+                txtdistance.setText("Sorry! currently no provider available");
+                accept.setVisibility(View.INVISIBLE);
             }
+
+            gmap.clear();
+            double lat,lng;
+            lat=getIntent().getExtras().getDouble("lat");
+            lng=getIntent().getExtras().getDouble("lng");
+            final LatLng currentlocation=new LatLng(lat,lng);
+
+            final LatLng cp=new LatLng(plat, plng);
+            MarkerOptions mk2=new MarkerOptions();
+            mk2.position(cp);
+            mk2.title("Provider");
+            gmap.addMarker(mk2);
+
+            MarkerOptions markerOptions=new MarkerOptions();
+            markerOptions.position(currentlocation);
+            markerOptions.title("I'm here");
+            gmap.addMarker(markerOptions);
+            gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+            LatLngBounds.Builder builder=new LatLngBounds.Builder();
+            builder.include(mk2.getPosition());
+            builder.include(markerOptions.getPosition());
+
+            LatLngBounds bounds=builder.build();
+
+            int width=getResources().getDisplayMetrics().widthPixels;
+            int height=getResources().getDisplayMetrics().heightPixels;
+            int padding=(int)(height * 0.2);
+
+            final CameraUpdate cu=CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+
+            if(plat != 0 && plng != 0) {
+                gmap.animateCamera(cu);
+            }
+            else {
+                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+            }
+
+            gmap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+                @Override
+                public void onCameraIdle() {
+                    if(plat != 0 && plng != 0) {
+                        gmap.animateCamera(cu);
+                    }
+                    else {
+                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation, 17.0f));
+                    }
+                }
+            });
         }
     };
 }

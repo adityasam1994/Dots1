@@ -37,8 +37,6 @@ public class report_problem extends AppCompatActivity {
         submit=(Button)findViewById(R.id.btnsubmit);
 
         userid=dbr.child(fauth.getCurrentUser().getUid()).getKey().toString();
-        Toast.makeText(this, userid, Toast.LENGTH_SHORT).show();
-        //mailid=fauth.getCurrentUser().getEmail().toString();
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override

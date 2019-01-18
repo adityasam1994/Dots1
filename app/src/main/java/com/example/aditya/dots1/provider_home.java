@@ -102,7 +102,7 @@ public class provider_home extends AppCompatActivity
         Intent intent=new Intent(provider_home.this, testsevice.class);
         PendingIntent pintent=PendingIntent.getService(provider_home.this, 0,intent,0);
         AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 30000, pintent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);
 
 
 
@@ -389,7 +389,9 @@ public class provider_home extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_policy) {
-            // Handle the camera action
+            startActivity(new Intent(provider_home.this, Privacy_Policy.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
         } else if (id == R.id.nav_account) {
 
             startActivity(new Intent(provider_home.this, myaccount.class));
@@ -398,8 +400,6 @@ public class provider_home extends AppCompatActivity
 
             Intent intent=new Intent(provider_home.this, provider_myorders.class);
             startActivity(intent);
-
-        } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
 

@@ -218,7 +218,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                     longi=lng;
                 }
 
-                if(addressfound == true && !address.isEnabled()){
+                if(addressfound == true || !address.isEnabled()){
 
                 String eaddress,eservice,eage,eavilable,ecomment;
                 eaddress=address.getText().toString().trim();
@@ -278,6 +278,10 @@ public class provider_detail extends AppCompatActivity implements LocationListen
             }
         });
 
+
+    }
+
+    private void savedetails(){
 
     }
 

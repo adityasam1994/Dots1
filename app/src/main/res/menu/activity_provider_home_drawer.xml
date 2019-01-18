@@ -12,14 +12,14 @@
             android:id="@+id/nav_orders"
             android:icon="@drawable/iconfinder_shoppingcart_216477"
             android:title="My Orders" />
-        <item
+        <!--<item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_manage"
             android:title="App Settings" />
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/iconfinder_iconnotification_2867931"
-            android:title="Notifications" />
+            android:title="Notifications" />-->
         <item
             android:id="@+id/nav_policy"
             android:icon="@drawable/iconfinder_lock__protect__privacy__security_2541992"

@@ -65,6 +65,21 @@ public class testsevice extends Service {
         sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
         spref=getSharedPreferences("notification", Context.MODE_PRIVATE);
 
+        message="Looking for new orders";
+
+        final Intent intent1 = new Intent(testsevice.this, provider_home.class);
+        final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.iconfinder_notification)
+                .setContentTitle("New Order")
+                .setContentText(message)
+                .setContentIntent(pendingIntent)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setVibrate(new long[]{0L})
+                .build();
+
+        startForeground(1, builder);
+
         StartTime= SystemClock.uptimeMillis();
 
         dbrorder.addValueEventListener(new ValueEventListener() {
@@ -118,7 +133,6 @@ public class testsevice extends Service {
                 }
                 //Boolean appopen = sharedPreferences.getBoolean("provider_at_home", false);
 
-
                 if(!spref.getString("text","").equals(message)) {
                     final Intent intent1 = new Intent(testsevice.this, provider_home.class);
                     final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -131,14 +145,27 @@ public class testsevice extends Service {
                             .build();
 
                     startForeground(1, builder);
+                    spref.edit().putString("text", message).commit();
                 }
+                else {
+                    final Intent intent1 = new Intent(testsevice.this, provider_home.class);
+                    final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.iconfinder_notification)
+                            .setContentTitle("New Order")
+                            .setContentText(message)
+                            .setContentIntent(pendingIntent)
+                            .setVibrate(new long[]{0L})
+                            .build();
 
-                spref.edit().putString("text", message).commit();
+                    startForeground(1, builder);
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Intent intent=new Intent(getApplicationContext(),MyReceiver.class);
+                sendBroadcast(intent);
             }
         });
 
@@ -189,7 +216,7 @@ public class testsevice extends Service {
         }
     }
 
-    /*@Override
+    @Override
     public void onDestroy() {
         super.onDestroy();
         //Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
@@ -202,6 +229,6 @@ public class testsevice extends Service {
         super.onTaskRemoved(rootIntent);
         Intent intent=new Intent(this,MyReceiver.class);
         sendBroadcast(intent);
-    }*/
+    }
 
 }

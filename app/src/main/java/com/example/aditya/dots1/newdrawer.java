@@ -1,6 +1,7 @@
 package com.example.aditya.dots1;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -96,6 +97,9 @@ public class newdrawer extends AppCompatActivity
     StorageReference storageReference=storage.getReferenceFromUrl("gs://dots-195d9.appspot.com");
     Button lines;
 
+    Intent mServiceIntent;
+    private testcounterservice mYourService;
+
     private static PayPalConfiguration config = new PayPalConfiguration()
             .environment(PayPalConfiguration.ENVIRONMENT_SANDBOX)
             .clientId("AVk4WFQZ8V_ct-PLjK5RrI1yAx6hq4Rt1pAKrPmNJkKAx3QOm1hDpQ-wBrrA-aGuhE7ZSmKZ9a9THHhN");
@@ -107,7 +111,11 @@ public class newdrawer extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        stopService(new Intent(this, testsevice.class));
+        /*mYourService = new testcounterservice();
+        mServiceIntent = new Intent(this, mYourService.getClass());
+        if (!isMyServiceRunning(mYourService.getClass())) {
+            startService(mServiceIntent);
+        }*/
 
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
@@ -327,6 +335,19 @@ public class newdrawer extends AppCompatActivity
     }
 
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i ("Service status", "Not running");
+        return false;
+    }
+
+
     private void show_dialogue(){
         dialog=new Dialog(newdrawer.this);
         dialog.setContentView(R.layout.job_done_notification);
@@ -429,7 +450,9 @@ public class newdrawer extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_policy) {
-            // Handle the camera action
+            startActivity(new Intent(newdrawer.this, Privacy_Policy.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
         } else if (id == R.id.nav_orders) {
             startActivity(new Intent(newdrawer.this,myorders.class));
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -516,6 +539,7 @@ public class newdrawer extends AppCompatActivity
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putBoolean("customer_at_home", false);
         editor.commit();
+
         super.onDestroy();
     }
 }

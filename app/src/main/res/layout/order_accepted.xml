@@ -21,17 +21,16 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/tbackground">
+            android:layout_height="40dp"
+            android:background="@drawable/t_stripe">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Status:"
+            <ImageView
+                android:id="@+id/btnback"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center"
-                android:layout_marginLeft="20dp"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_marginLeft="8dp"
+                android:src="@drawable/iconfinder_back" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -43,14 +42,12 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
                 android:layout_gravity="center"
-                android:layout_marginRight="20dp"
-                android:text="Status:"
-                android:textSize="18sp"
-                android:textStyle="bold"
+                android:layout_marginRight="8dp"
+                android:src="@drawable/iconfinder_back"
                 android:visibility="invisible" />
         </LinearLayout>
 
@@ -78,11 +75,20 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/providerpic"
+                    android:layout_marginTop="8dp"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/camera"
+                    app:civ_border_color="#EEEEEE"
+                    app:civ_border_width="3dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/tbackground"
                 android:orientation="vertical">
 

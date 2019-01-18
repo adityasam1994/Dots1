@@ -10,6 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -20,8 +22,8 @@
         <!--Heading-->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/tbackground"
+            android:layout_height="40dp"
+            android:background="@drawable/t_stripe"
             android:orientation="horizontal">
 
             <ImageView
@@ -60,8 +62,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:orientation="vertical">
 
                 <Spinner
                     android:id="@+id/spinnerservice"
@@ -141,21 +143,21 @@
                             android:background="@color/zxing_transparent"
                             android:visibility="invisible" />
 
-                    <EditText
-                        android:id="@+id/etlocation"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginEnd="4dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="#ECECEC"
-                        android:drawableLeft="@drawable/hom"
-                        android:drawablePadding="10dp"
-                        android:ems="10"
-                        android:hint="Location"
-                        android:inputType="textPersonName"
-                        android:textColorHint="#ECECEC"
-                        app:layout_constraintVertical_bias="0.0" />
+                        <EditText
+                            android:id="@+id/etlocation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginEnd="4dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="#ECECEC"
+                            android:drawableLeft="@drawable/hom"
+                            android:drawablePadding="10dp"
+                            android:ems="10"
+                            android:hint="Location"
+                            android:inputType="textPersonName"
+                            android:textColorHint="#ECECEC"
+                            app:layout_constraintVertical_bias="0.0" />
 
                     </FrameLayout>
 

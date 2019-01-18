@@ -26,12 +26,16 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".neworder" />
+        <activity android:name=".neworder"
+            android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".spinner_item" />
-        <activity android:name=".newlogin" />
-        <activity android:name=".newsignup" />
+        <activity android:name=".newlogin"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".newsignup"
+            android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".home" />
-        <activity android:name=".password_reset" />
+        <activity android:name=".password_reset"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
@@ -70,7 +74,7 @@
              Note that the API key is linked to the encryption key used to sign the APK.
              You need a different API key for each encryption key, including the release key that is used to
              sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/. 
+             You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
         <uses-library android:name="com.google.android.maps" />
 
@@ -79,7 +83,8 @@
             android:label="@string/title_activity_newdrawer"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".select" />
-        <activity android:name=".provider_detail" />
+        <activity android:name=".provider_detail"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".provider_home"
             android:label="@string/title_activity_provider_home"
@@ -131,7 +136,8 @@
             android:exported="true" />
 
         <activity android:name=".provider_myorders" />
-        <activity android:name=".provider_order_accepted" />
+        <activity android:name=".provider_order_accepted"
+            android:windowSoftInputMode="stateHidden"/>
 
         <service
             android:name=".customer_notification_service"
@@ -146,7 +152,19 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".rating"></activity>
+        <activity android:name=".rating" />
+
+        <receiver
+            android:name=".CustomerReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <service
+            android:name=".testcounterservice"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".Privacy_Policy"></activity>
     </application>
 
 </manifest>

@@ -287,6 +287,14 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     dbr.child(fauth.getCurrentUser().getUid()).child("longi").setValue(longitude);
 
                     StorageReference strf = storageReference.child("images/" + fauth.getCurrentUser().getUid());
+                    if(filePath == null){
+                        if(profile != null){
+                            filePath = profile;
+                        }
+                        else {
+                            filePath = Uri.parse(piclink);
+                        }
+                    }
                     strf.putFile(filePath)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override

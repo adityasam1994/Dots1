@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,6 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.WriterException;
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
@@ -47,7 +49,7 @@ public class order_accepted extends AppCompatActivity {
     public static final int REQUEST_CALL_PERMISSION = 846578;
     String pid,oid,lastpage="";
     TextView tvname,tvage,tvtime,secretcode;
-    ImageView qrcode, btncall;
+    ImageView qrcode, btncall, btnback, providerpic;
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Users");
     DatabaseReference dbrorder=FirebaseDatabase.getInstance().getReference("Orders");
     StorageReference strf= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -56,6 +58,8 @@ public class order_accepted extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.order_accepted);
 
+        providerpic=(ImageView)findViewById(R.id.providerpic);
+        btnback=(ImageView)findViewById(R.id.btnback);
         btncall=(ImageView) findViewById(R.id.btncall);
         secretcode=(TextView)findViewById(R.id.secretcode);
         qrcode=(ImageView)findViewById(R.id.qrcode);
@@ -70,6 +74,17 @@ public class order_accepted extends AppCompatActivity {
         Date cd=Calendar.getInstance().getTime();
         String dt=format.format(cd);
 
+        strf.child("images/"+(pid)).getDownloadUrl()
+                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        if(uri != null){
+                            Picasso.get().load(uri).resize(200, 200).into(providerpic);
+                        }
+
+                    }
+                });
+
 
         dbr.child(pid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -77,6 +92,11 @@ public class order_accepted extends AppCompatActivity {
                 String fname=dataSnapshot.child("fname").getValue().toString();
                 String age=dataSnapshot.child("info").child("eage").getValue().toString();
                 String phone=dataSnapshot.child("ph").getValue().toString();
+
+                if(dataSnapshot.hasChild("profilepic")){
+                    String piclink=dataSnapshot.child("profilepic").getValue().toString();
+                    Picasso.get().load(piclink).resize(200, 200).into(providerpic);
+                }
 
                 tvname.setText(fname);
                 tvage.setText(age);
@@ -88,6 +108,21 @@ public class order_accepted extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+        btnback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(getIntent() != null){
+                    if(getIntent().getExtras().getString("lastpage").equals("myorders")){
+                        finish();
+                    }
+                    if(getIntent().getExtras().getString("lastpage").equals("statuspage")){
+                        startActivity(new Intent(order_accepted.this, newdrawer.class));
+                        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                    }
+                }
             }
         });
 
@@ -166,6 +201,7 @@ public class order_accepted extends AppCompatActivity {
 
         if(lastpage.equals("statuspage")) {
             startActivity(new Intent(order_accepted.this, newdrawer.class));
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }
         if(lastpage.equals("myorders")){
             finish();
