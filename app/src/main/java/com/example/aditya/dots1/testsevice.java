@@ -126,7 +126,7 @@ public class testsevice extends Service {
                     message="You have an order from "+fname;
                 }
                 if(ordercount == 0){
-                    message="You don't have any new order";
+                    message="Looking for new orders";
                 }
                 else {
                     message="You have "+ordercount+" new order";

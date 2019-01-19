@@ -84,6 +84,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     public static final int CAMERA_PERMISSION_REQUEST = 12345678;
     public static final int REQUSET_FINE_LOCATION = 9999;
     public static final int REQUEST_COARSE_LOCATION = 8888;
+    public static final int REQ_LOC_SIGN = 907823;
     String[] namewords;
     LoginButton flogin;
     CallbackManager callbackManager;
@@ -161,9 +162,6 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
             }
         });
 
-       /* ActivityCompat.requestPermissions(newsignup.this, new String[]{Manifest.permission.CAMERA}, 34);
-        ActivityCompat.requestPermissions(newsignup.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 349);
-        ActivityCompat.requestPermissions(newsignup.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 3445);*/
 
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -190,13 +188,13 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        requestlocation();
+        //requestlocation();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -208,7 +206,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
             else {
                 requestlocation();
             }
-        }
+        }*/
 
 
 
@@ -328,6 +326,16 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         if(requestCode == CAMERA_PERMISSION_REQUEST){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 takepicture();
+            }
+        }
+
+        if(requestCode == REQ_LOC_SIGN){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Location Permission granted", Toast.LENGTH_SHORT).show();
+            }
+
+            else {
+                Toast.makeText(this, "Location permission is required", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -797,12 +805,42 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                     builder.show();
                 }
                 else{
-                    etaddress.setText("");
-                    showaddress=true;
-                    etaddress.setEnabled(false);
-                    btnchangeaddress.setVisibility(View.VISIBLE);
-                    pd.setMessage("Fetching Location...");
-                    pd.show();
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                            Criteria criteria = new Criteria();
+                            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                            String provider = locationManager.getBestProvider(criteria, true);
+                            locationManager.requestLocationUpdates(provider, 0, 0,  this);
+
+                            etaddress.setText("");
+                            showaddress=true;
+                            etaddress.setEnabled(false);
+                            btnchangeaddress.setVisibility(View.VISIBLE);
+                            pd.setMessage("Fetching Location...");
+                            pd.show();
+                        }
+                        else {
+                            String[] req_loc=new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                            requestPermissions(req_loc, REQ_LOC_SIGN);
+                        }
+                    }
+                    else {
+                        Criteria criteria = new Criteria();
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        String provider = locationManager.getBestProvider(criteria, true);
+                        locationManager.requestLocationUpdates(provider, 0, 0,  this);
+
+                        etaddress.setText("");
+                        showaddress=true;
+                        etaddress.setEnabled(false);
+                        btnchangeaddress.setVisibility(View.VISIBLE);
+                        pd.setMessage("Fetching Location...");
+                        pd.show();
+                    }
+
                 }
                 break;
         }

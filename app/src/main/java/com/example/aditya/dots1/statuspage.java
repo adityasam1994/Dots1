@@ -263,6 +263,8 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                                 Set<String> taskset = new HashSet<String>(rej);
                                 spref.edit().putStringSet("rej", taskset).commit();
                                 spref.edit().putLong("StartTime", SystemClock.uptimeMillis()).commit();
+                                spref.edit().putBoolean("accepted", false).commit();
+                                spref.edit().putBoolean("cancelled", false).commit();
 
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                     startForegroundService(mServiceIntent );

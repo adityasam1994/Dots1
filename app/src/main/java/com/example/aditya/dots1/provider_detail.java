@@ -1,6 +1,7 @@
 package com.example.aditya.dots1;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentProvider;
@@ -49,6 +50,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class provider_detail extends AppCompatActivity implements LocationListener {
 
+    public static final int REQUEST_LOC_DET = 2834;
     Spinner service, avilable;
     EditText address, comment, age;
     TextView uname;
@@ -268,12 +270,39 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                     builder.show();
                 }
                 else{
-                    address.setText("");
-                    showaddress=true;
-                    address.setEnabled(false);
-                    btneditaddress.setVisibility(View.VISIBLE);
-                    pd.setMessage("Fetching Location...");
-                    pd.show();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                            Criteria criteria = new Criteria();
+                            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                            String provider = locationManager.getBestProvider(criteria, true);
+                            locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
+
+                            address.setText("");
+                            showaddress=true;
+                            address.setEnabled(false);
+                            btneditaddress.setVisibility(View.VISIBLE);
+                            pd.setMessage("Fetching Location...");
+                            pd.show();
+                        }
+                        else {
+                            requestlocation();
+                        }
+                    }
+                    else {
+                        Criteria criteria = new Criteria();
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        String provider = locationManager.getBestProvider(criteria, true);
+                        locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
+
+                        address.setText("");
+                        showaddress=true;
+                        address.setEnabled(false);
+                        btneditaddress.setVisibility(View.VISIBLE);
+                        pd.setMessage("Fetching Location...");
+                        pd.show();
+                    }
+
                 }
             }
         });
@@ -281,13 +310,34 @@ public class provider_detail extends AppCompatActivity implements LocationListen
 
     }
 
-    private void savedetails(){
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_LOC_DET){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
 
+                address.setText("");
+                showaddress=true;
+                address.setEnabled(false);
+                btneditaddress.setVisibility(View.VISIBLE);
+                pd.setMessage("Fetching Location...");
+                pd.show();
+            }
+            else {
+                Toast.makeText(this, "Location permission is required", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void requestlocation() {
-        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},1);
-        ActivityCompat.requestPermissions(this,new String[]{ACCESS_COARSE_LOCATION},980);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{ACCESS_FINE_LOCATION}, REQUEST_LOC_DET);
+        }
     }
 
     @Override

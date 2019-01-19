@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -225,31 +226,41 @@ public class provider_order_accepted extends AppCompatActivity {
             public void onClick(View v) {
                 if(nformat.equals("video")){
 
-                    File mpath= Environment.getExternalStorageDirectory();
-
-                    File dir=new File(mpath+"/Dot/");
-                    dir.mkdirs();
+                    //File mpath= Environment.getExternalStorageDirectory();
+                    String mpath=Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/";
+                    File dir=new File(mpath);
+                    //dir.mkdirs();
                     String filename=code+".mp4";
                     File file=new File(dir, filename);
 
-                    Uri filepath=Uri.fromFile(file);
+                    //Uri filepath=Uri.fromFile(file);
+                    Uri filepath= FileProvider.getUriForFile(provider_order_accepted.this, BuildConfig.APPLICATION_ID + ".provider",file);
+
+                    provider_order_accepted.this.grantUriPermission(provider_order_accepted.this.getPackageName(), filepath,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(filepath, "video/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     startActivity(Intent.createChooser(intent, "Open video Using"));
                 }
 
                 if(nformat.equals("image")){
 
-                    File mpath= Environment.getExternalStorageDirectory();
-
-                    File dir=new File(mpath+"/Dot/");
-                    dir.mkdirs();
+                    //File mpath= Environment.getExternalStorageDirectory();
+                    String mpath=Environment.getExternalStorageDirectory().getAbsolutePath()+"/Dot/";
+                    File dir=new File(mpath);
+                    //dir.mkdirs();
                     String filename=code+".jpg";
                     File file=new File(dir, filename);
 
-                    Uri filepath=Uri.fromFile(file);
+                    //Uri filepath=Uri.fromFile(file);
+                    Uri filepath= FileProvider.getUriForFile(provider_order_accepted.this, BuildConfig.APPLICATION_ID + ".provider",file);
+                    provider_order_accepted.this.grantUriPermission(provider_order_accepted.this.getPackageName(), filepath,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(filepath, "image/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     startActivity(Intent.createChooser(intent, "Open image Using"));
                 }
             }

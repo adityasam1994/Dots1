@@ -2,9 +2,11 @@ package com.example.aditya.dots1;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -15,6 +17,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -403,7 +406,27 @@ public class newdrawer extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            moveTaskToBack(true);
+
+            if(isMyServiceRunning(customer_notification_service.class)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(newdrawer.this);
+                builder.setTitle("Order in progress");
+                builder.setMessage("If you exit the app, the order may get cancelled");
+                builder.setPositiveButton("Exit anyway", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        moveTaskToBack(true);
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(newdrawer.this, "Okay", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                builder.show();
+            }
+            else {
+                moveTaskToBack(true);
+            }
 
         }
     }
@@ -467,6 +490,9 @@ public class newdrawer extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_contact) {
+
+            startActivity(new Intent(newdrawer.this, Contact_us.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         }else if(id ==R.id.lout){
             FirebaseAuth.getInstance().signOut();

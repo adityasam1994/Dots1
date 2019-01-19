@@ -395,22 +395,30 @@ public class provider_home extends AppCompatActivity
         } else if (id == R.id.nav_account) {
 
             startActivity(new Intent(provider_home.this, myaccount.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         } else if (id == R.id.nav_orders) {
 
             Intent intent=new Intent(provider_home.this, provider_myorders.class);
             startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_report) {
 
             startActivity(new Intent(provider_home.this, report_problem.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
 
         }else if (id ==R.id.nav_logout){
             FirebaseAuth.getInstance().signOut();
             Intent intent=new Intent(provider_home.this,newlogin.class);
             startActivity(intent);
+        }else if (id == R.id.nav_contact_us) {
+
+            startActivity(new Intent(provider_home.this, Contact_us.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

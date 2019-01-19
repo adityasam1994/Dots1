@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class order_accepted extends AppCompatActivity {
     public static final int REQUEST_CALL_PERMISSION = 846578;
     String pid,oid,lastpage="";
     TextView tvname,tvage,tvtime,secretcode;
+    RatingBar ratingBar;
     ImageView qrcode, btncall, btnback, providerpic;
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Users");
     DatabaseReference dbrorder=FirebaseDatabase.getInstance().getReference("Orders");
@@ -58,6 +60,7 @@ public class order_accepted extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.order_accepted);
 
+        ratingBar=(RatingBar)findViewById(R.id.providerrating);
         providerpic=(ImageView)findViewById(R.id.providerpic);
         btnback=(ImageView)findViewById(R.id.btnback);
         btncall=(ImageView) findViewById(R.id.btncall);
@@ -73,6 +76,10 @@ public class order_accepted extends AppCompatActivity {
         SimpleDateFormat format=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
         Date cd=Calendar.getInstance().getTime();
         String dt=format.format(cd);
+
+        if(getIntent().getExtras().getString("lastpage").equals("statuspage")){
+            stopService(new Intent(getBaseContext(), customer_notification_service.class));
+        }
 
         strf.child("images/"+(pid)).getDownloadUrl()
                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -96,6 +103,12 @@ public class order_accepted extends AppCompatActivity {
                 if(dataSnapshot.hasChild("profilepic")){
                     String piclink=dataSnapshot.child("profilepic").getValue().toString();
                     Picasso.get().load(piclink).resize(200, 200).into(providerpic);
+                }
+
+                if(dataSnapshot.hasChild("rating")){
+                    ratingBar.setVisibility(View.VISIBLE);
+                    String rating=dataSnapshot.child("rating").getValue().toString();
+                    ratingBar.setRating(Float.parseFloat(rating));
                 }
 
                 tvname.setText(fname);
@@ -146,7 +159,6 @@ public class order_accepted extends AppCompatActivity {
                 }
             }
         });
-
 
 
         dbrorder.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(oid).addValueEventListener(new ValueEventListener() {

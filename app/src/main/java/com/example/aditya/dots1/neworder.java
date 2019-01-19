@@ -1,6 +1,7 @@
 package com.example.aditya.dots1;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -81,12 +82,17 @@ import java.util.Locale;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.example.aditya.dots1.myaccount.REQUEST_LOC;
 import static com.example.aditya.dots1.newsignup.CAMERA_PERMISSION_REQUEST;
 
 public class neworder extends AppCompatActivity implements LocationListener {
 
     public static final int WRITE_STORAGE_PERMISSION = 9876;
     public static final int READ_STORAGE_PERMISSION = 9890;
+    public static final int REQUEST_LOC_ORDER = 934758;
+    public static final int REQ_READ_ORDER = 856868;
+    public static final int REQ_STORAGE_ORD = 45852;
+    public static final int REQ_STORAGE_WRITE_ORD = 53942;
     VideoView videoView;
     int capture_video=3;
     double lat=0.00,lng=0.00;
@@ -121,10 +127,6 @@ public class neworder extends AppCompatActivity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_neworder);
 
-        ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},8);
-        ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},6);
-        ActivityCompat.requestPermissions(neworder.this, new String[]{Manifest.permission.CAMERA},7);
-
         btnchangeaddress=(Button)findViewById(R.id.btneditaddress);
         btnvideo=(Button)findViewById(R.id.btnvideo);
         btnback=(ImageView)findViewById(R.id.btnback);
@@ -144,25 +146,29 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
         servicename=getIntent().getExtras().getString("service");
 
-        requeststorage();
-        requestlocation();
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
                 Criteria criteria = new Criteria();
-                criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
                 String provider = locationManager.getBestProvider(criteria, true);
-                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+                locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
 
             }
             else {
-                requestlocation();
+                String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                requestPermissions(requestloc, REQUEST_LOC_ORDER);
             }
         }
+        else {
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            String provider = locationManager.getBestProvider(criteria, true);
+            locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+
+        }*/
 
 
 
@@ -266,16 +272,10 @@ public class neworder extends AppCompatActivity implements LocationListener {
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                        if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                                && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                             camvideo();
-                        }
-                        else {
-                            requeststorage();
-                        }
                     }
                     else {
-                        String[] pemissionRequest={Manifest.permission.CAMERA};
+                        String[] pemissionRequest=new String[]{Manifest.permission.CAMERA};
                         requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
                     }
                 }
@@ -311,12 +311,43 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     builder.show();
                 }
                 else{
-                    address.setText("");
-                    showaddress=true;
-                    address.setEnabled(false);
-                    btnchangeaddress.setVisibility(View.VISIBLE);
-                    pd.setMessage("Fetching Location...");
-                    pd.show();
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                            Criteria criteria = new Criteria();
+                            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                            String provider = locationManager.getBestProvider(criteria, true);
+                            locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
+
+                            address.setText("");
+                            showaddress=true;
+                            address.setEnabled(false);
+                            btnchangeaddress.setVisibility(View.VISIBLE);
+                            pd.setMessage("Fetching Location...");
+                            pd.show();
+
+                        }
+                        else {
+                            String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                            requestPermissions(requestloc, REQUEST_LOC_ORDER);
+                        }
+                    }
+                    else {
+
+                        Criteria criteria = new Criteria();
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        String provider = locationManager.getBestProvider(criteria, true);
+                        locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
+
+                        address.setText("");
+                        showaddress=true;
+                        address.setEnabled(false);
+                        btnchangeaddress.setVisibility(View.VISIBLE);
+                        pd.setMessage("Fetching Location...");
+                        pd.show();
+                    }
                 }
             }
             });
@@ -452,6 +483,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -461,6 +493,31 @@ public class neworder extends AppCompatActivity implements LocationListener {
             }
             else {
                 Toast.makeText(this, "Camera Permission is needed to take picture", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if(requestCode == REQUEST_LOC_ORDER){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+            }
+
+            else {
+                Toast.makeText(this, "Location Permission is required", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if(requestCode == REQ_STORAGE_ORD){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if(requestCode == REQ_STORAGE_WRITE_ORD){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Access granted", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -483,8 +540,10 @@ public class neworder extends AppCompatActivity implements LocationListener {
     }
 
     private void requeststorage(){
-        ActivityCompat.requestPermissions(this,new String[]{WRITE_EXTERNAL_STORAGE},7896);
-        ActivityCompat.requestPermissions(this,new String[]{READ_EXTERNAL_STORAGE},8769);
+        String[] reqStorageWrite=new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(reqStorageWrite, REQ_STORAGE_WRITE_ORD);
+        }
     }
 
     private void camvideo() {
@@ -497,26 +556,51 @@ public class neworder extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 format="image";
-                String storagedir=Environment.getExternalStorageDirectory().getAbsolutePath()+"/Dot/mypic.jpg";
-                File dir=new File(storagedir);
-                if(!dir.exists()) {
-                    dir.mkdirs();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                            && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+                        //String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/mypic.jpg";
+                        String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath();
+                        File dir = new File(storagedir, "/Dot/");
+                        if (!dir.exists()) {
+                            dir.mkdirs();
+                        }
+
+                        File file = new File(dir, "mypic.jpg");
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        outputfileuri=FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID+ ".provider", file);
+                        //outputfileuri = Uri.fromFile(dir);
+
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
+                        startActivityForResult(intent, Takepic);
+                        dialog.dismiss();
+                    }
+                    else {
+                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+                        requestPermissions(reqStorage, REQ_STORAGE_ORD);
+                    }
                 }
 
-                File file=new File(dir, "mypic.jpg");
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                    outputfileuri = FileProvider.getUriForFile(neworder.this,"com.example.aditya.dots1", dir);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                }
                 else {
+                    String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/mypic.jpg";
+                    File dir = new File(storagedir);
+                    if (!dir.exists()) {
+                        dir.mkdirs();
+                    }
+
+                    File file = new File(dir, "mypic.jpg");
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
                     outputfileuri = Uri.fromFile(dir);
+
+
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
+                    startActivityForResult(intent, Takepic);
+                    dialog.dismiss();
                 }
 
-                intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputfileuri);
-                startActivityForResult(intent, Takepic);
-                dialog.dismiss();
             }
         });
 
@@ -526,7 +610,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 format="video";
                 Intent intent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
-                intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
+                intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 3);
                 startActivityForResult(intent, capture_video);
                 dialog.dismiss();
             }

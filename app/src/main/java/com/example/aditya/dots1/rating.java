@@ -37,6 +37,8 @@ public class rating extends AppCompatActivity {
     Boolean piclink=false;
     ImageView providerpic;
     DatabaseReference dbrorder;
+    float rating=0,count=0, ratio=0;
+    TextView btnskip;
     StorageReference storageReference= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +47,13 @@ public class rating extends AppCompatActivity {
 
         Toast.makeText(this, "Payment was successfull", Toast.LENGTH_SHORT).show();
 
+        btnskip=(TextView)findViewById(R.id.btnskip);
         providerpic=(ImageView)findViewById(R.id.profilepic);
         orderpath=getIntent().getExtras().getString("orderpath");
         btnrating=(Button)findViewById(R.id.btnrating);
         ratingBar=(RatingBar)findViewById(R.id.ratingbar);
         dbrorder= FirebaseDatabase.getInstance().getReference("Orders");
         dbruser=FirebaseDatabase.getInstance().getReference("Users");
-
-        //Toast.makeText(this, ""+orderpath, Toast.LENGTH_SHORT).show();
 
         dbrorder.child(orderpath).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -105,14 +106,51 @@ public class rating extends AppCompatActivity {
             }
         });
 
+        dbrorder.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot dscustomer : dataSnapshot.getChildren()){
+                    for(DataSnapshot dsorder : dscustomer.getChildren()){
+                        for(DataSnapshot dselement : dsorder.getChildren()){
+                            if(dselement.getKey().toString().equals(providerid)){
+                                if(dselement.hasChild("rating")){
+                                    rating =rating + Float.parseFloat(dselement.child("rating").getValue().toString());
+                                    count = count + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
         btnrating.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dbrorder.child(orderpath).child("rating").setValue(""+ratingBar.getRating());
 
+                float r=(rating + ratingBar.getRating())/(count + 1);
+
+                dbruser.child(providerid).child("rating").setValue(r);
+
                 Toast.makeText(rating.this, "Thanks for the rating", Toast.LENGTH_SHORT).show();
 
                 startActivity(new Intent(rating.this, newdrawer.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
+        });
+
+        btnskip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(com.example.aditya.dots1.rating.this, newdrawer.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 

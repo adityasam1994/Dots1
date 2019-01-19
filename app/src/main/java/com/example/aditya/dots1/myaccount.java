@@ -1,6 +1,7 @@
 package com.example.aditya.dots1;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -54,6 +55,9 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class myaccount extends AppCompatActivity implements LocationListener {
 
+    public static final int REQUEST_LOC = 67564;
+    private static final int REQ_STORAGE_WRITE_MY = 796786;
+    private static final int REQ_STORAGE_MY = 98656;
     Button saveaccount, changeaddress;
     EditText etfname, etlname, etaddress, etphone;
     ImageView profilepic, getloc, btnback;
@@ -104,13 +108,9 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         phone.setBounds(0,0,width,height);
         etphone.setCompoundDrawables(phone,null,null,null);
 
-
-
-        //requestlocation();
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -118,11 +118,13 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 criteria.setAccuracy(Criteria.ACCURACY_FINE);
                 String provider = locationManager.getBestProvider(criteria, true);
                 locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+
             }
             else {
-                //requestlocation();
+                String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                requestPermissions(requestloc, REQUEST_LOC);
             }
-        }
+        }*/
 
 
         dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -210,11 +212,41 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     builder.show();
                 }
                 else{
-                    showaddress=true;
-                    etaddress.setEnabled(false);
-                    changeaddress.setVisibility(View.VISIBLE);
-                    pd.setMessage("Fetching Location...");
-                    pd.show();
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                            Criteria criteria = new Criteria();
+                            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                            String provider = locationManager.getBestProvider(criteria, true);
+                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+
+
+                            showaddress=true;
+                            etaddress.setEnabled(false);
+                            changeaddress.setVisibility(View.VISIBLE);
+                            pd.setMessage("Fetching Location...");
+                            pd.show();
+
+                        }
+                        else {
+                            String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                            requestPermissions(requestloc, REQUEST_LOC);
+                        }
+                    }
+                    else {
+                        Criteria criteria = new Criteria();
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        String provider = locationManager.getBestProvider(criteria, true);
+                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+
+
+                        showaddress=true;
+                        etaddress.setEnabled(false);
+                        changeaddress.setVisibility(View.VISIBLE);
+                        pd.setMessage("Fetching Location...");
+                        pd.show();
+                    }
                 }
             }
         });
@@ -337,27 +369,49 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                                 .start(myaccount.this);
                     }
                     else {
-                        //requeststorage();
+                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+                        requestPermissions(reqStorage, REQ_STORAGE_MY);
+
+                        String[] reqStorageWrite=new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                        requestPermissions(reqStorageWrite, REQ_STORAGE_WRITE_MY);
                     }
                 }
             }
         });
     }
 
-    private void requestlocation() {
-        ActivityCompat.requestPermissions(this,new String[]{ACCESS_FINE_LOCATION},587687);
-        ActivityCompat.requestPermissions(this,new String[]{ACCESS_COARSE_LOCATION},98769);
-    }
 
-    /*private void requeststorage(){
-        ActivityCompat.requestPermissions(this,new String[]{READ_EXTERNAL_STORAGE},7988);
-        ActivityCompat.requestPermissions(this,new String[]{WRITE_EXTERNAL_STORAGE},7981);
-    }*/
 
     @Override
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_LOC){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+            }
+        }
+
+        if(requestCode == REQ_STORAGE_MY){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Storage Read permission Granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if(requestCode == REQ_STORAGE_WRITE_MY){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Storage Write permission Granted", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override

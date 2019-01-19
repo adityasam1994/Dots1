@@ -75,17 +75,18 @@ public class customer_notification_service extends Service {
                         String status=ds.child("status").getValue().toString();
 
                         if(status.equals("accepted")){
+                            sprefappopen.edit().putBoolean("accepted", true).commit();
                             Intent intent=new Intent(getApplicationContext(), order_accepted.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.putExtra("pid", ds.getKey().toString());
                             intent.putExtra("oid", co);
                             intent.putExtra("lastpage", "statuspage");
                             startActivity(intent);
-                            stopSelf();
                             break;
                         }
 
                         else if(status.equals("cancelled")){
+                            sprefappopen.edit().putBoolean("cancelled", true).commit();
                             Toast.makeText(customer_notification_service.this, "Order Cancelled", Toast.LENGTH_SHORT).show();
                             Intent intent=new Intent(getApplicationContext(), newdrawer.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -240,7 +241,10 @@ public class customer_notification_service extends Service {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if((SystemClock.uptimeMillis() - sprefappopen.getLong("StartTime", SystemClock.uptimeMillis())) > 20000 && !killtimer){
+                String ui=sprefappopen.getString("uids", null);
+
+                if((SystemClock.uptimeMillis() - sprefappopen.getLong("StartTime", SystemClock.uptimeMillis())) > 20000 && !killtimer
+                        && !sprefappopen.getBoolean("accepted", false) && !sprefappopen.getBoolean("cancelled", false)){
                     String u=sprefappopen.getString("uids",null);
                     dbrorder.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(co).child(u).child("status").setValue("rejected");
                     killtimer=true;
