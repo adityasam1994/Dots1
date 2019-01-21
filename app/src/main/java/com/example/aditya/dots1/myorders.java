@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -50,7 +51,7 @@ public class myorders extends AppCompatActivity {
     String time,oredrpath="",cost,servi,state;
     Dialog dialog;
     ImageView btnback;
-
+    SharedPreferences spref;
     private static PayPalConfiguration config = new PayPalConfiguration()
             .environment(PayPalConfiguration.ENVIRONMENT_SANDBOX)
             .clientId("AVk4WFQZ8V_ct-PLjK5RrI1yAx6hq4Rt1pAKrPmNJkKAx3QOm1hDpQ-wBrrA-aGuhE7ZSmKZ9a9THHhN");
@@ -60,6 +61,7 @@ public class myorders extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_myorders);
 
+        spref=getSharedPreferences("payment", Context.MODE_PRIVATE);
         btnback=(ImageView)findViewById(R.id.btnback);
         parent = (LinearLayout) findViewById(R.id.myorders);
 
@@ -101,14 +103,6 @@ public class myorders extends AppCompatActivity {
                             }
                             if (st.equals("completed")) {
                                 statu = "Completed";
-                                time = ds.child("stopwatch").child("time").getValue().toString();
-                                oredrpath=fauth.getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+d.getKey().toString();
-                                cost=ds.child("cost").getValue().toString();
-                                servi=ds.child("service").getValue().toString();
-                                if(d.hasChild("state")){
-                                    state=d.child("state").getValue().toString();
-                                    //Toast.makeText(myorders.this, state, Toast.LENGTH_SHORT).show();
-                                }
                                 break;
                             }
 
@@ -186,27 +180,45 @@ public class myorders extends AppCompatActivity {
                                 Toast.makeText(myorders.this, "No provider was found for this order", Toast.LENGTH_SHORT).show();
                             }
                             if (finalStatu.equals("Completed")) {
-                                    if (state.equals("approved")) {
+
+                                final String[] ordpath=new String[1];
+                                final String[] stat=new String[1];
+
+                                for(DataSnapshot dd : ds.getChildren()){
+                                    if(dd.getKey().toString().length() > 20){
+                                        stat[0] = dd.child("state").getValue().toString();
+                                        ordpath[0]=fauth.getCurrentUser().getUid().toString()+"/"+ds.getKey().toString()+"/"+dd.getKey().toString();
+                                    }
+                                }
+                                    if (stat[0].equals("approved")) {
                                         Toast.makeText(myorders.this, "This order has been completed and paid", Toast.LENGTH_SHORT).show();
                                     } else {
                                         dialog = new Dialog(myorders.this);
                                         dialog.setContentView(R.layout.job_done_notification);
                                         dialog.show();
-                                        final String oid = ds.getKey().toString();
+
                                         Button pay = dialog.findViewById(R.id.btnpay);
-                                        TextView timer = dialog.findViewById(R.id.tvTimer);
-                                        TextView service = dialog.findViewById(R.id.tvservicename);
-                                        TextView tvcost = dialog.findViewById(R.id.tvcost);
+                                        final TextView timer = dialog.findViewById(R.id.tvTimer);
+                                        final TextView service = dialog.findViewById(R.id.tvservicename);
+                                        final TextView tvcost = dialog.findViewById(R.id.tvcost);
 
-                                        service.setText("(" + oid + ") " + servi + ":");
-                                        tvcost.setText(cost + "$");
+                                        final String oid = ds.getKey().toString();
+                                        final String[] ser = new String[1];
+                                        final String[] cos = new String[1];
+                                        final String[] ti = new String[1];
 
-                                        timer.setText(time);
+                                        ser[0] =ds.child("service").getValue().toString();
+                                        cos[0] =ds.child("cost").getValue().toString();
+                                        ti[0] =ds.child("stopwatch").child("time").getValue().toString();
+
+                                        tvcost.setText(cos[0] + "$");
+                                        timer.setText(ti[0]);
+                                        service.setText("(" + oid + ") " + ser[0] + ":");
 
                                         pay.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
-                                                beginpayment(cost, servi);
+                                                beginpayment(cos[0], ser[0], ordpath[0]);
                                             }
                                         });
                                     }
@@ -238,7 +250,7 @@ public class myorders extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 
-    private void beginpayment(String cost, String servi) {
+    private void beginpayment(String cost, String servi, String ordpath) {
         dialog.dismiss();
         Intent serviceConfig = new Intent(this, PayPalService.class);
         serviceConfig.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
@@ -246,6 +258,8 @@ public class myorders extends AppCompatActivity {
 
         PayPalPayment payment = new PayPalPayment(new BigDecimal(cost),
                 "USD", servi, PayPalPayment.PAYMENT_INTENT_SALE);
+
+        spref.edit().putString("ordpath", ordpath).commit();
 
         Intent paymentConfig = new Intent(this, PaymentActivity.class);
         paymentConfig.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
@@ -261,6 +275,9 @@ public class myorders extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+        final String orpath=spref.getString("ordpath", "");
+
         if (resultCode == Activity.RESULT_OK){
             PaymentConfirmation confirm = data.getParcelableExtra(
                     PaymentActivity.EXTRA_RESULT_CONFIRMATION);
@@ -276,12 +293,12 @@ public class myorders extends AppCompatActivity {
                     String state=response.getString("state");
 
                     if(state.equals("approved")) {
-                        dbr.child(oredrpath).child("payment_id").setValue(payment_id);
-                        dbr.child(oredrpath).child("create_time").setValue(create_time);
-                        dbr.child(oredrpath).child("state").setValue(state);
+                        dbr.child(orpath).child("payment_id").setValue(payment_id);
+                        dbr.child(orpath).child("create_time").setValue(create_time);
+                        dbr.child(orpath).child("state").setValue(state);
 
                         Intent intent=new Intent(myorders.this, rating.class);
-                        intent.putExtra("orderpath", oredrpath);
+                        intent.putExtra("orderpath", orpath);
                         startActivity(intent);
                     }
                     else {

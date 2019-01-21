@@ -47,6 +47,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.Resource;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.text.Line;
 import com.google.firebase.auth.FirebaseAuth;
@@ -496,6 +497,7 @@ public class newdrawer extends AppCompatActivity
 
         }else if(id ==R.id.lout){
             FirebaseAuth.getInstance().signOut();
+            LoginManager.getInstance().logOut();
             Intent intent=new Intent(newdrawer.this,newlogin.class);
             startActivity(intent);
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);

@@ -14,11 +14,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -155,15 +157,28 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
 
                         txtdistance.setText((int) distance+" Km");
 
+                        LatLngBounds.Builder builder=new LatLngBounds.Builder();
+                        builder.include(provider.getPosition());
+                        builder.include(markerOptions.getPosition());
+                        LatLngBounds bounds=builder.build();
+
+                        int width=getResources().getDisplayMetrics().widthPixels;
+                        int height=getResources().getDisplayMetrics().heightPixels;
+                        int padding=(int)(height * 0.2);
+
+                        final CameraUpdate cu=CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+
                         gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                         gmap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
                             @Override
                             public void onCameraIdle() {
-                                gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                                gmap.animateCamera(cu);
+                                //gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
                             }
                         });
 
-                        gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
+                        gmap.animateCamera(cu);
+                        //gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,17.0f));
                         }
 
                     @Override

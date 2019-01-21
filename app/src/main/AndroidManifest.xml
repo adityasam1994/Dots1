@@ -149,8 +149,10 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".myaccount" />
-        <activity android:name=".report_problem" />
+        <activity android:name=".myaccount"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".report_problem"
+            android:windowSoftInputMode="stateHidden"/>
 
         <receiver
             android:name=".timer_receiver"

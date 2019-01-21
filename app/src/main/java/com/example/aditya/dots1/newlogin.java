@@ -1,8 +1,10 @@
 package com.example.aditya.dots1;
 
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -21,11 +23,15 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -44,10 +50,12 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
-public class newlogin extends AppCompatActivity {
+public class newlogin extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
 
+    private static newlogin instance;
     Button su,btnli,btnreset,btnimage;
     EditText etmail,etpass;
     FirebaseAuth fauth;
@@ -61,12 +69,15 @@ public class newlogin extends AppCompatActivity {
     String name,lname,fname;
     String[] namewords;
     GoogleSignInClient mGoogleSignInClient;
+    GoogleApiClient mGoogleApiClient;
     int RC_SIGN_IN=101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newlogin);
+
+        instance=this;
 
         fauth=FirebaseAuth.getInstance();
         callbackManager=CallbackManager.Factory.create();
@@ -113,6 +124,11 @@ public class newlogin extends AppCompatActivity {
                 .requestEmail()
                 .build();
 
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         fblogin=(LoginButton)findViewById(R.id.fsignin);
@@ -147,10 +163,46 @@ public class newlogin extends AppCompatActivity {
             public void onClick(View v) {
                 pd.setMessage("Logging in...");
                 pd.show();
+
+                /*Intent signinIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signinIntent, 67);*/
+                //newlogin.getInstance().clearAppData();
                 Intent signInIntent = mGoogleSignInClient.getSignInIntent();
                 startActivityForResult(signInIntent, RC_SIGN_IN);
             }
         });
+    }
+
+    public static newlogin getInstance(){
+        return instance;
+    }
+
+    public void clearAppData(){
+        File cache = getCacheDir();
+        File appdir=new File(cache.getParent());
+        if(appdir.exists()){
+            String[] children = appdir.list();
+            for (String s : children){
+                if(!s.equals("lib")){
+                    deleteDir(new File(appdir, s));
+                }
+            }
+        }
+    }
+
+    public static boolean deleteDir(File dir){
+        if(dir != null && dir.isDirectory()){
+            String[] children = dir.list();
+            for(int i = 0; i < children.length; i++){
+                boolean success = deleteDir(new File(dir, children[i]));
+
+                if(!success){
+                    return  false;
+                }
+            }
+        }
+
+        return dir.delete();
     }
 
     private void handleaccesstoken(final AccessToken token, final String name){
@@ -274,7 +326,7 @@ public class newlogin extends AppCompatActivity {
         @Override
         public void onComplete(@NonNull Task<AuthResult> task) {
             if (task.isSuccessful()) {
-
+                mGoogleApiClient.clearDefaultAccountAndReconnect();
                 Boolean isnewuser=task.getResult().getAdditionalUserInfo().isNewUser();
 
                 if(isnewuser){
@@ -457,5 +509,23 @@ public class newlogin extends AppCompatActivity {
                 // ...
             }
         }
+
+        if(requestCode == 67){
+            GoogleSignInResult result= Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if(result.isSuccess()){
+                GoogleSignInAccount acct=result.getSignInAccount();
+                if(acct != null){
+                    String identifier = acct.getId()+"";
+                    String displayName = acct.getDisplayName()+"";
+
+                    mGoogleApiClient.clearDefaultAccountAndReconnect();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

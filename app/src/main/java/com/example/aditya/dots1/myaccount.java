@@ -110,22 +110,6 @@ public class myaccount extends AppCompatActivity implements LocationListener {
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                Criteria criteria = new Criteria();
-                criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                String provider = locationManager.getBestProvider(criteria, true);
-                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
-
-            }
-            else {
-                String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
-                requestPermissions(requestloc, REQUEST_LOC);
-            }
-        }*/
-
 
         dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -281,7 +265,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
 
                 double latitude=0,longitude=0;
 
-                if(etaddress.isEnabled()) {
+                if(etaddress.isEnabled() && etaddress.getText().toString().length() >= 5) {
                     Geocoder geocoder=new Geocoder(myaccount.this.getApplicationContext(),Locale.getDefault());
                     List<Address> addresses;
                     try {
@@ -299,13 +283,15 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     }
                 }
                 else {
-                    latitude=lat;
-                    longitude=lng;
+                    if(showaddress) {
+                        latitude = lat;
+                        longitude = lng;
+                    }
                 }
 
-                if(addressfound == true || !etaddress.isEnabled()) {
+                if(addressfound == true || !etaddress.isEnabled() || etaddress.getText().toString().length() < 5) {
 
-                    String fname, lname, address, phone;
+                    String fname="", lname="", address="", phone="";
                     fname = etfname.getText().toString().trim();
                     lname = etlname.getText().toString().trim();
                     address = etaddress.getText().toString().trim();
@@ -319,39 +305,38 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     dbr.child(fauth.getCurrentUser().getUid()).child("longi").setValue(longitude);
 
                     StorageReference strf = storageReference.child("images/" + fauth.getCurrentUser().getUid());
+
+
                     if(filePath == null){
                         if(profile != null){
-                            filePath = profile;
+                            Toast.makeText(myaccount.this, "Account update successful", Toast.LENGTH_SHORT).show();
+                            pd.dismiss();
                         }
                         else {
-                            filePath = Uri.parse(piclink);
+                            dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").setValue(piclink);
+                            pd.dismiss();
+                            Toast.makeText(myaccount.this, "Account updated successfully", Toast.LENGTH_SHORT).show();
                         }
                     }
-                    strf.putFile(filePath)
-                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    else {
+                        strf.putFile(filePath)
+                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        Toast.makeText(myaccount.this, "Account update successful", Toast.LENGTH_SHORT).show();
+                                        dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").removeValue();
+                                        pd.dismiss();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(myaccount.this, "Failed to update account!", Toast.LENGTH_SHORT).show();
+                                        pd.dismiss();
+                                    }
+                                });
+                    }
 
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(myaccount.this, "Failed to update account!", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-
-                    strf.getDownloadUrl()
-                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    String linktopic = uri.toString();
-
-                                    dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").setValue(linktopic);
-                                    pd.dismiss();
-                                    Toast.makeText(myaccount.this, "Account updated successfully", Toast.LENGTH_SHORT).show();
-                                }
-                            });
                 }
             }
         });
@@ -369,11 +354,8 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                                 .start(myaccount.this);
                     }
                     else {
-                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
                         requestPermissions(reqStorage, REQ_STORAGE_MY);
-
-                        String[] reqStorageWrite=new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
-                        requestPermissions(reqStorageWrite, REQ_STORAGE_WRITE_MY);
                     }
                 }
             }
@@ -399,17 +381,17 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 String provider = locationManager.getBestProvider(criteria, true);
                 locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
             }
+            else {
+                Toast.makeText(this, "Location permission is required", Toast.LENGTH_SHORT).show();
+            }
         }
 
         if(requestCode == REQ_STORAGE_MY){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(this, "Storage Read permission Granted", Toast.LENGTH_SHORT).show();
             }
-        }
-
-        if(requestCode == REQ_STORAGE_WRITE_MY){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(this, "Storage Write permission Granted", Toast.LENGTH_SHORT).show();
+            else {
+                Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show();
             }
         }
     }

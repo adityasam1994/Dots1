@@ -313,8 +313,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 else{
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
                             Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -513,11 +512,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
             }
-        }
-
-        if(requestCode == REQ_STORAGE_WRITE_ORD){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(this, "Access granted", Toast.LENGTH_SHORT).show();
+            else {
+                Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -578,7 +574,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         dialog.dismiss();
                     }
                     else {
-                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
                         requestPermissions(reqStorage, REQ_STORAGE_ORD);
                     }
                 }
