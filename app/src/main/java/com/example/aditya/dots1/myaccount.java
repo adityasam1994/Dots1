@@ -32,6 +32,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -45,6 +46,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.hbb20.CountryCodePicker;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -70,25 +72,30 @@ public class myaccount extends AppCompatActivity implements LocationListener {
     private static final int REQ_STORAGE_MY = 98656;
     public static final int CAPTURE_IMAGE = 29364;
     public static final int PIC_CROP = 74583;
-    Button saveaccount, changeaddress;
-    EditText etfname, etlname, etaddress, etphone;
-    ImageView profilepic, getloc, btnback;
+    Button saveaccount, changeaddress, changeaddress_work;
+    EditText etfname, etlname, etaddress, etphone, etaddress_work;
+    ImageView profilepic, getloc, btnback, getloc_work;
     Uri profile, filePath, myuri, testuri;
     DatabaseReference dbr = FirebaseDatabase.getInstance().getReference("Users");
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
     String piclink;
-    Boolean pickfromlink = false, addressfound=false;
+    LinearLayout workaddress_layout;
+    Boolean pickfromlink = false, addressfound=false, addressfound_work=false;
     ProgressDialog pd;
     double lat = 0, lng = 0;
-    Boolean showaddress = false;
+    Boolean showaddress = false ,showaddress_work=false, number_valid;
     LocationManager locationManager;
+    CountryCodePicker ccp;
+    String current_status;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.myaccount);
 
+        ccp = (CountryCodePicker)findViewById(R.id.code_picker);
+        workaddress_layout=(LinearLayout)findViewById(R.id.linearLayout_work);
         changeaddress=(Button)findViewById(R.id.btnchangeadd);
         btnback=(ImageView)findViewById(R.id.btnback);
         getloc = (ImageView) findViewById(R.id.getloc);
@@ -98,14 +105,18 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         etlname = (EditText) findViewById(R.id.etlname);
         etaddress = (EditText) findViewById(R.id.etaddress);
         etphone = (EditText) findViewById(R.id.etphone);
+        etaddress_work=(EditText)findViewById(R.id.etaddress_work);
+        changeaddress_work=(Button)findViewById(R.id.btnchangeadd_work);
+        getloc_work=(ImageView)findViewById(R.id.getloc_work);
 
         pd = new ProgressDialog(this);
 
         final float density=getResources().getDisplayMetrics().density;
 
         final Drawable fname=getResources().getDrawable(R.drawable.u30);
-        final Drawable phone=getResources().getDrawable(R.drawable.iconfinder_phone);
+        final Drawable phone=getResources().getDrawable(R.drawable.phoneicon);
         final Drawable home=getResources().getDrawable(R.drawable.hom);
+        final Drawable work=getResources().getDrawable(R.drawable.iconfinder_work);
 
         final  int width=Math.round(24*density);
         final int height=Math.round(24*density);
@@ -120,8 +131,26 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         phone.setBounds(0,0,width,height);
         etphone.setCompoundDrawables(phone,null,null,null);
 
+        work.setBounds(0,0,width,height);
+        etaddress_work.setCompoundDrawables(work,null,null,null);
+
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+
+        ccp.registerCarrierNumberEditText(etphone);
+
+        ccp.setPhoneNumberValidityChangeListener(new CountryCodePicker.PhoneNumberValidityChangeListener() {
+            @Override
+            public void onValidityChanged(boolean isValidNumber) {
+                if(etphone.getText().toString().length() > 1) {
+                    if (isValidNumber) {
+                        number_valid = true;
+                    } else {
+                        number_valid = false;
+                    }
+                }
+            }
+        });
 
         dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -150,6 +179,18 @@ public class myaccount extends AppCompatActivity implements LocationListener {
 
                     //Toast.makeText(myaccount.this, piclink, Toast.LENGTH_SHORT).show();
                     Picasso.get().load(piclink).resize(200, 200).into(profilepic);
+                }
+                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                    current_status="provider";
+                    if(dataSnapshot.hasChild("info")){
+                        String work_address = dataSnapshot.child("info").child("eaddress").getValue().toString();
+                        etaddress_work.setText(work_address);
+                    }
+                }
+                else {
+                    current_status="customer";
+                    LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
+                    workaddress_layout.setLayoutParams(para);
                 }
 
                 etfname.setText(fname);
@@ -183,6 +224,67 @@ public class myaccount extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        getloc_work.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(myaccount.this);
+                    builder.setTitle("GPS Disabled!");
+                    builder.setMessage("GPS should be enabled to get your location");
+                    builder.setPositiveButton("Enable GPS", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(intent);
+                        }
+                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(myaccount.this, "Okay", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    builder.show();
+                }
+                else{
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                            Criteria criteria = new Criteria();
+                            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                            String provider = locationManager.getBestProvider(criteria, true);
+                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+
+
+                            showaddress_work=true;
+                            etaddress_work.setEnabled(false);
+                            changeaddress_work.setVisibility(View.VISIBLE);
+                            pd.setMessage("Fetching Location...");
+                            pd.show();
+
+                        }
+                        else {
+                            String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                            requestPermissions(requestloc, REQUEST_LOC);
+                        }
+                    }
+                    else {
+                        Criteria criteria = new Criteria();
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        String provider = locationManager.getBestProvider(criteria, true);
+                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+
+
+                        showaddress_work=true;
+                        etaddress_work.setEnabled(false);
+                        changeaddress_work.setVisibility(View.VISIBLE);
+                        pd.setMessage("Fetching Location...");
+                        pd.show();
+                    }
+                }
             }
         });
 
@@ -269,6 +371,28 @@ public class myaccount extends AppCompatActivity implements LocationListener {
             }
         });
 
+        changeaddress_work.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder add_builder = new AlertDialog.Builder(myaccount.this);
+                add_builder.setTitle("Change address");
+                add_builder.setMessage("Do you want to change the address");
+                add_builder.setPositiveButton("Change address", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        etaddress_work.setEnabled(true);
+                        changeaddress_work.setVisibility(View.INVISIBLE);
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(myaccount.this, "Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                add_builder.show();
+            }
+        });
+
         saveaccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -276,6 +400,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 pd.show();
 
                 double latitude=0,longitude=0;
+                double latitude_work=0, longitude_work=0;
 
                 if(etaddress.isEnabled() && etaddress.getText().toString().length() >= 5) {
                     Geocoder geocoder=new Geocoder(myaccount.this.getApplicationContext(),Locale.getDefault());
@@ -301,20 +426,58 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     }
                 }
 
-                if(addressfound == true || !etaddress.isEnabled() || etaddress.getText().toString().length() < 5) {
+                if(etaddress_work.isEnabled() && etaddress_work.getText().toString().length() >= 5) {
+                    Geocoder geocoder=new Geocoder(myaccount.this.getApplicationContext(),Locale.getDefault());
+                    List<Address> addresses;
+                    try {
+                        addresses=geocoder.getFromLocationName(etaddress_work.getText().toString(),1);
+                        if(addresses.size()>0){
+                            latitude_work=addresses.get(0).getLatitude();
+                            longitude_work=addresses.get(0).getLongitude();
+                            addressfound_work=true;
+                        }
+                        else {
+                            Toast.makeText(myaccount.this, "Address not found", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    if(showaddress_work) {
+                        latitude_work = lat;
+                        longitude_work = lng;
+                    }
+                }
 
-                    String fname="", lname="", address="", phone="";
+                if((addressfound == true || !etaddress.isEnabled() || etaddress.getText().toString().length() < 5)
+                        && (addressfound_work == true || !etaddress_work.isEnabled() || etaddress_work.getText().toString().length() < 5)) {
+
+                    String fname="", lname="", address="", phone="", address_work="";
                     fname = etfname.getText().toString().trim();
                     lname = etlname.getText().toString().trim();
                     address = etaddress.getText().toString().trim();
                     phone = etphone.getText().toString().trim();
+                    address_work=etaddress_work.getText().toString().trim();
 
                     dbr.child(fauth.getCurrentUser().getUid()).child("fname").setValue(fname);
                     dbr.child(fauth.getCurrentUser().getUid()).child("lname").setValue(lname);
                     dbr.child(fauth.getCurrentUser().getUid()).child("address").setValue(address);
-                    dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue(phone);
                     dbr.child(fauth.getCurrentUser().getUid()).child("lati").setValue(latitude);
                     dbr.child(fauth.getCurrentUser().getUid()).child("longi").setValue(longitude);
+
+                    if(current_status.equals("provider")) {
+                        dbr.child(fauth.getCurrentUser().getUid()).child("info").child("eaddress").setValue(address_work);
+                        dbr.child(fauth.getCurrentUser().getUid()).child("info").child("lati").setValue(latitude_work);
+                        dbr.child(fauth.getCurrentUser().getUid()).child("info").child("longi").setValue(longitude_work);
+                    }
+
+                    if(number_valid){
+                        dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue(phone);
+                    }
+                    else {
+                        dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue("");
+                    }
 
                     StorageReference strf = storageReference.child("images/" + fauth.getCurrentUser().getUid());
 
@@ -502,6 +665,27 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                             + addresses.get(0).getCountryName() + ","
                             + addresses.get(0).getPostalCode();
                     etaddress.setText(ad);
+                    pd.dismiss();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            List<Address> addresses_work = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            if (addresses_work.isEmpty()) {
+                etaddress_work.setText("Waiting for address");
+            } else {
+                if (addresses_work.size() > 0 && showaddress_work==true) {
+                    etaddress_work.setText("");
+
+                    String ad = addresses_work.get(0).getFeatureName() + ","
+                            + addresses_work.get(0).getLocality() + ","
+                            + addresses_work.get(0).getAdminArea() + ","
+                            + addresses_work.get(0).getCountryName() + ","
+                            + addresses_work.get(0).getPostalCode();
+                    etaddress_work.setText(ad);
                     pd.dismiss();
                 }
             }
