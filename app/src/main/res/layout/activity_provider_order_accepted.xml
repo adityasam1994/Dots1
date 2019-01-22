@@ -212,7 +212,7 @@
                                 android:layout_width="60dp"
                                 android:layout_height="60dp"
                                 android:layout_weight="1"
-                                android:src="@drawable/gps" />
+                                android:src="@drawable/iconfinder_marker" />
 
                             <FrameLayout
                                 android:layout_width="60dp"

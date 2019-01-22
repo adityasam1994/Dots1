@@ -61,6 +61,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
     LocationManager locationManager;
     double lat, lng;
     Boolean showaddress=false, addressfound=false;
+    DatabaseReference dbrservice = FirebaseDatabase.getInstance().getReference("services");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,11 +113,26 @@ public class provider_detail extends AppCompatActivity implements LocationListen
             }
         });
 
-        ArrayList<String> list=new ArrayList<>();
-        list.add("Select the service type...");
-        list.add("Lifting");
-        list.add("Plumbing");
-        list.add("Electric");
+        dbrservice.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<String> list=new ArrayList<>();
+                list.add("Select the service type...");
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    list.add(ds.getKey().toString());
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(provider_detail.this,
+                        android.R.layout.simple_spinner_dropdown_item, list);
+
+                service.setAdapter(adapter);
+                adapter.setDropDownViewResource(R.layout.activity_spinner_item);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         ArrayList<String> listtime=new ArrayList<>();
 
@@ -126,14 +142,8 @@ public class provider_detail extends AppCompatActivity implements LocationListen
         listtime.add("2pm-5pm");
         listtime.add("5pm-8pm");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_dropdown_item, list);
-
         ArrayAdapter<String> adapter1 = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, listtime);
-
-        service.setAdapter(adapter);
-        adapter.setDropDownViewResource(R.layout.activity_spinner_item);
 
         avilable.setAdapter(adapter1);
         adapter1.setDropDownViewResource(R.layout.activity_spinner_item);
@@ -153,6 +163,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
 
             }
         });
+
         avilable.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

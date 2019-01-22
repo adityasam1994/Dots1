@@ -4,10 +4,12 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Criteria;
@@ -17,10 +19,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -43,8 +48,13 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+import com.yalantis.ucrop.UCrop;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -58,10 +68,12 @@ public class myaccount extends AppCompatActivity implements LocationListener {
     public static final int REQUEST_LOC = 67564;
     private static final int REQ_STORAGE_WRITE_MY = 796786;
     private static final int REQ_STORAGE_MY = 98656;
+    public static final int CAPTURE_IMAGE = 29364;
+    public static final int PIC_CROP = 74583;
     Button saveaccount, changeaddress;
     EditText etfname, etlname, etaddress, etphone;
     ImageView profilepic, getloc, btnback;
-    Uri profile, filePath;
+    Uri profile, filePath, myuri, testuri;
     DatabaseReference dbr = FirebaseDatabase.getInstance().getReference("Users");
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -342,9 +354,46 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         });
 
         profilepic.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("NewApi")
             @Override
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                            && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        /*CropImage.activity()
+                                .setAspectRatio(1, 1)
+                                .setRequestedSize(500, 500)
+                                .setCropShape(CropImageView.CropShape.OVAL)
+                                .start(myaccount.this);*/
+                        String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath();
+                        File dir = new File(storagedir, "/Dot/");
+                        if (!dir.exists()) {
+                            dir.mkdirs();
+                        }
+
+                        File file = new File(dir, "myProfilepic.jpg");
+
+                        //testuri = FileProvider.getUriForFile(myaccount.this, BuildConfig.APPLICATION_ID+ ".provider", file);
+                        testuri = Uri.fromFile(file);
+
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                intent.putExtra("crop", "true");
+                                intent.putExtra("aspectX", 1);
+                                intent.putExtra("aspectY",1);
+                                intent.putExtra("outputX", 300);
+                                intent.putExtra("outputY",300);
+                                intent.putExtra("return-data",true);
+                                intent.putExtra(MediaStore.EXTRA_OUTPUT, testuri);
+                                startActivityForResult(intent, CAPTURE_IMAGE);
+
+
+                    }
+                    else {
+                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                        requestPermissions(reqStorage, REQ_STORAGE_MY);
+                    }
+                }
+                else {
                     if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                             && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         CropImage.activity()
@@ -353,11 +402,8 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                                 .setCropShape(CropImageView.CropShape.OVAL)
                                 .start(myaccount.this);
                     }
-                    else {
-                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-                        requestPermissions(reqStorage, REQ_STORAGE_MY);
-                    }
                 }
+
             }
         });
     }
@@ -411,6 +457,30 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 Toast.makeText(myaccount.this,"Failed"+error,Toast.LENGTH_SHORT).show();
             }
         }
+        if (resultCode == RESULT_OK) {
+            if (requestCode == CAPTURE_IMAGE) {
+                filePath = data.getData();
+                performCrop();
+            }
+        }
+
+        if(requestCode == CAPTURE_IMAGE){
+            if(resultCode == RESULT_OK){
+                filePath=testuri;
+                Toast.makeText(this, ""+filePath, Toast.LENGTH_SHORT).show();
+                Bundle extras=data.getExtras();
+                Bitmap image=extras.getParcelable("data");
+                profilepic.setImageBitmap(image);
+            }
+        }
+    }
+
+    private void performCrop() {
+        // take care of exceptions
+        UCrop.of(filePath, myuri)
+                .withAspectRatio(1, 1)
+                .withMaxResultSize(300, 300)
+                .start(myaccount.this);
     }
 
     @Override

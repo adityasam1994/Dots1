@@ -224,6 +224,7 @@ public class customer_notification_service extends Service {
                             intent.putExtra("dist","Not found");
                             intent.putExtra("lat", 0);
                             intent.putExtra("lng", 0);
+                            dbrorder.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("provider_found").setValue("false");
                         }
                         sendBroadcast(intent);
                     }

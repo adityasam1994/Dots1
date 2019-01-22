@@ -80,35 +80,43 @@ public class myorders extends AppCompatActivity {
                     for (DataSnapshot d : ds.getChildren()) {
                         int l = d.getKey().toString().length();
 
-                        if (l > 15) {
-
-                            if (statu.equals("Rejected")) {
-                                statu = "Pending";
-                            }
-
-                            String st = d.child("status").getValue().toString();
-                            if (st.equals("accepted")) {
-                                statu = "Accepted";
+                        if (ds.hasChild("provider_found")) {
+                            if (ds.child("provider_found").getValue().toString().equals("false")) {
+                                statu = "Not Found";
                                 break;
                             }
+                        }
+                        else {
+                            if (l > 15) {
 
-                            if (st.equals("cancelled")) {
-                                statu = "Cancelled";
-                                break;
-                            }
+                                if (statu.equals("Rejected")) {
+                                    statu = "Pending";
+                                }
 
-                            if (st.equals("pending")) {
-                                statu = "Pending";
-                                break;
-                            }
-                            if (st.equals("completed")) {
-                                statu = "Completed";
-                                break;
-                            }
+                                String st = d.child("status").getValue().toString();
+                                if (st.equals("accepted")) {
+                                    statu = "Accepted";
+                                    break;
+                                }
+
+                                if (st.equals("cancelled")) {
+                                    statu = "Cancelled";
+                                    break;
+                                }
+
+                                if (st.equals("pending")) {
+                                    statu = "Pending";
+                                    break;
+                                }
+                                if (st.equals("completed")) {
+                                    statu = "Completed";
+                                    break;
+                                }
 
 
-                            if (st.equals("rejected")) {
-                                statu = "Rejected";
+                                if (st.equals("rejected")) {
+                                    statu = "Rejected";
+                                }
                             }
                         }
                     }
@@ -158,6 +166,10 @@ public class myorders extends AppCompatActivity {
                     layout.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            if(finalStatu.equals("Not Found")){
+                                Toast.makeText(myorders.this, "Sorry! no provider is available in your area", Toast.LENGTH_SHORT).show();
+                            }
+
                             if (finalStatu.equals("Accepted")) {
                                 Intent intent = new Intent(myorders.this, order_status_service.class);
                                 intent.putExtra("oid", ds.getKey().toString());

@@ -22,6 +22,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.Image;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -52,6 +53,9 @@ import android.widget.VideoView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -76,12 +80,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.example.aditya.dots1.R.*;
 import static com.example.aditya.dots1.myaccount.REQUEST_LOC;
 import static com.example.aditya.dots1.newsignup.CAMERA_PERMISSION_REQUEST;
 
@@ -114,6 +120,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
     private  File output;
     String imagepath;
     Uri fileuri, outputfileuri;
+    Button btnplay, btnplus;
+    String cam_or_vid;
 
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
@@ -125,52 +133,30 @@ public class neworder extends AppCompatActivity implements LocationListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_neworder);
+        setContentView(layout.activity_neworder);
 
-        btnchangeaddress=(Button)findViewById(R.id.btneditaddress);
-        btnvideo=(Button)findViewById(R.id.btnvideo);
-        btnback=(ImageView)findViewById(R.id.btnback);
-        videoView=(VideoView)findViewById(R.id.videoView);
+        btnplay=(Button)findViewById(R.id.btnplay);
+        btnplus=(Button)findViewById(id.btnplus);
+        btnchangeaddress=(Button)findViewById(id.btneditaddress);
+        btnvideo=(Button)findViewById(id.btnvideo);
+        btnback=(ImageView)findViewById(id.btnback);
+        videoView=(VideoView)findViewById(id.videoView);
         requestQueue = Volley.newRequestQueue(this);
-        btnlocation = (Button) findViewById(R.id.btnlocation);
+        btnlocation = (Button) findViewById(id.btnlocation);
         pd = new ProgressDialog(this);
-        spinner = (Spinner) findViewById(R.id.spinner_service);
-        spinner2 = (Spinner) findViewById(R.id.spinner_time);
-        heading = (TextView) findViewById(R.id.tv);
-        btnimage = (ImageView) findViewById(R.id.btnimage);
-        spinner_service = (Spinner) findViewById(R.id.spinner_service);
-        spinner_time = (Spinner) findViewById(R.id.spinner_time);
-        comment = (EditText) findViewById(R.id.etcomment);
-        address = (EditText) findViewById(R.id.etaddress);
-        submit = (Button) findViewById(R.id.btnstart);
+        spinner = (Spinner) findViewById(id.spinner_service);
+        spinner2 = (Spinner) findViewById(id.spinner_time);
+        heading = (TextView) findViewById(id.tv);
+        btnimage = (ImageView) findViewById(id.btnimage);
+        spinner_service = (Spinner) findViewById(id.spinner_service);
+        spinner_time = (Spinner) findViewById(id.spinner_time);
+        comment = (EditText) findViewById(id.etcomment);
+        address = (EditText) findViewById(id.etaddress);
+        submit = (Button) findViewById(id.btnstart);
 
         servicename=getIntent().getExtras().getString("service");
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                Criteria criteria = new Criteria();
-                criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                String provider = locationManager.getBestProvider(criteria, true);
-                locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
-
-            }
-            else {
-                String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
-                requestPermissions(requestloc, REQUEST_LOC_ORDER);
-            }
-        }
-        else {
-            Criteria criteria = new Criteria();
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            String provider = locationManager.getBestProvider(criteria, true);
-            locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
-
-        }*/
-
-
 
 
         String head = getIntent().getExtras().getString("service");
@@ -193,7 +179,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                             android.R.layout.simple_spinner_dropdown_item, list_myservice);
 
                     spinner.setAdapter(adapter);
-                    adapter.setDropDownViewResource(R.layout.activity_spinner_item);
+                    adapter.setDropDownViewResource(layout.activity_spinner_item);
 
 
             }
@@ -217,7 +203,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
 
         spinner2.setAdapter(adapter1);
-        adapter1.setDropDownViewResource(R.layout.activity_spinner_item);
+        adapter1.setDropDownViewResource(layout.activity_spinner_item);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -251,7 +237,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
             }
         });
 
-        btnvideo.setOnClickListener(new View.OnClickListener() {
+        btnplus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -263,6 +249,25 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
 
                     }
+                }
+            }
+        });
+
+        btnplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(cam_or_vid.equals("cam")){
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(filePath, "image/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(intent, "Open image using"));
+                }
+
+                if(cam_or_vid.equals("vid")){
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(filePath, "video/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(intent, "Open video using"));
                 }
             }
         });
@@ -459,7 +464,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         //intent.putExtra("result", result);
                         pd.dismiss();
                         startActivity(intent);
-                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                        overridePendingTransition(anim.slide_in_right, anim.slide_out_left);
 
                     }
                     else if(addressfound == false && address.isEnabled()){
@@ -532,7 +537,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
     @Override
     public void finish() {
         super.finish();
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        overridePendingTransition(anim.slide_in_left, anim.slide_out_right);
     }
 
     private void requeststorage(){
@@ -544,10 +549,10 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
     private void camvideo() {
         final Dialog dialog=new Dialog(neworder.this);
-        dialog.setContentView(R.layout.camorvideo);
+        dialog.setContentView(layout.camorvideo);
         dialog.show();
-        Button cam=dialog.findViewById(R.id.cam);
-        Button vid=dialog.findViewById(R.id.video);
+        Button cam=dialog.findViewById(id.cam);
+        Button vid=dialog.findViewById(id.video);
         cam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -645,8 +650,10 @@ public class neworder extends AppCompatActivity implements LocationListener {
             }else {
                 btnimage.setImageBitmap(bitmap);
             }
-            videoView.setVisibility(View.INVISIBLE);
-            btnvideo.setVisibility(View.INVISIBLE);
+
+            btnimage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            btnplay.setVisibility(View.VISIBLE);
+            cam_or_vid="cam";
 
             ByteArrayOutputStream stream=new ByteArrayOutputStream();
 
@@ -678,24 +685,38 @@ public class neworder extends AppCompatActivity implements LocationListener {
             }
             filePath=Uri.fromFile(file);
         }
+
+
         if(requestCode == capture_video && resultCode == RESULT_OK){
             filePath=data.getData();
 
             result=filePath.getPath();
 
-            videoView.setVisibility(View.VISIBLE);
-            btnvideo.setVisibility(View.VISIBLE);
-            videoView.setVideoURI(filePath);
-            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.setLooping(true);
-                }
-            });
-            videoView.start();
+            String[] filePathColumn ={MediaStore.Images.Media.DATA};
+            Cursor cursor = this.getContentResolver().query(filePath, filePathColumn, null, null, null);
+            cursor.moveToFirst();
+            int columnindex = cursor.getColumnIndex(filePathColumn[0]);
+            String picPath=cursor.getString(columnindex);
+            cursor.close();
+            Bitmap bitmap=ThumbnailUtils.createVideoThumbnail(picPath, MediaStore.Video.Thumbnails.MINI_KIND);
 
-            btnimage.setVisibility(View.INVISIBLE);
+            int w=bitmap.getWidth();
+            int h=bitmap.getHeight();
+            int neww=w/2;
+            int newh=h/2;
 
+            if(h>w){
+                Matrix matrix=new Matrix();
+                matrix.postRotate(90);
+                Bitmap news=Bitmap.createBitmap(bitmap,0,0,w,h,matrix,true);
+                btnimage.setImageBitmap(news);
+            }else {
+                btnimage.setImageBitmap(bitmap);
+            }
+
+            btnimage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            btnplay.setVisibility(View.VISIBLE);
+            cam_or_vid="vid";
 
         }
     }

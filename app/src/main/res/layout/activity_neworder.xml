@@ -77,12 +77,11 @@
                 android:orientation="vertical">
 
                 <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="200dp"
+                    android:layout_height="115dp"
                     android:layout_gravity="center">
 
                     <ImageView
-                        android:id="@+id/btnimage"
                         android:layout_width="200dp"
                         android:layout_height="115dp"
                         android:layout_below="@+id/spinner_time"
@@ -92,8 +91,18 @@
                         android:maxHeight="10dp"
                         android:maxWidth="100dp"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/cam"
+                        android:src="@drawable/iconfinder_camera"
                         android:visibility="visible" />
+
+                    <com.github.siyamed.shapeimageview.RoundedImageView
+                        android:id="@+id/btnimage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="center"
+                        app:siBorderColor="#ECECEC"
+                        app:siBorderWidth="3dp"
+                        app:siRadius="6dp"
+                        app:siSquare="false" />
 
                     <VideoView
                         android:id="@+id/videoView"
@@ -108,6 +117,21 @@
                         android:layout_width="200dp"
                         android:layout_height="115dp"
                         android:background="@color/zxing_transparent" />
+
+                    <Button
+                        android:id="@+id/btnplay"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/iconfinder_youtube"
+                        android:visibility="invisible" />
+
+                    <Button
+                        android:id="@+id/btnplus"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="top|right"
+                        android:background="@drawable/iconfinder_plus"/>
                 </FrameLayout>
 
                 <Spinner
@@ -227,7 +251,7 @@
                         android:layout_marginEnd="0dp"
                         android:layout_marginStart="0dp"
                         android:layout_marginTop="0dp"
-                        android:background="@drawable/gps" />
+                        android:background="@drawable/iconfinder_marker" />
 
                 </LinearLayout>
 

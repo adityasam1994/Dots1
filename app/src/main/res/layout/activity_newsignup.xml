@@ -38,7 +38,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="4dp"
-                    android:src="@drawable/camera"
+                    android:src="@drawable/iconfinder_camera"
                     app:civ_border_color="#EEEEEE"
                     app:civ_border_width="2dp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -161,27 +161,38 @@
                 app:layout_constraintTop_toBottomOf="@id/etpass"
                 app:layout_constraintVertical_bias="0.0" />
 
-            <EditText
-                android:id="@+id/etphone"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/etpass2"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="1dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/phoneicon"
-                android:drawablePadding="20dp"
-                android:ems="10"
-                android:hint=" Phone Number"
-                android:inputType="textPersonName"
-                android:textColorHint="#EEEDEC"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etpass2"
-                app:layout_constraintVertical_bias="0.0" />
+                android:orientation="horizontal">
+
+                <com.hbb20.CountryCodePicker
+                    android:id="@+id/code_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    app:ccp_areaCodeDetectedCountry="true"
+                    app:ccp_textSize="14dp"
+                    android:gravity="center"
+                    android:layout_marginStart="8dp"
+                    app:ccp_showNameCode="false"/>
+
+                <EditText
+                    android:id="@+id/etphone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/etpass2"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="#EEEDEC"
+                    android:drawableLeft="@drawable/phoneicon"
+                    android:drawablePadding="20dp"
+                    android:ems="10"
+                    android:hint=" Phone Number"
+                    android:inputType="phone"
+                    android:textColorHint="#EEEDEC" />
+
+            </LinearLayout>
 
 
             <LinearLayout
@@ -233,7 +244,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_gravity="right"
-                    android:background="@drawable/gps"
+                    android:background="@drawable/iconfinder_marker"
                     android:gravity="right" />
 
             </LinearLayout>

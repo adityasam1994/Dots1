@@ -23,6 +23,9 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -64,6 +67,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.Phonenumber;
+import com.hbb20.CountryCodePicker;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -74,6 +80,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -87,6 +94,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     public static final int REQ_LOC_SIGN = 907823;
     String[] namewords;
     LoginButton flogin;
+    CountryCodePicker ccp;
     CallbackManager callbackManager;
     GoogleApiClient googleApiClient;
     AccessToken accessToken;
@@ -95,7 +103,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     ImageView ivprofile;
     int PICK_IMAGE_REQUEST = 111, TAKE_PICTURE = 0;
     Uri filePath;
-    EditText etfname, etlname, etmail, etpass, etpass2, etphone, etaddress;
+    EditText etfname, etlname, etmail, etpass, etpass2, etphone, etaddress, country_code;
     FirebaseAuth fauth;
     DatabaseReference dbr;
     ProgressDialog pd;
@@ -110,6 +118,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     private LocationManager locationManager;
     public boolean showaddress = false, addressfound = false;
     double latitude, longitude;
+    Boolean number_valid;
 
     //creating reference to firebase storage
     StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -119,6 +128,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newsignup);
 
+        ccp = (CountryCodePicker)findViewById(R.id.code_picker);
         pd = new ProgressDialog(this);
         li = (TextView) findViewById(R.id.btnstart);
         ivprofile = (ImageView) findViewById(R.id.profilepic);
@@ -138,6 +148,22 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
 
         btnfblogin = (ImageButton) findViewById(R.id.fsigninbutton);
         flogin = (LoginButton) findViewById(R.id.fsignin);
+
+        ccp.registerCarrierNumberEditText(etphone);
+
+        ccp.setPhoneNumberValidityChangeListener(new CountryCodePicker.PhoneNumberValidityChangeListener() {
+            @Override
+            public void onValidityChanged(boolean isValidNumber) {
+                if(isValidNumber){
+                    //Toast.makeText(newsignup.this, ""+ccp.getFormattedFullNumber().trim(), Toast.LENGTH_SHORT).show();
+                    number_valid=true;
+                }
+                else {
+                    //Toast.makeText(newsignup.this, "Invalid Number", Toast.LENGTH_SHORT).show();
+                    number_valid=false;
+                }
+            }
+        });
 
         requestQueue = Volley.newRequestQueue(this);
         callbackManager = CallbackManager.Factory.create();
@@ -249,7 +275,12 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         btnreg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                registeruser();
+                if (number_valid) {
+                    registeruser();
+                }
+                else {
+                    Toast.makeText(newsignup.this, "Please enter a valid phone number", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -633,7 +664,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         String fname, lname, ph, address, pass2;
         fname = etfname.getText().toString().trim();
         lname = etlname.getText().toString().trim();
-        ph = etphone.getText().toString().trim();
+        ph = ccp.getFormattedFullNumber().trim();
         address = etaddress.getText().toString().trim();
         pass2 = etpass2.getText().toString().trim();
         email=etmail.getText().toString().trim();
@@ -680,7 +711,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                                     if (addressfound || !etaddress.isEnabled()) {
                                         String fnames = etfname.getText().toString().trim();
                                         lname = etlname.getText().toString().trim();
-                                        ph = etphone.getText().toString().trim();
+                                        ph = ccp.getFormattedFullNumber().trim();
                                         address = etaddress.getText().toString().trim();
                                         usersignup usignup = new usersignup(fnames, lname, ph, address, lati, longi);
 

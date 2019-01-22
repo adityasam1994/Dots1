@@ -69,14 +69,18 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:4.+'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.mcxiaoke.volley:library:1.0.19'
-    implementation "com.weiwangcn.betterspinner:library-material:1.1.0"
-    implementation "androidmads.library.qrgenearator:QRGenearator:1.0.3"
-    implementation "com.github.nisrulz:qreader:2.1.0"
-    implementation "com.google.zxing:core:3.2.1"
-    implementation "com.journeyapps:zxing-android-embedded:3.2.0@aar"
+    implementation 'com.weiwangcn.betterspinner:library-material:1.1.0'
+    implementation 'androidmads.library.qrgenearator:QRGenearator:1.0.3'
+    implementation 'com.github.nisrulz:qreader:2.1.0'
+    implementation 'com.google.zxing:core:3.2.1'
+    implementation 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
     implementation 'com.google.android.gms:play-services-vision:11.0.2'
-    implementation "com.paypal.sdk:paypal-android-sdk:2.14.1"
-
+    implementation 'com.paypal.sdk:paypal-android-sdk:2.14.1'
+    implementation 'com.github.yalantis:ucrop:2.2.2'
+    implementation files('libs/libphonenumber-3.0.0-javadoc.jar')
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.10.3'
+    implementation 'com.hbb20:ccp:2.2.3'
+    implementation 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
 }
 
 apply plugin: 'com.google.gms.google-services'

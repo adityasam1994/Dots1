@@ -29,6 +29,7 @@
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
                 android:src="@drawable/settingicon"
                 android:visibility="invisible" />
@@ -49,6 +50,7 @@
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:layout_marginRight="8dp"
                 android:layout_gravity="center"
                 android:src="@drawable/settingicon" />
         </LinearLayout>
@@ -166,7 +168,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_gravity="top|right"
-                        android:background="@drawable/gps" />
+                        android:background="@drawable/iconfinder_marker" />
 
                 </LinearLayout>
 
