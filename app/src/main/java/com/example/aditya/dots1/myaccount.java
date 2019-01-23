@@ -3,6 +3,7 @@ package com.example.aditya.dots1;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -52,6 +53,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 import com.yalantis.ucrop.UCrop;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -72,6 +74,8 @@ public class myaccount extends AppCompatActivity implements LocationListener {
     private static final int REQ_STORAGE_MY = 98656;
     public static final int CAPTURE_IMAGE = 29364;
     public static final int PIC_CROP = 74583;
+    private static final int CAPTURE_IMAGE_FROM_CAM = 19373;
+    private static final int CROP_PIC = 33445;
     Button saveaccount, changeaddress, changeaddress_work;
     EditText etfname, etlname, etaddress, etphone, etaddress_work;
     ImageView profilepic, getloc, btnback, getloc_work;
@@ -88,6 +92,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
     LocationManager locationManager;
     CountryCodePicker ccp;
     String current_status;
+    Uri captureuri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +116,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
 
         pd = new ProgressDialog(this);
 
-        final float density=getResources().getDisplayMetrics().density;
+        /*final float density=getResources().getDisplayMetrics().density;
 
         final Drawable fname=getResources().getDrawable(R.drawable.u30);
         final Drawable phone=getResources().getDrawable(R.drawable.phoneicon);
@@ -132,7 +137,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         etphone.setCompoundDrawables(phone,null,null,null);
 
         work.setBounds(0,0,width,height);
-        etaddress_work.setCompoundDrawables(work,null,null,null);
+        etaddress_work.setCompoundDrawables(work,null,null,null);*/
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -475,9 +480,6 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     if(number_valid){
                         dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue(phone);
                     }
-                    else {
-                        dbr.child(fauth.getCurrentUser().getUid()).child("ph").setValue("");
-                    }
 
                     StorageReference strf = storageReference.child("images/" + fauth.getCurrentUser().getUid());
 
@@ -523,31 +525,16 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                             && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                        /*CropImage.activity()
-                                .setAspectRatio(1, 1)
-                                .setRequestedSize(500, 500)
-                                .setCropShape(CropImageView.CropShape.OVAL)
-                                .start(myaccount.this);*/
-                        String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath();
-                        File dir = new File(storagedir, "/Dot/");
-                        if (!dir.exists()) {
-                            dir.mkdirs();
-                        }
 
-                        File file = new File(dir, "myProfilepic.jpg");
-
-                        //testuri = FileProvider.getUriForFile(myaccount.this, BuildConfig.APPLICATION_ID+ ".provider", file);
-                        testuri = Uri.fromFile(file);
-
-                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                               /* Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                                 intent.putExtra("crop", "true");
                                 intent.putExtra("aspectX", 1);
                                 intent.putExtra("aspectY",1);
-                                intent.putExtra("outputX", 300);
-                                intent.putExtra("outputY",300);
+                                intent.putExtra("outputX", 500);
+                                intent.putExtra("outputY",500);
                                 intent.putExtra("return-data",true);
-                                intent.putExtra(MediaStore.EXTRA_OUTPUT, testuri);
-                                startActivityForResult(intent, CAPTURE_IMAGE);
+                                startActivityForResult(intent, CAPTURE_IMAGE);*/
+                               camorgallery();
 
 
                     }
@@ -567,6 +554,38 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     }
                 }
 
+            }
+        });
+    }
+
+    private void camorgallery(){
+        final Dialog dialog=new Dialog(myaccount.this);
+        dialog.setContentView(R.layout.camorgallery);
+        dialog.show();
+        Button cam=dialog.findViewById(R.id.cam);
+        Button gal=dialog.findViewById(R.id.gal);
+
+        cam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, CAPTURE_IMAGE_FROM_CAM);
+                dialog.dismiss();
+            }
+        });
+
+        gal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.putExtra("crop", "true");
+                intent.putExtra("aspectX", 1);
+                intent.putExtra("aspectY",1);
+                intent.putExtra("outputX", 500);
+                intent.putExtra("outputY",500);
+                intent.putExtra("return-data",true);
+                startActivityForResult(intent, CAPTURE_IMAGE);
+                dialog.dismiss();
             }
         });
     }
@@ -623,27 +642,59 @@ public class myaccount extends AppCompatActivity implements LocationListener {
         if (resultCode == RESULT_OK) {
             if (requestCode == CAPTURE_IMAGE) {
                 filePath = data.getData();
-                performCrop();
             }
         }
 
         if(requestCode == CAPTURE_IMAGE){
             if(resultCode == RESULT_OK){
-                filePath=testuri;
-                Toast.makeText(this, ""+filePath, Toast.LENGTH_SHORT).show();
                 Bundle extras=data.getExtras();
                 Bitmap image=extras.getParcelable("data");
-                profilepic.setImageBitmap(image);
+                //profilepic.setImageBitmap(image);
+
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                image.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                String path = MediaStore.Images.Media.insertImage(this.getContentResolver(), image, "profile", null);
+                Uri newuri=Uri.parse(path);
+                profilepic.setImageURI(newuri);
+                filePath=newuri;
+            }
+        }
+
+        if(resultCode == RESULT_OK){
+            if(requestCode == CAPTURE_IMAGE_FROM_CAM){
+                captureuri = data.getData();
+                performCrop();
+            }
+            else if(requestCode == CROP_PIC){
+                Bundle extras=data.getExtras();
+                Bitmap image=extras.getParcelable("data");
+                //profilepic.setImageBitmap(image);
+
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                image.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                String path = MediaStore.Images.Media.insertImage(this.getContentResolver(), image, "profile", null);
+                Uri newuri=Uri.parse(path);
+                profilepic.setImageURI(newuri);
+                filePath=newuri;
             }
         }
     }
 
     private void performCrop() {
-        // take care of exceptions
-        UCrop.of(filePath, myuri)
-                .withAspectRatio(1, 1)
-                .withMaxResultSize(300, 300)
-                .start(myaccount.this);
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            cropIntent.setDataAndType(captureuri, "image/*");
+            cropIntent.putExtra("crop", "true");
+            cropIntent.putExtra("aspectX",1);
+            cropIntent.putExtra("aspectY",1);
+            cropIntent.putExtra("outputX",500);
+            cropIntent.putExtra("outputY",500);
+            cropIntent.putExtra("return-data",true);
+            startActivityForResult(cropIntent, CROP_PIC);
+        }
+        catch (ActivityNotFoundException e){
+            Toast.makeText(this, "This device doesn't support cropping!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

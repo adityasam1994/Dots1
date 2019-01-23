@@ -32,7 +32,7 @@
                 android:layout_height="30dp"
                 android:layout_gravity="center"
                 android:layout_marginLeft="8dp"
-                android:src="@drawable/iconfinder_back" />
+                android:src="@drawable/ic_arrow_back_real_black_24dp" />
 
             <TextView
                 android:layout_width="0dp"

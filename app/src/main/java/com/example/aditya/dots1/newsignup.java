@@ -218,28 +218,8 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-
-
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                Criteria criteria = new Criteria();
-                criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                String provider = locationManager.getBestProvider(criteria, true);
-                locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
-            }
-            else {
-                requestlocation();
-            }
-        }*/
-
-
-
-
-
         //final ConstraintLayout constraintLayout=(ConstraintLayout)findViewById(R.id.signupcontraint);
-        final float density=getResources().getDisplayMetrics().density;
+        /*final float density=getResources().getDisplayMetrics().density;
         final Drawable fname=getResources().getDrawable(R.drawable.u30);
         final Drawable lname=getResources().getDrawable(R.drawable.u30);
         final Drawable mail=getResources().getDrawable(R.drawable.emailicon);
@@ -267,7 +247,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         etphone.setCompoundDrawables(phone,null,null,null);
 
         home.setBounds(0,0,width,height);
-        etaddress.setCompoundDrawables(home,null,null,null);
+        etaddress.setCompoundDrawables(home,null,null,null);*/
 
         fauth=FirebaseAuth.getInstance();
         dbr= FirebaseDatabase.getInstance().getReference("Users");

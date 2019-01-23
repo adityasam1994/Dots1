@@ -6,11 +6,11 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_account"
-            android:icon="@drawable/iconfinder_accountcircle_326497"
+            android:icon="@drawable/ic_account_circle_real_black_24dp"
             android:title="My Account" />
         <item
             android:id="@+id/nav_orders"
-            android:icon="@drawable/iconfinder_shoppingcart_216477"
+            android:icon="@drawable/ic_shopping_cart_real_black_24dp"
             android:title="My Orders" />
         <!--<item
             android:id="@+id/nav_slideshow"
@@ -22,15 +22,15 @@
             android:title="Notifications" />-->
         <item
             android:id="@+id/nav_policy"
-            android:icon="@drawable/iconfinder_lock__protect__privacy__security_2541992"
+            android:icon="@drawable/ic_security_real_black_24dp"
             android:title="Privacy Policy" />
         <item
             android:id="@+id/nav_report"
-            android:icon="@drawable/iconfinder_report_326685"
+            android:icon="@drawable/ic_report_real_black_24dp"
             android:title="Report a Problem" />
         <item
             android:id="@+id/lout"
-            android:icon="@drawable/iconfinder_icons_exit2_1564506"
+            android:icon="@drawable/ic_power_settings_new_black_24dp"
             android:title="Logout" />
     </group>
 
@@ -38,11 +38,11 @@
         <menu>
             <item
                 android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
+                android:icon="@drawable/ic_share_black_24dp"
                 android:title="Share" />
             <item
                 android:id="@+id/nav_contact"
-                android:icon="@drawable/iconfinder_contact_126567"
+                android:icon="@drawable/ic_email_real_black_24dp"
                 android:title="Contact us" />
         </menu>
     </item>

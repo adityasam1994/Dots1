@@ -67,43 +67,64 @@
                 android:layout_marginTop="8dp"
                 android:orientation="vertical">
 
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_work_black_24dp"
+                        android:layout_marginStart="4dp"/>
                 <Spinner
                     android:id="@+id/spinnerservice"
                     style="@style/Base.Widget.AppCompat.Spinner.Underlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginStart="16dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="#ECECEC" />
+
+                </FrameLayout>
 
                 <EditText
                     android:id="@+id/etage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginBottom="16dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="16dp"
                     android:backgroundTint="#ECECEC"
-                    android:drawableLeft="@drawable/u30"
+                    android:drawableLeft="@drawable/ic_account_circle_black_24dp"
                     android:drawablePadding="10dp"
                     android:ems="10"
                     android:hint="Age"
                     android:inputType="textPersonName"
                     android:textColorHint="#ECECEC" />
 
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_access_time_black_24dp"
+                        android:layout_marginStart="4dp"/>
                 <Spinner
                     android:id="@+id/spinneravil"
                     style="@style/Base.Widget.AppCompat.Spinner.Underlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="8dp"
                     android:backgroundTint="#ECECEC" />
+
+                </FrameLayout>
 
                 <EditText
                     android:id="@+id/etcomment"
@@ -153,7 +174,7 @@
                             android:layout_marginEnd="4dp"
                             android:layout_weight="1"
                             android:backgroundTint="#ECECEC"
-                            android:drawableLeft="@drawable/hom"
+                            android:drawableLeft="@drawable/ic_home_black_24dp"
                             android:drawablePadding="10dp"
                             android:ems="10"
                             android:hint="Location"
@@ -177,7 +198,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginTop="16dp"
                     android:background="@drawable/whiteb"
                     android:text="save"
                     android:textSize="20sp" />

@@ -31,7 +31,7 @@
                 android:layout_height="30dp"
                 android:layout_gravity="center"
                 android:layout_marginLeft="8dp"
-                app:srcCompat="@drawable/iconfinder_back" />
+                app:srcCompat="@drawable/ic_arrow_back_real_black_24dp" />
 
             <TextView
                 android:id="@+id/tvheading"

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,11 +20,13 @@ public class password_reset extends AppCompatActivity {
     EditText etmail;
     Button btnsend;
     ProgressDialog pd;
+    ImageView btnback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_reset);
 
+        btnback=(ImageView)findViewById(R.id.btnback);
         btnsend=(Button)findViewById(R.id.btnsend);
         etmail=(EditText)findViewById(R.id.etmail);
         pd=new ProgressDialog(this);
@@ -49,6 +52,13 @@ public class password_reset extends AppCompatActivity {
                                 }
                             }
                         });
+            }
+        });
+
+        btnback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }

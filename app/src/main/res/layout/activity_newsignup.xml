@@ -59,19 +59,13 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/u30"
+                android:drawableLeft="@drawable/ic_account_circle_black_24dp"
                 android:drawablePadding="20dip"
                 android:ems="10"
                 android:hint="First Name"
                 android:inputType="textPersonName"
                 android:textAlignment="viewStart"
-                android:textColorHint="#EEEDEC"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/profilepic"
-                app:layout_constraintVertical_bias="0.0" />
+                android:textColorHint="#EEEDEC"/>
 
             <EditText
                 android:id="@+id/etlname"
@@ -82,7 +76,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/custom_user_icon"
+                android:drawableLeft="@drawable/ic_account_circle_black_24dp"
                 android:drawablePadding="20dip"
                 android:ems="10"
                 android:hint="Last Name"
@@ -104,17 +98,12 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/custon_mail_icon"
+                android:drawableLeft="@drawable/ic_email_black_24dp"
                 android:drawablePadding="20dp"
                 android:ems="10"
                 android:hint="Email"
                 android:inputType="textEmailAddress"
-                android:textColorHint="#EEEDEC"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etlname"
-                app:layout_constraintVertical_bias="0.0" />
+                android:textColorHint="#EEEDEC" />
 
             <EditText
                 android:id="@+id/etpass"
@@ -125,17 +114,12 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/locki"
+                android:drawableLeft="@drawable/ic_lock_black_24dp"
                 android:drawablePadding="20dp"
                 android:ems="10"
                 android:hint="Password"
                 android:inputType="textPassword"
-                android:textColorHint="#EEEDEC"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etmail"
-                app:layout_constraintVertical_bias="0.0" />
+                android:textColorHint="#EEEDEC" />
 
 
             <EditText
@@ -148,18 +132,13 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:backgroundTint="#EEEDEC"
-                android:drawableLeft="@drawable/locki"
+                android:drawableLeft="@drawable/ic_lock_black_24dp"
                 android:drawablePadding="20dip"
                 android:ems="10"
                 android:hint="Re-Enter Password"
                 android:inputType="textPassword"
                 android:textAlignment="viewStart"
-                android:textColorHint="#EEEDEC"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etpass"
-                app:layout_constraintVertical_bias="0.0" />
+                android:textColorHint="#EEEDEC" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -185,7 +164,7 @@
                     android:layout_marginBottom="1dp"
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="#EEEDEC"
-                    android:drawableLeft="@drawable/phoneicon"
+                    android:drawableLeft="@drawable/ic_phone_black_24dp"
                     android:drawablePadding="20dp"
                     android:ems="10"
                     android:hint=" Phone Number"
@@ -229,7 +208,7 @@
                         android:layout_below="@+id/etphone"
                         android:layout_centerHorizontal="true"
                         android:backgroundTint="#EEEDEC"
-                        android:drawableLeft="@drawable/hom"
+                        android:drawableLeft="@drawable/ic_home_black_24dp"
                         android:drawablePadding="20dp"
                         android:ems="10"
                         android:hint="Address/Current Location"

@@ -31,7 +31,7 @@
                 android:layout_height="30dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                app:srcCompat="@drawable/iconfinder_back"
+                app:srcCompat="@drawable/ic_arrow_back_real_black_24dp"
                 tools:layout_editor_absoluteX="8dp"
                 tools:layout_editor_absoluteY="13dp" />
 
