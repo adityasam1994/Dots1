@@ -88,7 +88,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
     Boolean pickfromlink = false, addressfound=false, addressfound_work=false;
     ProgressDialog pd;
     double lat = 0, lng = 0;
-    Boolean showaddress = false ,showaddress_work=false, number_valid;
+    Boolean showaddress = false ,showaddress_work=false, number_valid=false;
     LocationManager locationManager;
     CountryCodePicker ccp;
     String current_status;
@@ -185,17 +185,29 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     //Toast.makeText(myaccount.this, piclink, Toast.LENGTH_SHORT).show();
                     Picasso.get().load(piclink).resize(200, 200).into(profilepic);
                 }
-                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
-                    current_status="provider";
-                    if(dataSnapshot.hasChild("info")){
-                        String work_address = dataSnapshot.child("info").child("eaddress").getValue().toString();
-                        etaddress_work.setText(work_address);
+                if(dataSnapshot.hasChild("current_status")) {
+                    if (dataSnapshot.child("current_status").getValue().toString().equals("provider")) {
+                        current_status = "provider";
+                        if (dataSnapshot.hasChild("info")) {
+                            String work_address = dataSnapshot.child("info").child("eaddress").getValue().toString();
+                            etaddress_work.setText(work_address);
+                        }
+                    } else {
+                        current_status = "customer";
+                        LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
+                        workaddress_layout.setLayoutParams(para);
                     }
                 }
                 else {
-                    current_status="customer";
-                    LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
-                    workaddress_layout.setLayoutParams(para);
+                    if(dataSnapshot.child("status").getValue().toString().equals("provider")){
+                        String work_address = dataSnapshot.child("info").child("eaddress").getValue().toString();
+                        etaddress_work.setText(work_address);
+                    }
+                    else {
+                        current_status = "customer";
+                        LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
+                        workaddress_layout.setLayoutParams(para);
+                    }
                 }
 
                 etfname.setText(fname);
@@ -407,7 +419,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                 double latitude=0,longitude=0;
                 double latitude_work=0, longitude_work=0;
 
-                if(etaddress.isEnabled() && etaddress.getText().toString().length() >= 5) {
+                if(etaddress.isEnabled()) {
                     Geocoder geocoder=new Geocoder(myaccount.this.getApplicationContext(),Locale.getDefault());
                     List<Address> addresses;
                     try {
@@ -431,7 +443,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     }
                 }
 
-                if(etaddress_work.isEnabled() && etaddress_work.getText().toString().length() >= 5) {
+                if(etaddress_work.isEnabled()) {
                     Geocoder geocoder=new Geocoder(myaccount.this.getApplicationContext(),Locale.getDefault());
                     List<Address> addresses;
                     try {
@@ -455,15 +467,11 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     }
                 }
 
-                if((addressfound == true || !etaddress.isEnabled() || etaddress.getText().toString().length() < 5)
-                        && (addressfound_work == true || !etaddress_work.isEnabled() || etaddress_work.getText().toString().length() < 5)) {
-
                     String fname="", lname="", address="", phone="", address_work="";
                     fname = etfname.getText().toString().trim();
                     lname = etlname.getText().toString().trim();
                     address = etaddress.getText().toString().trim();
                     phone = etphone.getText().toString().trim();
-                    address_work=etaddress_work.getText().toString().trim();
 
                     dbr.child(fauth.getCurrentUser().getUid()).child("fname").setValue(fname);
                     dbr.child(fauth.getCurrentUser().getUid()).child("lname").setValue(lname);
@@ -472,6 +480,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                     dbr.child(fauth.getCurrentUser().getUid()).child("longi").setValue(longitude);
 
                     if(current_status.equals("provider")) {
+                        address_work=etaddress_work.getText().toString().trim();
                         dbr.child(fauth.getCurrentUser().getUid()).child("info").child("eaddress").setValue(address_work);
                         dbr.child(fauth.getCurrentUser().getUid()).child("info").child("lati").setValue(latitude_work);
                         dbr.child(fauth.getCurrentUser().getUid()).child("info").child("longi").setValue(longitude_work);
@@ -490,7 +499,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                             pd.dismiss();
                         }
                         else {
-                            dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").setValue(piclink);
+                            //dbr.child(fauth.getCurrentUser().getUid()).child("profilepic").setValue(piclink);
                             pd.dismiss();
                             Toast.makeText(myaccount.this, "Account updated successfully", Toast.LENGTH_SHORT).show();
                         }
@@ -514,7 +523,6 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                                 });
                     }
 
-                }
             }
         });
 
@@ -543,7 +551,7 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                         requestPermissions(reqStorage, REQ_STORAGE_MY);
                     }
                 }
-                else {
+                else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.P){
                     if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                             && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         CropImage.activity()
@@ -552,6 +560,17 @@ public class myaccount extends AppCompatActivity implements LocationListener {
                                 .setCropShape(CropImageView.CropShape.OVAL)
                                 .start(myaccount.this);
                     }
+                    else {
+                        String[] reqStorage=new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                        requestPermissions(reqStorage, REQ_STORAGE_MY);
+                    }
+                }
+                else if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
+                    CropImage.activity()
+                            .setAspectRatio(1, 1)
+                            .setRequestedSize(500, 500)
+                            .setCropShape(CropImageView.CropShape.OVAL)
+                            .start(myaccount.this);
                 }
 
             }

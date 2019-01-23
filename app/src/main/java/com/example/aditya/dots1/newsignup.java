@@ -299,6 +299,9 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                         requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
                     }
                 }
+                else {
+                    takepicture();
+                }
             }
         });
 

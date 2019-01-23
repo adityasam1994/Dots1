@@ -250,6 +250,9 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
                     }
                 }
+                else {
+                    camvideo();
+                }
             }
         });
 
@@ -283,6 +286,9 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         String[] pemissionRequest=new String[]{Manifest.permission.CAMERA};
                         requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
                     }
+                }
+                else {
+                    camvideo();
                 }
             }
         });
