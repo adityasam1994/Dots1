@@ -241,7 +241,7 @@
                             android:drawablePadding="20dp"
                             android:ems="10"
                             android:hint="Address/Current Location"
-                            android:inputType="textPersonName"
+                            android:inputType="none"
                             android:textColor="#3b3b3b"
                             android:textColorHint="#EEEDEC" />
 

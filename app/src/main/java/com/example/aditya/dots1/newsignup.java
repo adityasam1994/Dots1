@@ -742,30 +742,8 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                 etaddress.setText("Waiting for address");
                         } else {
                             if (addresses.size() > 0 && showaddress==true && etaddress.getText().toString().isEmpty()) {
-                                String fn = addresses.get(0).getFeatureName();
-                                String loc = addresses.get(0).getLocality();
-                                String aa = addresses.get(0).getAdminArea();
-                                String cn = addresses.get(0).getCountryName();
-                                String pc = addresses.get(0).getPostalCode();
-
-                                if (fn == null) {
-                                    fn = "";
-                                }
-                                if (loc == null) {
-                                    loc = "";
-                                }
-                                if (aa == null) {
-                                    aa = "";
-                                }
-                                if (cn == null) {
-                                    cn = "";
-                                }
-                                if (pc == null) {
-                                    pc = "";
-                                }
-
-                                String ad = fn + "," + loc + "," + aa + "," + cn + "," + pc;
-                                etaddress.setText(ad);
+                                String fn = addresses.get(0).getAddressLine(0);
+                                etaddress.setText(fn);
                                 pd.dismiss();
                             }
                         }

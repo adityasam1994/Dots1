@@ -165,7 +165,7 @@
                             android:drawablePadding="8dp"
                             android:ems="10"
                             android:hint="Home Address"
-                            android:inputType="textPersonName"
+                            android:inputType="none"
                             android:paddingLeft="8dp"
                             android:textColorHint="#ECECEC" />
                     </FrameLayout>
@@ -215,7 +215,7 @@
                             android:drawablePadding="8dp"
                             android:ems="10"
                             android:hint="Work Address"
-                            android:inputType="textPersonName"
+                            android:inputType="none"
                             android:paddingLeft="8dp"
                             android:textColorHint="#ECECEC" />
                     </FrameLayout>

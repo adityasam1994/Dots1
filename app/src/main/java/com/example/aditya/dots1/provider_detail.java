@@ -370,11 +370,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                 address.setText("Waiting for address");
             } else {
                 if (addresses.size() > 0 && showaddress==true && address.getText().toString().isEmpty()) {
-                    String ad = addresses.get(0).getFeatureName() + ","
-                            + addresses.get(0).getLocality() + ","
-                            + addresses.get(0).getAdminArea() + ","
-                            + addresses.get(0).getCountryName() + ","
-                            + addresses.get(0).getPostalCode();
+                    String ad = addresses.get(0).getAddressLine(0);
                     address.setText(ad);
                     pd.dismiss();
                 }
