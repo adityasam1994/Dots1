@@ -85,6 +85,7 @@ public class provider_home extends AppCompatActivity
     SharedPreferences sharedPreferences;
     StorageReference strf= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
     ProgressDialog pd;
+    String piclink="", lname;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -209,7 +210,12 @@ public class provider_home extends AppCompatActivity
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 fname=dataSnapshot.child(fauth.getCurrentUser().getUid()).child("fname").getValue().toString();
+                lname=dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("lname").getValue().toString();
                 tvname.setText(fname);
+
+                if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("profilepic")) {
+                    piclink = dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("profilepic").getValue().toString();
+                }
             }
 
             @Override
@@ -218,35 +224,6 @@ public class provider_home extends AppCompatActivity
             }
         });
 
-
-        /*btnascustomer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dbruser.child(fauth.getCurrentUser().getUid()).child("current_status").setValue("customer");
-
-                startActivity(new Intent(provider_home.this, newdrawer.class));
-            }
-        });*/
-
-        /*imgplay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(nformat.equals("video")) {
-                    if (videouri != null) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(videouri, "video/*");
-                        startActivity(Intent.createChooser(intent, "Play Video Using"));
-                    }
-                }
-                if(nformat.equals("image")) {
-                    if (videouri != null) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(videouri, "image/*");
-                        startActivity(Intent.createChooser(intent, "Play Video Using"));
-                    }
-                }
-            }
-        });*/
 
         storageReference.child("images/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).getDownloadUrl()
                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -264,9 +241,16 @@ public class provider_home extends AppCompatActivity
                 TextView mail=(TextView)drawer.findViewById(R.id.tvpmail);
                 ImageView pic=(ImageView)drawer.findViewById(R.id.ivppic);
 
-                name.setText(fname);
+                name.setText(fname+" "+lname);
                 mail.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-                Picasso.get().load(filepath).resize(100,100).into(pic);
+
+                if(!piclink.equals("") && filepath == null)
+                    {
+                        Picasso.get().load(piclink).resize(100, 100).into(pic);
+                    }
+                    if(filepath != null){
+                        Picasso.get().load(filepath).resize(100, 100).into(pic);
+                    }
 
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
                     drawer.closeDrawer(GravityCompat.START);

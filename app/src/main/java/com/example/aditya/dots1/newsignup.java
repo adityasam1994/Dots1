@@ -274,9 +274,6 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         gsign.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                   /* Plus.AccountApi.clearDefaultAccount(googleApiClient);
-                    googleApiClient.disconnect();
-                    googleApiClient.connect();*/
 
                 pd.setMessage("Logging in...");
                 pd.show();
@@ -460,57 +457,49 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                             Intent intent = new Intent(newsignup.this, select.class);
                             startActivity(intent);
 
-                            /*StorageReference sref = storageRef.child("images/"+ FirebaseAuth.getInstance().getCurrentUser().getUid());
-                            Uri file=Uri.parse(photo);
-                            sref.putFile(file);
-
-                            if(filePath != null) {
-                                Uri uri=Uri.parse("android:resource://com.example.aditya.dots1/drawable/camera");
-                                sref.putFile(uri);
-                                ivprofile.setImageURI(uri);
-                            }else {
-                                Uri uri=Uri.parse("android:resource://com.example.aditya.dots1/drawable/cam");
-                                sref.putFile(uri);
-                                ivprofile.setImageURI(uri);
-                            }*/
-
                         }
                         else {
                                 dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        String st=dataSnapshot.child("status").getValue().toString();
-
-                                        if(st.equals("customer")) {
-                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
-                                                }
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, provider_home.class));
-                                                }
-                                            }
-                                            else {
-                                                pd.dismiss();
-                                                startActivity(new Intent(newsignup.this, newdrawer.class));
-                                            }}
-
-                                        if(st.equals("provider")){
-                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
-                                                }
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, provider_home.class));
-                                                }
-                                            }
-
+                                        if (dataSnapshot.hasChild("status")) {
                                             pd.dismiss();
-                                            startActivity(new Intent(newsignup.this, provider_home.class));
+                                            Intent intent = new Intent(newsignup.this, select.class);
+                                            startActivity(intent);
+                                        } else {
+                                            String st = dataSnapshot.child("status").getValue().toString();
+
+                                            if (st.equals("customer")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                    }
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, provider_home.class));
+                                                    }
+                                                } else {
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                }
+                                            }
+
+                                            if (st.equals("provider")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                    }
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, provider_home.class));
+                                                    }
+                                                }
+
+                                                pd.dismiss();
+                                                startActivity(new Intent(newsignup.this, provider_home.class));
+                                            }
                                         }
                                     }
 
@@ -565,38 +554,44 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                                 dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        String st=dataSnapshot.child("status").getValue().toString();
-
-                                        if(st.equals("customer")) {
-                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
-                                                }
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, provider_home.class));
-                                                }
-                                            }
-                                            else {
-                                                pd.dismiss();
-                                                startActivity(new Intent(newsignup.this, newdrawer.class));
-                                            }}
-
-                                        if(st.equals("provider")){
-                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
-                                                }
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newsignup.this, provider_home.class));
-                                                }
-                                            }
-
+                                        if (dataSnapshot.hasChild("status")) {
                                             pd.dismiss();
-                                            startActivity(new Intent(newsignup.this, provider_home.class));
+                                            Intent intent = new Intent(newsignup.this, select.class);
+                                            startActivity(intent);
+                                        } else {
+                                            String st = dataSnapshot.child("status").getValue().toString();
+
+                                            if (st.equals("customer")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                    }
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, provider_home.class));
+                                                    }
+                                                } else {
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                }
+                                            }
+
+                                            if (st.equals("provider")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, newdrawer.class));
+                                                    }
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newsignup.this, provider_home.class));
+                                                    }
+                                                }
+
+                                                pd.dismiss();
+                                                startActivity(new Intent(newsignup.this, provider_home.class));
+                                            }
                                         }
                                     }
 

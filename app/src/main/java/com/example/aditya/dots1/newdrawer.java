@@ -115,12 +115,6 @@ public class newdrawer extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /*mYourService = new testcounterservice();
-        mServiceIntent = new Intent(this, mYourService.getClass());
-        if (!isMyServiceRunning(mYourService.getClass())) {
-            startService(mServiceIntent);
-        }*/
-
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putBoolean("customer_at_home", true);

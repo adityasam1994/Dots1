@@ -73,7 +73,7 @@ public class myorders extends AppCompatActivity {
 
                 for (final DataSnapshot ds : dataSnapshot.getChildren()) {
                     String statu = "Pending";
-
+                    int count = 0;
                     String name = ds.getKey().toString();
                     String serv = ds.child("service").getValue().toString();
 
@@ -88,6 +88,8 @@ public class myorders extends AppCompatActivity {
                         }
                         else {
                             if (l > 15) {
+
+                                count = count+1;
 
                                 if (statu.equals("Rejected")) {
                                     statu = "Pending";
@@ -112,8 +114,6 @@ public class myorders extends AppCompatActivity {
                                     statu = "Completed";
                                     break;
                                 }
-
-
                                 if (st.equals("rejected")) {
                                     statu = "Rejected";
                                 }
@@ -126,6 +126,10 @@ public class myorders extends AppCompatActivity {
                     float px_h= TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
                     );
+
+                    if(count == 0){
+                        statu = "Not Found";
+                    }
 
                     final LinearLayout layout = new LinearLayout(myorders.this);
                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) px_h);

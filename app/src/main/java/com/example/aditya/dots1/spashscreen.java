@@ -33,37 +33,40 @@ public class spashscreen extends Activity {
             dbr.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
-                    if(status.equals("customer")) {
-                        if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
+                    if (!dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("status")) {
+                        Intent intent = new Intent(spashscreen.this, newlogin.class);
+                        startActivity(intent);
+                    } else {
+                        status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
+                        if (status.equals("customer")) {
+                            if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                    startActivity(new Intent(spashscreen.this, newdrawer.class));
+                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                }
+                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                    startActivity(new Intent(spashscreen.this, provider_home.class));
+                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                }
+                            } else {
                                 startActivity(new Intent(spashscreen.this, newdrawer.class));
                                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                             }
-                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
+                        }
+                        if (status.equals("provider")) {
+                            if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                    startActivity(new Intent(spashscreen.this, newdrawer.class));
+                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                }
+                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                    startActivity(new Intent(spashscreen.this, provider_home.class));
+                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                }
+                            } else {
                                 startActivity(new Intent(spashscreen.this, provider_home.class));
                                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                             }
-                        }
-                        else {
-                            startActivity(new Intent(spashscreen.this, newdrawer.class));
-                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                        }
-                    }
-                    if(status.equals("provider")){
-                        if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                startActivity(new Intent(spashscreen.this, newdrawer.class));
-                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                            }
-                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                startActivity(new Intent(spashscreen.this, provider_home.class));
-                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                            }
-                        }
-                        else {
-                            startActivity(new Intent(spashscreen.this, provider_home.class));
-                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                         }
                     }
                 }

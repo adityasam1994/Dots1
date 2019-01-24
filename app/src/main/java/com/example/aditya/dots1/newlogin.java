@@ -32,6 +32,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -163,10 +164,7 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
             public void onClick(View v) {
                 pd.setMessage("Logging in...");
                 pd.show();
-
-                /*Intent signinIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                startActivityForResult(signinIntent, 67);*/
-                //newlogin.getInstance().clearAppData();
+                //FirebaseAuth.getInstance().signOut();
                 Intent signInIntent = mGoogleSignInClient.getSignInIntent();
                 startActivityForResult(signInIntent, RC_SIGN_IN);
             }
@@ -242,38 +240,44 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
                                 dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        String st=dataSnapshot.child("status").getValue().toString();
-
-                                        if(st.equals("customer")) {
-                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
-                                                }
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newlogin.this, provider_home.class));
-                                                }
-                                            }
-                                            else {
-                                                pd.dismiss();
-                                                startActivity(new Intent(newlogin.this, newdrawer.class));
-                                            }}
-
-                                        if(st.equals("provider")){
-                                            if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
-                                                }
-                                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                                    pd.dismiss();
-                                                    startActivity(new Intent(newlogin.this, provider_home.class));
-                                                }
-                                            }
-
+                                        if (!dataSnapshot.hasChild("status")) {
                                             pd.dismiss();
-                                            startActivity(new Intent(newlogin.this, provider_home.class));
+                                            Intent intent = new Intent(newlogin.this, select.class);
+                                            startActivity(intent);
+                                        } else {
+                                            String st = dataSnapshot.child("status").getValue().toString();
+
+                                            if (st.equals("customer")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                    }
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newlogin.this, provider_home.class));
+                                                    }
+                                                } else {
+                                                    pd.dismiss();
+                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                }
+                                            }
+
+                                            if (st.equals("provider")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                    }
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                                        pd.dismiss();
+                                                        startActivity(new Intent(newlogin.this, provider_home.class));
+                                                    }
+                                                }
+
+                                                pd.dismiss();
+                                                startActivity(new Intent(newlogin.this, provider_home.class));
+                                            }
                                         }
                                     }
 
@@ -361,38 +365,45 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
                     dbr.child(fauth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            String st=dataSnapshot.child("status").getValue().toString();
-
-                            if(st.equals("customer")) {
-                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                    if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                        pd.dismiss();
-                                        startActivity(new Intent(newlogin.this, newdrawer.class));
-                                    }
-                                    if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                        pd.dismiss();
-                                        startActivity(new Intent(newlogin.this, provider_home.class));
-                                    }
-                                }
-                                else {
-                                    pd.dismiss();
-                                    startActivity(new Intent(newlogin.this, newdrawer.class));
-                                }}
-
-                            if(st.equals("provider")){
-                                if(dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")){
-                                    if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")){
-                                        pd.dismiss();
-                                        startActivity(new Intent(newlogin.this, newdrawer.class));
-                                    }
-                                    if(dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")){
-                                        pd.dismiss();
-                                        startActivity(new Intent(newlogin.this, provider_home.class));
-                                    }
-                                }
-
+                            if (!dataSnapshot.hasChild("status")) {
                                 pd.dismiss();
-                                startActivity(new Intent(newlogin.this, provider_home.class));
+                                Intent intent = new Intent(newlogin.this, select.class);
+                                startActivity(intent);
+                            } else {
+
+                                String st = dataSnapshot.child("status").getValue().toString();
+
+                                if (st.equals("customer")) {
+                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                        if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                            pd.dismiss();
+                                            startActivity(new Intent(newlogin.this, newdrawer.class));
+                                        }
+                                        if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                            pd.dismiss();
+                                            startActivity(new Intent(newlogin.this, provider_home.class));
+                                        }
+                                    } else {
+                                        pd.dismiss();
+                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                    }
+                                }
+
+                                if (st.equals("provider")) {
+                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                        if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
+                                            pd.dismiss();
+                                            startActivity(new Intent(newlogin.this, newdrawer.class));
+                                        }
+                                        if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
+                                            pd.dismiss();
+                                            startActivity(new Intent(newlogin.this, provider_home.class));
+                                        }
+                                    }
+
+                                    pd.dismiss();
+                                    startActivity(new Intent(newlogin.this, provider_home.class));
+                                }
                             }
                         }
 
@@ -408,7 +419,6 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
                 Toast.makeText(newlogin.this,"Login Failed",Toast.LENGTH_SHORT).show();
             }
 
-            // ...
         }
     });
 }
@@ -432,40 +442,44 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
                                 dbr.addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
-                                        if(status.equals("customer")) {
-                                            if(dataSnapshot.hasChild("current_status")){
-                                                if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
+                                        if (!dataSnapshot.hasChild("status")) {
+                                            pd.dismiss();
+                                            Intent intent = new Intent(newlogin.this, select.class);
+                                            startActivity(intent);
+                                        } else {
+                                            status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
+                                            if (status.equals("customer")) {
+                                                if (dataSnapshot.hasChild("current_status")) {
+                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("customer")) {
+                                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                                    }
+                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("provider")) {
+                                                        startActivity(new Intent(newlogin.this, provider_home.class));
+                                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                                    }
+                                                } else {
                                                     startActivity(new Intent(newlogin.this, newdrawer.class));
                                                     overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                 }
-                                                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
+                                            }
+                                            if (status.equals("provider")) {
+                                                if (dataSnapshot.hasChild("current_status")) {
+                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("customer")) {
+                                                        startActivity(new Intent(newlogin.this, newdrawer.class));
+                                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                                    }
+                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("provider")) {
+                                                        startActivity(new Intent(newlogin.this, provider_home.class));
+                                                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                                    }
+                                                } else {
                                                     startActivity(new Intent(newlogin.this, provider_home.class));
                                                     overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                 }
                                             }
-                                            else {
-                                                startActivity(new Intent(newlogin.this, newdrawer.class));
-                                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                                            }
-                                        }
-                                        if(status.equals("provider")){
-                                            if(dataSnapshot.hasChild("current_status")){
-                                                if(dataSnapshot.child("current_status").getValue().toString().equals("customer")){
-                                                    startActivity(new Intent(newlogin.this, newdrawer.class));
-                                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                                                }
-                                                if(dataSnapshot.child("current_status").getValue().toString().equals("provider")){
-                                                    startActivity(new Intent(newlogin.this, provider_home.class));
-                                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                                                }
-                                            }
-                                            else {
-                                                startActivity(new Intent(newlogin.this, provider_home.class));
-                                                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                                            }
-                                        }
 
+                                        }
                                     }
 
                                     @Override

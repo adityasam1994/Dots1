@@ -133,34 +133,36 @@ public class customer_notification_service extends Service {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 uids=null;
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    if(ds.child("status").getValue().toString().equals("provider")){
-                        if(ds.child("info").child("eservice").getValue().toString().equals(tvservice)) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if (ds.hasChild("status")) {
+                        if (ds.child("status").getValue().toString().equals("provider")) {
+                            if (ds.child("info").child("eservice").getValue().toString().equals(tvservice)) {
 
-                            Set<String> taskset = sprefappopen.getStringSet("rej", new HashSet<String>());
-                            List<String> tasklist = new ArrayList<>(taskset);
+                                Set<String> taskset = sprefappopen.getStringSet("rej", new HashSet<String>());
+                                List<String> tasklist = new ArrayList<>(taskset);
 
-                            if (!tasklist.contains(ds.getKey().toString())) {
+                                if (!tasklist.contains(ds.getKey().toString())) {
 
-                                plat = (double) ds.child("info").child("lati").getValue();
-                                plng = (double) ds.child("info").child("longi").getValue();
+                                    plat = (double) ds.child("info").child("lati").getValue();
+                                    plng = (double) ds.child("info").child("longi").getValue();
 
-                                double clat = lati;
-                                double clng = longi;
+                                    double clat = lati;
+                                    double clng = longi;
 
-                                Location locc = new Location("");
-                                locc.setLatitude(clat);
-                                locc.setLongitude(clng);
+                                    Location locc = new Location("");
+                                    locc.setLatitude(clat);
+                                    locc.setLongitude(clng);
 
-                                Location locp = new Location("");
-                                locp.setLatitude(plat);
-                                locp.setLongitude(plng);
+                                    Location locp = new Location("");
+                                    locp.setLatitude(plat);
+                                    locp.setLongitude(plng);
 
-                                double dist = locc.distanceTo(locp);
+                                    double dist = locc.distanceTo(locp);
 
-                                if (dist < distance) {
-                                    distance = dist;
-                                    uids = ds.getKey().toString();
+                                    if (dist < distance) {
+                                        distance = dist;
+                                        uids = ds.getKey().toString();
+                                    }
                                 }
                             }
                         }
@@ -224,7 +226,6 @@ public class customer_notification_service extends Service {
                             intent.putExtra("dist","Not found");
                             intent.putExtra("lat", 0);
                             intent.putExtra("lng", 0);
-                            dbrorder.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("provider_found").setValue("false");
                         }
                         sendBroadcast(intent);
                     }

@@ -449,7 +449,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     else {
                         if(addressfound || !address.isEnabled()){
                         //Toast.makeText(neworder.this, "okay"+addressfound, Toast.LENGTH_SHORT).show();
-                        generatecode();
+                        //generatecode();
                         generatecodeforqr();
                         String ids=code;
                         String uri=filePath.toString();
@@ -563,7 +563,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 format="image";
-
+                generatecode();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                             && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -574,8 +574,9 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         if (!dir.exists()) {
                             dir.mkdirs();
                         }
+                        String picname=code+".jpg";
 
-                        File file = new File(dir, "mypic.jpg");
+                        File file = new File(dir, picname);
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                         outputfileuri=FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID+ ".provider", file);
                         //outputfileuri = Uri.fromFile(dir);
@@ -591,16 +592,17 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 }
 
                 else {
-                    String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/mypic.jpg";
+                    String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/";
                     File dir = new File(storagedir);
                     if (!dir.exists()) {
                         dir.mkdirs();
                     }
+                    String picname=code+".jpg";
 
-                    File file = new File(dir, "mypic.jpg");
+                    File file = new File(dir, picname);
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-                    outputfileuri = Uri.fromFile(dir);
+                    outputfileuri = Uri.fromFile(file);
 
 
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
@@ -631,11 +633,11 @@ public class neworder extends AppCompatActivity implements LocationListener {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         filePath=outputfileuri;
-        if(requestCode == Takepic && resultCode == RESULT_OK){
+        if(requestCode == Takepic && resultCode == RESULT_OK) {
 
-            Bitmap bitmap=null;
+            Bitmap bitmap = null;
             try {
-                bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -643,53 +645,58 @@ public class neworder extends AppCompatActivity implements LocationListener {
             btnimage.setVisibility(View.VISIBLE);
 
             //Bitmap bitmap=(Bitmap)data.getExtras().get("data");
-            int w=bitmap.getWidth();
-            int h=bitmap.getHeight();
-            int neww=w/2;
-            int newh=h/2;
+            int w = bitmap.getWidth();
+            int h = bitmap.getHeight();
+            int neww = w / 2;
+            int newh = h / 2;
 
-            if(h>w){
-                Matrix matrix=new Matrix();
+            if (h > w) {
+                Matrix matrix = new Matrix();
                 matrix.postRotate(90);
-                Bitmap news=Bitmap.createBitmap(bitmap,0,0,w,h,matrix,true);
+                Bitmap news = Bitmap.createBitmap(bitmap, 0, 0, w, h, matrix, true);
                 btnimage.setImageBitmap(news);
-            }else {
+            } else {
                 btnimage.setImageBitmap(bitmap);
             }
 
             btnimage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             btnplay.setVisibility(View.VISIBLE);
-            cam_or_vid="cam";
+            cam_or_vid = "cam";
 
-            ByteArrayOutputStream stream=new ByteArrayOutputStream();
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
 
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 50,stream);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-            byte[] byteArray = stream.toByteArray();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
 
-            Bitmap compressedBitmap=BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+                byte[] byteArray = stream.toByteArray();
 
-            String mpath=Environment.getExternalStorageDirectory().getAbsolutePath();
-            File dir=new File(mpath+"/Dot/");
-            if(!dir.exists()) {
-                dir.mkdirs();
+                Bitmap compressedBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+                String mpath = Environment.getExternalStorageDirectory().getAbsolutePath();
+                File dir = new File(mpath + "/Dot/");
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                String cpname = code + "_.jpg";
+
+                File file = new File(dir, cpname);
+
+                Uri ptp = FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID + ".provider", file);
+                OutputStream out = null;
+                try {
+                    out = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
+                    out.flush();
+                    out.close();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                filePath = Uri.fromFile(file);
             }
-
-            File file=new File(dir, "mycompressedpic.jpg");
-
-            OutputStream out=null;
-            try {
-                out=new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
-                out.flush();
-                out.close();
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            filePath=Uri.fromFile(file);
         }
 
 
