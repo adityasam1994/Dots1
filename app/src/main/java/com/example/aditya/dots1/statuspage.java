@@ -27,11 +27,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -265,13 +267,9 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
                                 spref.edit().putLong("StartTime", SystemClock.uptimeMillis()).commit();
                                 spref.edit().putBoolean("accepted", false).commit();
                                 spref.edit().putBoolean("cancelled", false).commit();
+                                spref.edit().putBoolean("provider_at_home", false).commit();
 
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    startForegroundService(mServiceIntent );
-                                }
-                                else {
-                                    startService(mServiceIntent);
-                                }
+                                startService(mServiceIntent);
                             }
                         })
                 .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -318,8 +316,11 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback{
         MarkerOptions markerOptions=new MarkerOptions();
         markerOptions.position(currentlocation);
         markerOptions.title("I'm here");
+        //markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.location_icon_small));
+        //markerOptions.draggable(true);
         gmap.addMarker(markerOptions);
         gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
 
         /*LatLngBounds.Builder builder=new LatLngBounds.Builder();
         builder.include(mk2.getPosition());

@@ -31,6 +31,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,7 +50,7 @@ import java.util.Locale;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class provider_detail extends AppCompatActivity implements LocationListener {
+public class provider_detail extends AppCompatActivity /*implements LocationListener */{
 
     public static final int REQUEST_LOC_DET = 2834;
     Spinner service, avilable;
@@ -61,12 +63,15 @@ public class provider_detail extends AppCompatActivity implements LocationListen
     LocationManager locationManager;
     double lat, lng;
     Boolean showaddress=false, addressfound=false;
+    FusedLocationProviderClient fusedLocationProviderClient;
     DatabaseReference dbrservice = FirebaseDatabase.getInstance().getReference("services");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_provider_detail);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         btneditaddress=(Button)findViewById(R.id.btneditaddress);
         btngetloc = (Button) findViewById(R.id.btngetloc);
@@ -284,10 +289,10 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            Criteria criteria = new Criteria();
+                            /*Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
+                            locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);*/
 
                             address.setText("");
                             showaddress=true;
@@ -295,16 +300,17 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                             btneditaddress.setVisibility(View.VISIBLE);
                             pd.setMessage("Fetching Location...");
                             pd.show();
+                            getloc();
                         }
                         else {
                             requestlocation();
                         }
                     }
                     else {
-                        Criteria criteria = new Criteria();
+                        /*Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
+                        locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);*/
 
                         address.setText("");
                         showaddress=true;
@@ -312,6 +318,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                         btneditaddress.setVisibility(View.VISIBLE);
                         pd.setMessage("Fetching Location...");
                         pd.show();
+                        getloc();
                     }
 
                 }
@@ -335,10 +342,10 @@ public class provider_detail extends AppCompatActivity implements LocationListen
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode == REQUEST_LOC_DET){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Criteria criteria = new Criteria();
+                /*Criteria criteria = new Criteria();
                 criteria.setAccuracy(Criteria.ACCURACY_FINE);
                 String provider = locationManager.getBestProvider(criteria, true);
-                locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
+                locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);*/
 
                 address.setText("");
                 showaddress=true;
@@ -346,6 +353,7 @@ public class provider_detail extends AppCompatActivity implements LocationListen
                 btneditaddress.setVisibility(View.VISIBLE);
                 pd.setMessage("Fetching Location...");
                 pd.show();
+                getloc();
             }
             else {
                 Toast.makeText(this, "Location permission is required", Toast.LENGTH_SHORT).show();
@@ -359,7 +367,33 @@ public class provider_detail extends AppCompatActivity implements LocationListen
         }
     }
 
-    @Override
+    @SuppressLint("MissingPermission")
+    private void getloc(){
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                lat=location.getLatitude();
+                lng=location.getLongitude();
+                Geocoder geo = new Geocoder(provider_detail.this.getApplicationContext(), Locale.getDefault());
+                try {
+                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses.isEmpty()) {
+                        address.setText("Waiting for address");
+                    } else {
+                        if (addresses.size() > 0 && showaddress==true && address.getText().toString().isEmpty()) {
+                            String ad = addresses.get(0).getAddressLine(0);
+                            address.setText(ad);
+                            pd.dismiss();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+   /* @Override
     public void onLocationChanged(Location location) {
         lat=location.getLatitude();
         lng=location.getLongitude();
@@ -393,6 +427,6 @@ public class provider_detail extends AppCompatActivity implements LocationListen
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "Location provider is diasabled!", Toast.LENGTH_SHORT).show();
-    }
+    }*/
 }
 

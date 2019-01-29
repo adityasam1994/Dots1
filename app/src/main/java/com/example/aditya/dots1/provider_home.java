@@ -316,11 +316,16 @@ public class provider_home extends AppCompatActivity
         getdirection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String uri="http://maps.google.com/maps?daddr="+
+                /*String uri="http://maps.google.com/maps?daddr="+
                         nlat+","+nlng+"("+"Customer"+")";
                 Intent intent=new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 intent.setPackage("com.google.android.apps.maps");
-                startActivity(intent);
+                startActivity(intent);*/
+
+                Uri intenturi = Uri.parse("google.navigation:q=" + nlat +"," + nlng);
+                Intent mapintent = new Intent(Intent.ACTION_VIEW, intenturi);
+                mapintent.setPackage("com.google.android.apps.maps");
+                startActivity(mapintent);
             }
         });
     }

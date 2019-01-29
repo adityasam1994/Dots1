@@ -121,7 +121,7 @@ public class myorders extends AppCompatActivity {
                         }
                     }
 
-                    float dip_h=35f;
+                    float dip_h=50f;
                     Resources r=getResources();
                     float px_h= TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()

@@ -65,20 +65,21 @@ public class testsevice extends Service {
         sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
         spref=getSharedPreferences("notification", Context.MODE_PRIVATE);
 
-        message="Looking for new orders";
+       /* message="Looking for new orders";
 
-        final Intent intent1 = new Intent(testsevice.this, provider_home.class);
-        final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.iconfinder_notification)
-                .setContentTitle("New Order")
-                .setContentText(message)
-                .setContentIntent(pendingIntent)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                .setVibrate(new long[]{0L})
-                .build();
+            final Intent intent1 = new Intent(testsevice.this, provider_home.class);
+            final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+            Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.iconfinder_notification)
+                    .setContentTitle("New Order")
+                    .setContentText(message)
+                    .setContentIntent(pendingIntent)
+                    .setVibrate(new long[]{0})
+                    .build();
 
-        startForeground(1, builder);
+            startForeground(1, builder);
+            spref.edit().putString("text",message).commit();*/
+
 
         StartTime= SystemClock.uptimeMillis();
 
@@ -125,29 +126,43 @@ public class testsevice extends Service {
                 if(ordercount == 1){
                     message="You have an order from "+fname;
                 }
-                if(ordercount == 0){
+                else if(ordercount == 0){
                     message="Looking for new orders";
                 }
                 else {
                     message="You have "+ordercount+" new order";
                 }
-                //Boolean appopen = sharedPreferences.getBoolean("provider_at_home", false);
+                Boolean appopen = sharedPreferences.getBoolean("provider_at_home", false);
 
                 if(!spref.getString("text","").equals(message)) {
-                    final Intent intent1 = new Intent(testsevice.this, provider_home.class);
-                    final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
-                    Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
-                            .setSmallIcon(R.drawable.iconfinder_notification)
-                            .setContentTitle("New Order")
-                            .setContentText(message)
-                            .setContentIntent(pendingIntent)
-                            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                            .build();
-
-                    startForeground(1, builder);
-                    spref.edit().putString("text", message).commit();
+                    if(message.equals("Looking for new orders")) {
+                        final Intent intent1 = new Intent(testsevice.this, provider_home.class);
+                        final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+                        Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
+                                .setSmallIcon(R.drawable.iconfinder_notification)
+                                .setContentTitle("New Order")
+                                .setContentText(message)
+                                .setContentIntent(pendingIntent)
+                                .setVibrate(new long[]{0})
+                                .build();
+                        startForeground(1, builder);
+                        spref.edit().putString("text", message).commit();
+                    }
+                    else {
+                        final Intent intent1 = new Intent(testsevice.this, provider_home.class);
+                        final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+                        Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
+                                .setSmallIcon(R.drawable.iconfinder_notification)
+                                .setContentTitle("New Order")
+                                .setContentText(message)
+                                .setContentIntent(pendingIntent)
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .build();
+                        startForeground(1, builder);
+                        spref.edit().putString("text", message).commit();
+                    }
                 }
-                else {
+                /*else {
                     final Intent intent1 = new Intent(testsevice.this, provider_home.class);
                     final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
                     Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
@@ -159,7 +174,7 @@ public class testsevice extends Service {
                             .build();
 
                     startForeground(1, builder);
-                }
+                }*/
             }
 
             @Override

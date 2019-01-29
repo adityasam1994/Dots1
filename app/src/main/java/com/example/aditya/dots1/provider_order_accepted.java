@@ -1,8 +1,11 @@
 package com.example.aditya.dots1;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,15 +39,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.example.aditya.dots1.order_accepted.REQUEST_CALL_PERMISSION;
+
 public class provider_order_accepted extends AppCompatActivity {
 
-    String path, secretcode, nformat,code;
-    TextView tvservice,tvservicetype, tvtime, tvcode, tvuserdetail, tvcomment, tvid, tvname, etcode;
+    String path, secretcode, nformat,code, phone;
+    TextView tvservice,tvservicetype, tvtime, tvcode, tvuserdetail, tvcomment, tvid, tvname, etcode, txtphone;
     ImageView imgplay, getdiection, btnback, btnplaynow;
     double lat, lng;
     Uri videouri;
     ProgressDialog pd;
-    Button btnstart,scanqr;
+    Button btnstart,scanqr, btncall;
     DatabaseReference dbruser=FirebaseDatabase.getInstance().getReference("Users");
     DatabaseReference dbr= FirebaseDatabase.getInstance().getReference("Orders");
     StorageReference strf= FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -53,6 +58,8 @@ public class provider_order_accepted extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_provider_order_accepted);
 
+        btncall=(Button)findViewById(R.id.btncall);
+        txtphone=(TextView)findViewById(R.id.txtphone);
         btnplaynow=(ImageView)findViewById(R.id.imgplaynow);
         pd=new ProgressDialog(this);
         etcode=(EditText)findViewById(R.id.etcode);
@@ -82,6 +89,21 @@ public class provider_order_accepted extends AppCompatActivity {
         });
 
         path=getIntent().getExtras().getString("path");
+
+        String uid=path.split("/")[0];
+
+        dbruser.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String ph=dataSnapshot.child("ph").getValue().toString();
+                txtphone.setText(ph);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         dbr.child(path).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -269,11 +291,15 @@ public class provider_order_accepted extends AppCompatActivity {
         getdiection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String uri="http://maps.google.com/maps?daddr="+
+                /*String uri="http://maps.google.com/maps?daddr="+
                         lat+","+lng+"("+"Customer"+")";
                 Intent intent=new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 intent.setPackage("com.google.android.apps.maps");
-                startActivity(intent);
+                startActivity(intent);*/
+                Uri intenturi = Uri.parse("google.navigation:q=" + lat +"," +lng);
+                Intent mapintent = new Intent(Intent.ACTION_VIEW, intenturi);
+                mapintent.setPackage("com.google.android.apps.maps");
+                startActivity(mapintent);
             }
         });
 
@@ -310,6 +336,40 @@ public class provider_order_accepted extends AppCompatActivity {
                 }
             }
         });
+
+        btncall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Intent.ACTION_CALL);
+                intent.setData(Uri.parse("tel:"+txtphone.getText().toString().trim()));
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if(checkSelfPermission(android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+                        startActivity(intent);
+                    }
+                    else {
+                        String[] requestcall={Manifest.permission.CALL_PHONE};
+                        requestPermissions(requestcall, REQUEST_CALL_PERMISSION);
+                    }
+                }
+                else {
+                    startActivity(intent);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CALL_PERMISSION){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Now you can call", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(this, "Call permission is required to make calls", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override

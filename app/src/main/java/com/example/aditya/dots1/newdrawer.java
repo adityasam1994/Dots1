@@ -14,6 +14,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -39,9 +40,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -94,12 +98,15 @@ public class newdrawer extends AppCompatActivity
     DatabaseReference dbr;
     DatabaseReference dbrorder=FirebaseDatabase.getInstance().getReference("Orders");
     DatabaseReference dbrservices=FirebaseDatabase.getInstance().getReference("services");
+    DatabaseReference dbruser = FirebaseDatabase.getInstance().getReference("Users");
     TextView tv;
     SharedPreferences sharedPreferences;
     Boolean fbpic=false;
     FirebaseStorage storage=FirebaseStorage.getInstance();
     StorageReference storageReference=storage.getReferenceFromUrl("gs://dots-195d9.appspot.com");
     Button lines;
+    double u_lat, u_lng;
+    TextView txtdistance;
 
     Intent mServiceIntent;
     private testcounterservice mYourService;
@@ -122,14 +129,10 @@ public class newdrawer extends AppCompatActivity
 
         servicelist=(LinearLayout)findViewById(R.id.service_layout);
         lines=(Button)findViewById(R.id.btnmenu);
-        //btnasprovider=(Button)findViewById(R.id.btnasprovider);
 
         dbr= FirebaseDatabase.getInstance().getReference("Users");
         tv=(TextView)findViewById(R.id.tv);
 
-        /*Intent in=new Intent(newdrawer.this, customer_notification_service.class);
-        startService(in);
-*/
         FirebaseUser currentuser=FirebaseAuth.getInstance().getCurrentUser();
         email=currentuser.getEmail();
 
@@ -157,55 +160,121 @@ public class newdrawer extends AppCompatActivity
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (final DataSnapshot ds:dataSnapshot.getChildren()){
 
-                    float dip_mt=8f;
-                    Resources r=getResources();
-                    float px_mt= TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP, dip_mt, r.getDisplayMetrics()
-                    );
-
-                    float dip_pl=20f;
-                    float px_pl= TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP, dip_pl, r.getDisplayMetrics()
-                    );
-
-                    float dip_h=35f;
-                    float px_h= TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
-                    );
-
-                    float dip_ts=10f;
-                    float px_ts= TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP, dip_ts, r.getDisplayMetrics()
-                    );
-
-                    final LinearLayout layout = new LinearLayout(newdrawer.this);
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) px_h);
-                    params.setMargins(0, (int) px_mt, 0, 0);
-                    layout.setLayoutParams(params);
-                    layout.setOrientation(LinearLayout.HORIZONTAL);
-                    layout.setBackground(ContextCompat.getDrawable(newdrawer.this, R.drawable.t_stripe));
-
-                    Button mybutton=new Button(newdrawer.this);
-                    mybutton.setText(ds.getKey().toString());
-                    mybutton.setTextSize(px_ts);
-                    mybutton.setTypeface(null, Typeface.BOLD);
-                    mybutton.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-                    LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-                    mybutton.setLayoutParams(para);
-                    mybutton.setPadding((int) px_pl,0,0,0);
-                    mybutton.setBackground(ContextCompat.getDrawable(newdrawer.this, R.color.zxing_transparent));
-
-                    layout.addView(mybutton);
-                    servicelist.addView(layout);
-
-
-                    mybutton.setOnClickListener(new View.OnClickListener() {
+                    final double[] distance = {50000};
+                    final int[] count = {0};
+                    dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onClick(View v) {
-                            Intent intent=new Intent(newdrawer.this,neworder.class);
-                            intent.putExtra("service",ds.getKey().toString());
-                            startActivity(intent);
-                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("lati")) {
+                                u_lat = (double) dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("lati").getValue();
+                            }
+                            if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("lati")) {
+                                u_lng = (double) dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("longi").getValue();
+                            }
+                            for(DataSnapshot d : dataSnapshot.getChildren()) {
+                                if (d.hasChild("status")) {
+                                    if (d.child("status").getValue().toString().equals("provider")) {
+                                        if (d.child("info").child("eservice").getValue().toString().equals(ds.getKey().toString())) {
+
+                                            count[0] = count[0] + 1;
+
+                                            double p_lat = (double) d.child("info").child("lati").getValue();
+                                            double p_lng = (double) d.child("info").child("longi").getValue();
+
+                                            Location locc = new Location("");
+                                            locc.setLatitude(u_lat);
+                                            locc.setLongitude(u_lng);
+
+                                            Location locp = new Location("");
+                                            locp.setLatitude(p_lat);
+                                            locp.setLongitude(p_lng);
+
+                                            double dist = (double) locc.distanceTo(locp);
+
+                                            if (dist < distance[0]) {
+                                                distance[0] = dist;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            float dip_mt=8f;
+                            Resources r=getResources();
+                            float px_mt= TypedValue.applyDimension(
+                                    TypedValue.COMPLEX_UNIT_DIP, dip_mt, r.getDisplayMetrics()
+                            );
+
+                            float dip_pl=20f;
+                            float px_pl= TypedValue.applyDimension(
+                                    TypedValue.COMPLEX_UNIT_DIP, dip_pl, r.getDisplayMetrics()
+                            );
+
+                            float dip_h=35f;
+                            float px_h= TypedValue.applyDimension(
+                                    TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
+                            );
+
+                            float dip_ts=10f;
+                            float px_ts= TypedValue.applyDimension(
+                                    TypedValue.COMPLEX_UNIT_DIP, dip_ts, r.getDisplayMetrics()
+                            );
+
+                            double diss = distance[0] / 1000;
+                            diss = diss * 100;
+                            diss = Math.round(diss);
+                            diss = diss / 100;
+
+                            if(diss < 50.0){
+                                txtdistance = new TextView(newdrawer.this);
+                                txtdistance.setText("("+diss+" Km"+")");
+                                txtdistance.setTextSize(14);
+                                txtdistance.setPadding(0,0,14,0);
+                                txtdistance.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+                            }
+                            else {
+                                txtdistance = new TextView(newdrawer.this);
+                                txtdistance.setText("Not Available");
+                                txtdistance.setTextSize(14);
+                                txtdistance.setPadding(0,0,14,0);
+                                txtdistance.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+                            }
+
+                            final LinearLayout layout = new LinearLayout(newdrawer.this);
+                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) px_h);
+                            params.setMargins(0, (int) px_mt, 0, 0);
+                            layout.setLayoutParams(params);
+                            layout.setOrientation(LinearLayout.HORIZONTAL);
+                            layout.setBackground(ContextCompat.getDrawable(newdrawer.this, R.drawable.t_stripe));
+
+                            Button mybutton=new Button(newdrawer.this);
+                            mybutton.setText(ds.getKey().toString());
+                            mybutton.setTextSize(18);
+                            mybutton.setTypeface(null, Typeface.BOLD);
+                            mybutton.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
+                            LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT,1);
+                            mybutton.setLayoutParams(para);
+                            mybutton.setPadding((int) px_pl,0,0,0);
+                            mybutton.setBackground(ContextCompat.getDrawable(newdrawer.this, R.color.zxing_transparent));
+
+                            layout.addView(mybutton);
+                            layout.addView(txtdistance);
+                            servicelist.addView(layout);
+
+                            mybutton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Intent intent=new Intent(newdrawer.this,neworder.class);
+                                    intent.putExtra("service",ds.getKey().toString());
+                                    startActivity(intent);
+                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
                     });
                 }

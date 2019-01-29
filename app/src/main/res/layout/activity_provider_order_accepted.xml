@@ -175,6 +175,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
                         android:orientation="horizontal">
 
                         <LinearLayout
@@ -188,23 +189,38 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="10dp"
                                 android:layout_marginTop="20dp"
-                                android:text="Caution"
+                                android:text="Contact Number"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
 
-                            <TextView
+                            <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="10dp"
-                                android:layout_marginLeft="20dp"
-                                android:layout_marginTop="5dp"
-                                android:text="Caution" />
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/txtphone"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginLeft="20dp"
+                                    android:layout_marginRight="8dp"
+                                    android:text="Phone" />
+
+                                <Button
+                                    android:id="@+id/btncall"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:layout_marginEnd="20dp"
+                                    android:background="@drawable/phone_blue"/>
+                            </LinearLayout>
                         </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:background="@drawable/commentborder"
                             android:layout_weight="1">
 
                             <ImageView
@@ -212,26 +228,32 @@
                                 android:layout_width="60dp"
                                 android:layout_height="60dp"
                                 android:layout_weight="1"
+                                android:layout_marginTop="2dp"
+                                android:layout_marginBottom="2dp"
                                 android:layout_marginRight="4dp"
+                                android:layout_marginLeft="4dp"
                                 android:src="@drawable/iconfinder_marker" />
 
                             <FrameLayout
                                 android:layout_width="60dp"
                                 android:layout_height="60dp"
+                                android:layout_marginTop="2dp"
+                                android:layout_marginBottom="2dp"
+                                android:layout_marginRight="4dp"
                                 android:layout_weight="1">
 
                                 <ImageView
                                     android:id="@+id/imgplaynow"
-                                    android:layout_width="60dp"
-                                    android:layout_height="60dp"
-                                    android:src="@drawable/play"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/iconfinder_play_new"
                                     android:visibility="invisible" />
 
                                 <ImageView
                                     android:id="@+id/imgplay"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:src="@drawable/iconfinder_download"/>
+                                    android:src="@drawable/iconfinder_download" />
 
                             </FrameLayout>
                         </LinearLayout>

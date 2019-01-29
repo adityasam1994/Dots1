@@ -58,6 +58,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.hbb20.CountryCodePicker;
+import com.soundcloud.android.crop.Crop;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -77,7 +78,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class myaccount extends AppCompatActivity implements LocationListener{
+public class myaccount extends AppCompatActivity/* implements LocationListener*/{
 
     public static final int REQUEST_LOC = 67564;
     private static final int REQ_STORAGE_WRITE_MY = 796786;
@@ -102,13 +103,16 @@ public class myaccount extends AppCompatActivity implements LocationListener{
     LocationManager locationManager;
     CountryCodePicker ccp;
     String current_status;
-    Uri captureuri;
+    Uri captureuri, inputuri;
+    GoogleApiClient googleApiClient;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.myaccount);
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         ccp = (CountryCodePicker) findViewById(R.id.code_picker);
         workaddress_layout = (LinearLayout) findViewById(R.id.linearLayout_work);
         changeaddress = (Button) findViewById(R.id.btnchangeadd);
@@ -252,10 +256,10 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            Criteria criteria = new Criteria();
+                            /*Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
 
 
                             showaddress_work = true;
@@ -263,16 +267,17 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                             changeaddress_work.setVisibility(View.VISIBLE);
                             pd.setMessage("Fetching Location...");
                             pd.show();
+                            getloc();
 
                         } else {
                             String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
                             requestPermissions(requestloc, REQUEST_LOC);
                         }
                     } else {
-                        Criteria criteria = new Criteria();
+                        /*Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
 
 
                         showaddress_work = true;
@@ -280,6 +285,7 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                         changeaddress_work.setVisibility(View.VISIBLE);
                         pd.setMessage("Fetching Location...");
                         pd.show();
+                        getloc();
                     }
                 }
             }
@@ -310,10 +316,10 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            Criteria criteria = new Criteria();
+                            /*Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
 
 
                             showaddress = true;
@@ -321,16 +327,17 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                             changeaddress.setVisibility(View.VISIBLE);
                             pd.setMessage("Fetching Location...");
                             pd.show();
+                            getloc();
 
                         } else {
                             String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
                             requestPermissions(requestloc, REQUEST_LOC);
                         }
                     } else {
-                        Criteria criteria = new Criteria();
+                        /*Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
+                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
 
 
                         showaddress = true;
@@ -338,6 +345,7 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                         changeaddress.setVisibility(View.VISIBLE);
                         pd.setMessage("Fetching Location...");
                         pd.show();
+                        getloc();
                     }
                 }
             }
@@ -555,7 +563,18 @@ public class myaccount extends AppCompatActivity implements LocationListener{
         cam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath();
+                File dir = new File(storagedir, "/Dot/");
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                String picname="profile.jpg";
+
+                File file = new File(dir, picname);
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                inputuri=FileProvider.getUriForFile(myaccount.this, BuildConfig.APPLICATION_ID+ ".provider", file);
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, inputuri);
                 startActivityForResult(intent, CAPTURE_IMAGE_FROM_CAM);
                 dialog.dismiss();
             }
@@ -564,17 +583,26 @@ public class myaccount extends AppCompatActivity implements LocationListener{
         gal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                /*Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 intent.putExtra("crop", "true");
                 intent.putExtra("aspectX", 1);
                 intent.putExtra("aspectY", 1);
                 intent.putExtra("outputX", 500);
                 intent.putExtra("outputY", 500);
                 intent.putExtra("return-data", true);
-                startActivityForResult(intent, CAPTURE_IMAGE);
+                startActivityForResult(intent, CAPTURE_IMAGE);*/
+                Crop.pickImage(myaccount.this);
                 dialog.dismiss();
             }
         });
+    }
+
+    protected synchronized void buildGoogleApiClient(){
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) this)
+                .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
 
@@ -644,22 +672,30 @@ public class myaccount extends AppCompatActivity implements LocationListener{
             }
         }
 
-        if (resultCode == RESULT_OK) {
-            if (requestCode == CAPTURE_IMAGE_FROM_CAM) {
-                captureuri = data.getData();
-                performCrop();
-            } else if (requestCode == CROP_PIC) {
-                Bundle extras = data.getExtras();
-                Bitmap image = extras.getParcelable("data");
-                //profilepic.setImageBitmap(image);
+        if (requestCode == Crop.REQUEST_PICK && resultCode == RESULT_OK) {
+            beginCrop(data.getData());
+        } else if (requestCode == Crop.REQUEST_CROP) {
+            handleCrop(resultCode, data);
+        }
 
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                image.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-                String path = MediaStore.Images.Media.insertImage(this.getContentResolver(), image, "profile", null);
-                Uri newuri = Uri.parse(path);
-                profilepic.setImageURI(newuri);
-                filePath = newuri;
+        if (requestCode == CAPTURE_IMAGE_FROM_CAM && resultCode == RESULT_OK) {
+                beginCrop(inputuri);
+            } else if (requestCode == Crop.REQUEST_CROP) {
+                handleCrop(resultCode, data);
             }
+    }
+
+    private void beginCrop(Uri source) {
+        Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+        Crop.of(source, destination).asSquare().start(this);
+    }
+
+    private void handleCrop(int resultCode, Intent result) {
+        if (resultCode == RESULT_OK) {
+            profilepic.setImageURI(Crop.getOutput(result));
+            filePath = Crop.getOutput(result);
+        } else if (resultCode == Crop.RESULT_ERROR) {
+            Toast.makeText(this, Crop.getError(result).getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -679,7 +715,7 @@ public class myaccount extends AppCompatActivity implements LocationListener{
         }
     }
 
-    @Override
+    /*@Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
@@ -709,11 +745,7 @@ public class myaccount extends AppCompatActivity implements LocationListener{
                 if (addresses_work.size() > 0 && showaddress_work == true) {
                     etaddress_work.setText("");
 
-                    String ad = addresses_work.get(0).getFeatureName() + ","
-                            + addresses_work.get(0).getLocality() + ","
-                            + addresses_work.get(0).getAdminArea() + ","
-                            + addresses_work.get(0).getCountryName() + ","
-                            + addresses_work.get(0).getPostalCode();
+                    String ad = addresses_work.get(0).getAddressLine(0);
                     etaddress_work.setText(ad);
                     pd.dismiss();
                 }
@@ -736,6 +768,51 @@ public class myaccount extends AppCompatActivity implements LocationListener{
     @Override
     public void onProviderDisabled(String provider) {
 
+    }*/
+
+    @SuppressLint("MissingPermission")
+    private void getloc(){
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                lat = location.getLatitude();
+                lng = location.getLongitude();
+                Geocoder geo = new Geocoder(myaccount.this.getApplicationContext(), Locale.getDefault());
+                try {
+                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses.isEmpty()) {
+                        etaddress.setText("Waiting for address");
+                    } else {
+                        if (addresses.size() > 0 && showaddress == true) {
+                            etaddress.setText("");
+
+                            String ad = addresses.get(0).getAddressLine(0);
+                            etaddress.setText(ad);
+                            pd.dismiss();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    List<Address> addresses_work = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses_work.isEmpty()) {
+                        etaddress_work.setText("Waiting for address");
+                    } else {
+                        if (addresses_work.size() > 0 && showaddress_work == true) {
+                            etaddress_work.setText("");
+
+                            String ad = addresses_work.get(0).getAddressLine(0);
+                            etaddress_work.setText(ad);
+                            pd.dismiss();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 }

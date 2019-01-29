@@ -7,8 +7,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,12 +55,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class newlogin extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
 
     private static newlogin instance;
     Button su,btnli,btnreset,btnimage;
-    EditText etmail,etpass;
+    TextInputEditText etmail,etpass;
     FirebaseAuth fauth;
     ProgressDialog pd;
     CallbackManager callbackManager;
@@ -88,8 +92,8 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
         su=(Button)findViewById(R.id.btnsignup);
         btnli=(Button)findViewById(R.id.btnstart);
         btnimage=(Button)findViewById(R.id.btnimage);
-        etmail=(EditText)findViewById(R.id.etmail);
-        etpass=(EditText)findViewById(R.id.etpass);
+        etmail=(TextInputEditText)findViewById(R.id.etmail);
+        etpass=(TextInputEditText)findViewById(R.id.etpass);
 
         su.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -321,6 +325,15 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
         }
     }
 
+    private boolean emailValidator(String email){
+        Pattern pattern;
+        Matcher matcher;
+        final String EMAIL_PATTERN = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        pattern = Pattern.compile(EMAIL_PATTERN);
+        matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+
 
     private void firebaseAuthWithGoogle(final GoogleSignInAccount account) {
 
@@ -429,10 +442,23 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
         String email, pass;
         email = etmail.getText().toString().trim();
         pass = etpass.getText().toString().trim();
+
+        if(TextUtils.isEmpty(etmail.getText().toString().trim()) || TextUtils.isEmpty(etpass.getText().toString().trim())){
+            etmail.setError("Please enter the email ID");
+            etpass.setError("Please enter the password");
+            pd.dismiss();
+        }
+        else if(!emailValidator(etmail.getText().toString().trim())){
+            etmail.setError("Please enter a valid email ID");
+            pd.dismiss();
+        }
+        /*else {
+
+        }
         if (email.isEmpty() || pass.isEmpty()) {
             pd.dismiss();
             Toast.makeText(this, "Please enter the username and password!", Toast.LENGTH_SHORT).show();
-        } else {
+        }*/ else {
             fauth.signInWithEmailAndPassword(email, pass)
                     .addOnCompleteListener(newlogin.this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -442,19 +468,19 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
                                 dbr.addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        if (!dataSnapshot.hasChild("status")) {
+                                        if (!dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("status")) {
                                             pd.dismiss();
                                             Intent intent = new Intent(newlogin.this, select.class);
                                             startActivity(intent);
                                         } else {
                                             status = dataSnapshot.child(fauth.getCurrentUser().getUid()).child("status").getValue().toString();
                                             if (status.equals("customer")) {
-                                                if (dataSnapshot.hasChild("current_status")) {
-                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("customer")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
                                                         startActivity(new Intent(newlogin.this, newdrawer.class));
                                                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                     }
-                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("provider")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
                                                         startActivity(new Intent(newlogin.this, provider_home.class));
                                                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                     }
@@ -464,12 +490,12 @@ public class newlogin extends AppCompatActivity implements GoogleApiClient.OnCon
                                                 }
                                             }
                                             if (status.equals("provider")) {
-                                                if (dataSnapshot.hasChild("current_status")) {
-                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("customer")) {
+                                                if (dataSnapshot.child(fauth.getCurrentUser().getUid()).hasChild("current_status")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("customer")) {
                                                         startActivity(new Intent(newlogin.this, newdrawer.class));
                                                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                     }
-                                                    if (dataSnapshot.child("current_status").getValue().toString().equals("provider")) {
+                                                    if (dataSnapshot.child(fauth.getCurrentUser().getUid()).child("current_status").getValue().toString().equals("provider")) {
                                                         startActivity(new Intent(newlogin.this, provider_home.class));
                                                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                                                     }

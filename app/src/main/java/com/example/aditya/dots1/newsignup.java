@@ -1,6 +1,7 @@
 package com.example.aditya.dots1;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -51,8 +52,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -86,7 +90,7 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-public class newsignup extends AppCompatActivity implements LocationListener, View.OnClickListener {
+public class newsignup extends AppCompatActivity implements /*LocationListener,*/ View.OnClickListener {
 
     public static final int CAMERA_PERMISSION_REQUEST = 12345678;
     public static final int REQUSET_FINE_LOCATION = 9999;
@@ -119,6 +123,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     public boolean showaddress = false, addressfound = false;
     double latitude, longitude;
     Boolean number_valid;
+    FusedLocationProviderClient fusedLocationProviderClient;
 
     //creating reference to firebase storage
     StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dots-195d9.appspot.com");
@@ -127,6 +132,8 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newsignup);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         ccp = (CountryCodePicker)findViewById(R.id.code_picker);
         pd = new ProgressDialog(this);
@@ -218,37 +225,6 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        //final ConstraintLayout constraintLayout=(ConstraintLayout)findViewById(R.id.signupcontraint);
-        /*final float density=getResources().getDisplayMetrics().density;
-        final Drawable fname=getResources().getDrawable(R.drawable.u30);
-        final Drawable lname=getResources().getDrawable(R.drawable.u30);
-        final Drawable mail=getResources().getDrawable(R.drawable.emailicon);
-        final Drawable lock=getResources().getDrawable(R.drawable.locki);
-        final Drawable phone=getResources().getDrawable(R.drawable.phoneicon);
-        final Drawable home=getResources().getDrawable(R.drawable.hom);
-
-        final  int width=Math.round(24*density);
-        final int height=Math.round(24*density);
-
-        fname.setBounds(0,0,width,height);
-        etfname.setCompoundDrawables(fname,null,null,null);
-
-        lname.setBounds(0,0,width,height);
-        etlname.setCompoundDrawables(lname,null,null,null);
-
-        mail.setBounds(0,0,width,height);
-        etmail.setCompoundDrawables(mail,null,null,null);
-
-        lock.setBounds(0,0,width,height);
-        etpass.setCompoundDrawables(lock,null,null,null);
-        etpass2.setCompoundDrawables(lock,null,null,null);
-
-        phone.setBounds(0,0,width,height);
-        etphone.setCompoundDrawables(phone,null,null,null);
-
-        home.setBounds(0,0,width,height);
-        etaddress.setCompoundDrawables(home,null,null,null);*/
-
         fauth=FirebaseAuth.getInstance();
         dbr= FirebaseDatabase.getInstance().getReference("Users");
 
@@ -267,7 +243,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
         li.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openlogin();
+                finish();
             }
         });
 
@@ -731,7 +707,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     }
 
 
-    @Override
+    /*@Override
     public void onLocationChanged(final Location location) {
         latitude=location.getLatitude();
         longitude=location.getLongitude();
@@ -767,6 +743,32 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "GPS service is disabled", Toast.LENGTH_SHORT).show();
+    }*/
+
+    @SuppressLint("MissingPermission")
+    private void getloc(){
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                latitude=location.getLatitude();
+                longitude=location.getLongitude();
+                Geocoder geo = new Geocoder(newsignup.this.getApplicationContext(), Locale.getDefault());
+                try {
+                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses.isEmpty()) {
+                        etaddress.setText("Waiting for address");
+                    } else {
+                        if (addresses.size() > 0 && showaddress==true && etaddress.getText().toString().isEmpty()) {
+                            String fn = addresses.get(0).getAddressLine(0);
+                            etaddress.setText(fn);
+                            pd.dismiss();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -797,10 +799,10 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                 && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            Criteria criteria = new Criteria();
+                            /*Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0,  this);
+                            locationManager.requestLocationUpdates(provider, 0, 0,  this);*/
 
                             etaddress.setText("");
                             showaddress=true;
@@ -808,6 +810,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                             btnchangeaddress.setVisibility(View.VISIBLE);
                             pd.setMessage("Fetching Location...");
                             pd.show();
+                            getloc();
                         }
                         else {
                             String[] req_loc=new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
@@ -815,10 +818,10 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                         }
                     }
                     else {
-                        Criteria criteria = new Criteria();
+                        /*Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0,  this);
+                        locationManager.requestLocationUpdates(provider, 0, 0,  this);*/
 
                         etaddress.setText("");
                         showaddress=true;
@@ -826,6 +829,7 @@ public class newsignup extends AppCompatActivity implements LocationListener, Vi
                         btnchangeaddress.setVisibility(View.VISIBLE);
                         pd.setMessage("Fetching Location...");
                         pd.show();
+                        getloc();
                     }
 
                 }

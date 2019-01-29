@@ -58,6 +58,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -92,7 +93,7 @@ import static com.example.aditya.dots1.R.*;
 import static com.example.aditya.dots1.myaccount.REQUEST_LOC;
 import static com.example.aditya.dots1.newsignup.CAMERA_PERMISSION_REQUEST;
 
-public class neworder extends AppCompatActivity implements LocationListener {
+public class neworder extends AppCompatActivity/* implements LocationListener */{
 
     public static final int WRITE_STORAGE_PERMISSION = 9876;
     public static final int READ_STORAGE_PERMISSION = 9890;
@@ -123,6 +124,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
     Uri fileuri, outputfileuri;
     Button btnplay, btnplus;
     String cam_or_vid;
+    FusedLocationProviderClient fusedLocationProviderClient;
 
     FirebaseAuth fauth = FirebaseAuth.getInstance();
     FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
@@ -135,6 +137,8 @@ public class neworder extends AppCompatActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(layout.activity_neworder);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         btnplay=(Button)findViewById(R.id.btnplay);
         btnplus=(Button)findViewById(id.btnplus);
@@ -261,7 +265,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
             public void onClick(View v) {
                 if(cam_or_vid.equals("cam")){
                     Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(filePath, "image/*");
+                    intent.setDataAndType(outputfileuri, "image/*");
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     startActivity(Intent.createChooser(intent, "Open image using"));
                 }
@@ -326,10 +330,10 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            Criteria criteria = new Criteria();
+                            /*Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
+                            locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);*/
 
                             address.setText("");
                             showaddress=true;
@@ -337,6 +341,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                             btnchangeaddress.setVisibility(View.VISIBLE);
                             pd.setMessage("Fetching Location...");
                             pd.show();
+                            getloc();
 
                         }
                         else {
@@ -346,10 +351,12 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     }
                     else {
 
+/*
                         Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
                         locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
+*/
 
                         address.setText("");
                         showaddress=true;
@@ -357,6 +364,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                         btnchangeaddress.setVisibility(View.VISIBLE);
                         pd.setMessage("Fetching Location...");
                         pd.show();
+                        getloc();
                     }
                 }
             }
@@ -578,7 +586,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
 
                         File file = new File(dir, picname);
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        outputfileuri=FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID+ ".provider", file);
+                        outputfileuri=FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID+ ".provider", getTempFile(neworder.this));
                         //outputfileuri = Uri.fromFile(dir);
 
                         intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
@@ -635,12 +643,26 @@ public class neworder extends AppCompatActivity implements LocationListener {
         filePath=outputfileuri;
         if(requestCode == Takepic && resultCode == RESULT_OK) {
 
-            Bitmap bitmap = null;
+            Bitmap bitmap=null;
+            final File filed = getTempFile(neworder.this);
+            try{
+                Uri uri = Uri.fromFile(filed);
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+
+                //btnimage.setImageBitmap(bitmap);
+                //btnimage.setVisibility(View.VISIBLE);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            /*Bitmap bitmap = null;
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             btnimage.setVisibility(View.VISIBLE);
 
@@ -685,7 +707,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
                 Uri ptp = FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID + ".provider", file);
                 OutputStream out = null;
                 try {
-                    out = new FileOutputStream(file);
+                    out = new FileOutputStream(ptp.toString());
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
                     out.flush();
                     out.close();
@@ -734,7 +756,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
         }
     }
 
-    @Override
+    /*@Override
     public void onLocationChanged(final Location location) {
         lat=location.getLatitude();
         lng=location.getLongitude();
@@ -755,6 +777,41 @@ public class neworder extends AppCompatActivity implements LocationListener {
                     }
 
 
+    }*/
+
+    @SuppressLint("MissingPermission")
+    private void getloc(){
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                lat=location.getLatitude();
+                lng=location.getLongitude();
+                Geocoder geo = new Geocoder(neworder.this.getApplicationContext(), Locale.getDefault());
+                try {
+                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    if (addresses.isEmpty()) {
+                        address.setText("Waiting for address");
+                    } else {
+                        if (addresses.size() > 0 && showaddress==true && address.getText().toString().isEmpty()) {
+                            String ad = addresses.get(0).getAddressLine(0);
+                            address.setText(ad);
+                            pd.dismiss();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private File getTempFile(Context context){
+        final File path = new File(Environment.getExternalStorageDirectory(),
+                context.getPackageName());
+        if(!path.exists()){
+            path.mkdir();
+        }
+        return new File(path, "myimage.png");
     }
 
     private void requestlocation() {
@@ -766,7 +823,7 @@ public class neworder extends AppCompatActivity implements LocationListener {
     }
 
 
-    @Override
+    /*@Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
 
     }
@@ -779,5 +836,5 @@ public class neworder extends AppCompatActivity implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         //Toast.makeText(this, "Please enable the GPS", Toast.LENGTH_SHORT).show();
-    }
+    }*/
 }
