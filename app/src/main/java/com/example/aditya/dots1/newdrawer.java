@@ -13,7 +13,9 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -107,6 +109,7 @@ public class newdrawer extends AppCompatActivity
     Button lines;
     double u_lat, u_lng;
     TextView txtdistance;
+    ImageView btnsetting;
 
     Intent mServiceIntent;
     private testcounterservice mYourService;
@@ -121,6 +124,8 @@ public class newdrawer extends AppCompatActivity
         setContentView(R.layout.activity_newdrawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        btnsetting=(ImageView)findViewById(R.id.btnsetting);
 
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
@@ -152,6 +157,18 @@ public class newdrawer extends AppCompatActivity
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+        btnsetting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isMyServiceRunning(customer_notification_service.class)){
+                    //Toast.makeText(newdrawer.this, "The bastered is running", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    //Toast.makeText(newdrawer.this, "Not Running", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -234,7 +251,7 @@ public class newdrawer extends AppCompatActivity
                             }
                             else {
                                 txtdistance = new TextView(newdrawer.this);
-                                txtdistance.setText("Not Available");
+                                txtdistance.setText("N/A");
                                 txtdistance.setTextSize(14);
                                 txtdistance.setPadding(0,0,14,0);
                                 txtdistance.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
@@ -418,6 +435,7 @@ public class newdrawer extends AppCompatActivity
     private void show_dialogue(){
         dialog=new Dialog(newdrawer.this);
         dialog.setContentView(R.layout.job_done_notification);
+        //dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.HSVToColor(150,new float[]{0f,0f,93f})));
         dialog.show();
 
         Button pay=dialog.findViewById(R.id.btnpay);
@@ -622,6 +640,7 @@ public class newdrawer extends AppCompatActivity
         }
     }
 
+
     @Override
     public void onDestroy(){
         stopService(new Intent(this, PayPalService.class));
@@ -633,4 +652,6 @@ public class newdrawer extends AppCompatActivity
 
         super.onDestroy();
     }
+
+
 }

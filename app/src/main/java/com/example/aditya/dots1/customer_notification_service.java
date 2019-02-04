@@ -178,11 +178,22 @@ public class customer_notification_service extends Service {
                     sprefappopen.edit().putLong("StartTime", SystemClock.uptimeMillis()).commit();
                     sprefappopen.edit().putString("uids", uids).commit();
 
-                    sprefappopen.edit().putLong("lat", Double.doubleToRawLongBits(plat)).commit();
-                    sprefappopen.edit().putLong("lng", Double.doubleToRawLongBits(plng)).commit();
+                    double diss = distance/ 1000;
+                    diss = diss * 100;
+                    diss = Math.round(diss);
+                    diss = diss / 100;
+                    String d = "" + diss + " Km";
 
+                    sprefappopen.edit().putString("dist", d).commit();
+                    sprefappopen.edit().putString("lat", String.valueOf(plat)).commit();
+                    sprefappopen.edit().putString("lng", String.valueOf(plng)).commit();
                     killtimer=false;
                     Timer();
+                }
+                else {
+                    sprefappopen.edit().putString("dist", "Not").commit();
+                    sprefappopen.edit().putString("lat", String.valueOf("0.0")).commit();
+                    sprefappopen.edit().putString("lng", String.valueOf("0.0")).commit();
                 }
             }
 
@@ -228,6 +239,7 @@ public class customer_notification_service extends Service {
                             intent.putExtra("lng", 0);
                         }
                         sendBroadcast(intent);
+                        stopSelf();
                     }
                 },delay,period);
 

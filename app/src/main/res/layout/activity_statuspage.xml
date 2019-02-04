@@ -54,7 +54,8 @@
 
         </LinearLayout>
 
-        <ScrollView
+        <com.example.aditya.dots1.CustomScrollView
+            android:id="@+id/scrollview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp">
@@ -232,7 +233,7 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="4dp"
                 android:layout_marginTop="4dp"
-                android:text="2 Miles : 15 Min"
+                android:text="Distance"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="invisible" />
@@ -254,14 +255,26 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="4dp"
-                android:background="@drawable/imageborder"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/view"
-                app:layout_constraintVertical_bias="0.0">
+                android:background="@drawable/imageborder">
 
 
+                <Button
+                    android:id="@+id/btnmapdone"
+                    android:layout_width="80dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/blueb"
+                    android:text="Done"
+                    android:textSize="8sp" />
+
+                <Button
+                    android:id="@+id/btnsetmap"
+                    android:layout_width="80dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/blueb"
+                    android:text="Show on map"
+                    android:textSize="8sp" />
                 <fragment
                     android:id="@+id/gmap"
                     android:name="com.google.android.gms.maps.MapFragment"
@@ -284,6 +297,6 @@
 
         </LinearLayout>
 
-        </ScrollView>
+        </com.example.aditya.dots1.CustomScrollView>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

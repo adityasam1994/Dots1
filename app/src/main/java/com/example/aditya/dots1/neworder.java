@@ -625,6 +625,7 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
             @Override
             public void onClick(View v) {
                 format="video";
+                generatecode();
                 Intent intent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
                 intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 3);
@@ -685,7 +686,7 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
             btnplay.setVisibility(View.VISIBLE);
             cam_or_vid = "cam";
 
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            /*if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
 
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -700,7 +701,7 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
-                String cpname = code + "_.jpg";
+                String cpname = "mypicCompressed_.jpg";
 
                 File file = new File(dir, cpname);
 
@@ -717,8 +718,8 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                filePath = Uri.fromFile(file);
-            }
+                filePath = ptp;
+            }*/
         }
 
 
