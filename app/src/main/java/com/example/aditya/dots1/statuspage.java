@@ -1,5 +1,6 @@
 package com.example.aditya.dots1;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -22,6 +23,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +31,7 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -98,6 +101,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
     Button btnsetmap, btnmapdone;
     Boolean editmap=false;
     double lat, lng;
+    int heigh;
     double distances;
     boolean killtimer=false, pending=false;
     CustomScrollView scrollView;
@@ -146,7 +150,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
         //scrollView.setEnableScrolling(false);
 
         final ViewTreeObserver frameobserver=frameLayout.getViewTreeObserver();
-        frameobserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        /*frameobserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 int width=frameLayout.getWidth();
@@ -154,7 +158,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
                 ppframe.height=width;
                 frameLayout.setLayoutParams(ppframe);
             }
-        });
+        });*/
 
         filePath=getIntent().getData();
 
@@ -178,9 +182,27 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
             @Override
             public void onClick(View v) {
                 editmap = true;
-                scrollView.setEnableScrolling(false);
+                //scrollView.setEnableScrolling(false);
                 btnsetmap.setVisibility(View.INVISIBLE);
                 btnmapdone.setVisibility(View.VISIBLE);
+
+                float dip_pl=200f;
+                float px_pl= TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, dip_pl, getResources().getDisplayMetrics()
+                );
+
+                float px_pl_h= TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, 500f, getResources().getDisplayMetrics()
+                );
+
+                int heigh = (int) px_pl;
+                ResizeAnimation resizeAnimation = new ResizeAnimation(
+                        frameLayout,
+                        (int) px_pl_h,
+                        heigh
+                );
+                resizeAnimation.setDuration(1000);
+                frameLayout.startAnimation(resizeAnimation);
             }
         });
 
@@ -188,9 +210,28 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
             @Override
             public void onClick(View v) {
                 editmap = false;
-                scrollView.setEnableScrolling(true);
+                //scrollView.setEnableScrolling(true);
                 btnmapdone.setVisibility(View.INVISIBLE);
                 btnsetmap.setVisibility(View.VISIBLE);
+
+                float dip_pl=200f;
+                float px_pl= TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, dip_pl, getResources().getDisplayMetrics()
+                );
+
+                float px_pl_fianl= TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, 500f, getResources().getDisplayMetrics()
+                );
+
+                int heigh = (int) px_pl;
+
+                ResizeAnimationSmall resizeAnimation = new ResizeAnimationSmall(
+                        frameLayout,
+                        heigh,
+                        (int) px_pl_fianl
+                );
+                resizeAnimation.setDuration(1000);
+                frameLayout.startAnimation(resizeAnimation);
             }
         });
 
@@ -715,7 +756,7 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
 
         int width=getResources().getDisplayMetrics().widthPixels;
         //int height=getResources().getDisplayMetrics().heightPixels;
-        float dip_pl=200f;
+        float dip_pl=150f;
         float px_pl= TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, dip_pl, getResources().getDisplayMetrics()
         );
@@ -731,4 +772,5 @@ public class statuspage extends AppCompatActivity implements OnMapReadyCallback,
             gmap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentlocation,16.0f));
         }
     }
+
 }

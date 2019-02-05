@@ -54,6 +54,41 @@
 
         </LinearLayout>
 
+        <FrameLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/imageborder">
+
+
+            <Button
+                android:id="@+id/btnmapdone"
+                android:layout_width="80dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/blueb"
+                android:text="Done"
+                android:textSize="8sp" />
+
+            <Button
+                android:id="@+id/btnsetmap"
+                android:layout_width="80dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/blueb"
+                android:text="Show on map"
+                android:textSize="8sp" />
+            <fragment
+                android:id="@+id/gmap"
+                android:name="com.google.android.gms.maps.MapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/imageborder"/>
+        </FrameLayout>
+
         <com.example.aditya.dots1.CustomScrollView
             android:id="@+id/scrollview"
             android:layout_width="match_parent"
@@ -65,9 +100,32 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+
+            <TextView
+                android:id="@+id/txtdistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="4dp"
+                android:text="Distance"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="invisible" />
+
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:background="#EEEEEE" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:orientation="horizontal">
 
 
@@ -225,62 +283,6 @@
 
             </LinearLayout>
 
-
-            <TextView
-                android:id="@+id/txtdistance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="4dp"
-                android:layout_marginTop="4dp"
-                android:text="Distance"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
-
-            <View
-                android:id="@+id/view"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:background="#EEEEEE" />
-
-            <FrameLayout
-                android:id="@+id/frameLayout"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/imageborder">
-
-
-                <Button
-                    android:id="@+id/btnmapdone"
-                    android:layout_width="80dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/blueb"
-                    android:text="Done"
-                    android:textSize="8sp" />
-
-                <Button
-                    android:id="@+id/btnsetmap"
-                    android:layout_width="80dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/blueb"
-                    android:text="Show on map"
-                    android:textSize="8sp" />
-                <fragment
-                    android:id="@+id/gmap"
-                    android:name="com.google.android.gms.maps.MapFragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </FrameLayout>
 
             <Button
                 android:id="@+id/btnaccept"
