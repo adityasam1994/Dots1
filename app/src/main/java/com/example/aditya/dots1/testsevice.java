@@ -1,5 +1,6 @@
 package com.example.aditya.dots1;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -22,6 +23,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -65,21 +68,20 @@ public class testsevice extends Service {
         sharedPreferences=getSharedPreferences("appopen", Context.MODE_PRIVATE);
         spref=getSharedPreferences("notification", Context.MODE_PRIVATE);
 
-       /* message="Looking for new orders";
+        message = "Looking for new orders";
 
-            final Intent intent1 = new Intent(testsevice.this, provider_home.class);
-            final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
-            Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.iconfinder_notification)
-                    .setContentTitle("New Order")
-                    .setContentText(message)
-                    .setContentIntent(pendingIntent)
-                    .setVibrate(new long[]{0})
-                    .build();
+        Intent notificationIntent = new Intent(this, newdrawer.class);
 
-            startForeground(1, builder);
-            spref.edit().putString("text",message).commit();*/
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                notificationIntent, 0);
 
+        Notification notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.iconfinder_notification)
+                .setContentTitle("My orders")
+                .setContentText(message)
+                .setContentIntent(pendingIntent).build();
+
+        startForeground(1337, notification);
 
         StartTime= SystemClock.uptimeMillis();
 
@@ -134,7 +136,7 @@ public class testsevice extends Service {
                 }
                 Boolean appopen = sharedPreferences.getBoolean("provider_at_home", false);
 
-                if(!spref.getString("text","").equals(message)) {
+                /*if(!spref.getString("text","").equals(message)) {
                     if(message.equals("Looking for new orders")) {
                         final Intent intent1 = new Intent(testsevice.this, provider_home.class);
                         final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -161,20 +163,20 @@ public class testsevice extends Service {
                         startForeground(1, builder);
                         spref.edit().putString("text", message).commit();
                     }
-                }
-                /*else {
-                    final Intent intent1 = new Intent(testsevice.this, provider_home.class);
-                    final PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 2, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
-                    Notification builder = new NotificationCompat.Builder(testsevice.this, CHANNEL_ID)
-                            .setSmallIcon(R.drawable.iconfinder_notification)
-                            .setContentTitle("New Order")
-                            .setContentText(message)
-                            .setContentIntent(pendingIntent)
-                            .setVibrate(new long[]{0L})
-                            .build();
-
-                    startForeground(1, builder);
                 }*/
+                Intent notificationIntent = new Intent(testsevice.this, provider_home.class);
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(testsevice.this, 0,
+                        notificationIntent, 0);
+
+                Notification notification = new NotificationCompat.Builder(testsevice.this)
+                        .setSmallIcon(R.drawable.iconfinder_notification)
+                        .setContentTitle("My orders")
+                        .setContentText(message)
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                        .setContentIntent(pendingIntent).build();
+
+                startForeground(1337, notification);
             }
 
             @Override
@@ -231,19 +233,29 @@ public class testsevice extends Service {
         }
     }
 
-    @Override
+    /*@Override
     public void onDestroy() {
         super.onDestroy();
         //Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
         Intent intent=new Intent(this,MyReceiver.class);
         sendBroadcast(intent);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void onTaskRemoved(Intent rootIntent) {
+        Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
+        restartServiceIntent.setPackage(getPackageName());
+
+        PendingIntent restartServicePendingIntent = PendingIntent.getService(getApplicationContext(), 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager alarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmService.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 1000,
+                restartServicePendingIntent);
+
         super.onTaskRemoved(rootIntent);
-        Intent intent=new Intent(this,MyReceiver.class);
-        sendBroadcast(intent);
-    }
+        *//*Intent intent=new Intent(this,MyReceiver.class);
+        sendBroadcast(intent);*//*
+    }*/
 
 }

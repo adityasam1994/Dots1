@@ -317,7 +317,7 @@
                         android:layout_gravity="center_horizontal"
                         android:background="@drawable/whiteb"
                         android:gravity="center"
-                        android:text="Accept"
+                        android:text="Start"
                         android:textSize="18sp" />
 
                 </LinearLayout>

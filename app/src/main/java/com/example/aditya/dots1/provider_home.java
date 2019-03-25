@@ -100,16 +100,17 @@ public class provider_home extends AppCompatActivity
             inten.putExtra("receive", false);
             startService(inten);*/
 
-        Intent intent=new Intent(provider_home.this, testsevice.class);
+        /*Intent intent=new Intent(provider_home.this, testsevice.class);
         PendingIntent pintent=PendingIntent.getService(provider_home.this, 0,intent,0);
         AlarmManager alarm=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, pintent);*/
 
 
 
 
-        /*Intent intent = new Intent(provider_home.this, testsevice.class);
-        startService(intent);*/
+        /*Intent intent = new Intent(this, testsevice.class);
+        this.startService(intent);*/
+        lookfororders();
 
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
@@ -297,7 +298,7 @@ public class provider_home extends AppCompatActivity
                     //((ViewManager)btncancel.getParent()).removeView(btncancel);
                     try {
                         dbrdetail.child(norderpath).child(fauth.getCurrentUser().getUid()).child("status").setValue("accepted");
-
+                        detailayout.setVisibility(View.INVISIBLE);
                     }
                     catch (Exception e){
                         e.printStackTrace();
@@ -310,6 +311,7 @@ public class provider_home extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 dbrdetail.child(norderpath).child(fauth.getCurrentUser().getUid()).child("status").setValue("cancelled");
+                detailayout.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -326,6 +328,210 @@ public class provider_home extends AppCompatActivity
                 Intent mapintent = new Intent(Intent.ACTION_VIEW, intenturi);
                 mapintent.setPackage("com.google.android.apps.maps");
                 startActivity(mapintent);
+            }
+        });
+    }
+
+    private void lookfororders() {
+        dbrdetail.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                useridloop:
+                for(DataSnapshot dsusers : dataSnapshot.getChildren()) {
+                    for (DataSnapshot dsorders : dsusers.getChildren()) {
+                        for (DataSnapshot dselements : dsorders.getChildren()) {
+                            if(dselements.getKey().toString().equals(fauth.getCurrentUser().getUid())){
+                                if(dselements.child("status").getValue().toString().equals("pending")) {
+
+                                    norderstatus=dselements.child("status").getValue().toString();
+                                    nlat= (double) dsorders.child("latitude").getValue();
+                                    nlng= (double) dsorders.child("longitude").getValue();
+                                    nusername = dsorders.child("username").getValue().toString();
+                                    ncod = dsorders.child("code").getValue().toString();
+                                    ncommen = dsorders.child("ecomment").getValue().toString();
+                                    naddress = dsorders.child("eaddress").getValue().toString();
+                                    nservice = dsorders.child("service").getValue().toString();
+                                    ntime = dsorders.child("time").getValue().toString();
+                                    nformat = dsorders.child("format").getValue().toString();
+                                    nservicetype=dsorders.child("servicetype").getValue().toString();
+                                    nsercretcode = dsorders.child("qrcode").getValue().toString();
+                                    ncustomerid=dsusers.getKey().toString();
+                                    norderpath = dsusers.getKey().toString() + "/" + dsorders.getKey().toString();
+                                    nordertime=dsorders.child("Date").getValue().toString();
+
+                                    SimpleDateFormat forma=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+                                    Date cd= Calendar.getInstance().getTime();
+                                    final String ct=forma.format(cd);
+
+
+                                    Date d1=null;
+                                    Date d2=null;
+
+                                    try {
+                                        d1=forma.parse(nordertime);
+                                        d2=forma.parse(ct);
+
+                                        long millis=d1.getTime()+600000 - d2.getTime();
+                                        long sec=millis/100%60;
+                                        long mins=millis/(60*1000)%60;
+
+                                        tvtimeremaining.setText("Will be rejected in: "+mins+" Mins");
+
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    if(!ncod.equals("")) {
+
+                                        if(nformat.equals("video")){
+                                            File mpath= Environment.getExternalStorageDirectory();
+
+                                            File dir=new File(mpath+"/Dot/");
+                                            dir.mkdirs();
+                                            String filename=ncod+".mp4";
+                                            File file=new File(dir, filename);
+
+                                            if(file.exists()){
+                                                btnplaynow.setVisibility(View.VISIBLE);
+                                                imgplay.setVisibility(View.INVISIBLE);
+                                            }
+                                        }
+
+                                        if(nformat.equals("image")){
+                                            File mpath= Environment.getExternalStorageDirectory();
+
+                                            File dir=new File(mpath+"/Dot/");
+                                            dir.mkdirs();
+                                            String filename=ncod+".jpg";
+                                            File file=new File(dir, filename);
+
+                                            if(file.exists()){
+                                                btnplaynow.setVisibility(View.VISIBLE);
+                                                imgplay.setVisibility(View.INVISIBLE);
+                                            }
+                                        }
+
+                                        imgplay.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                if(nformat.equals("video")) {
+                                                    pd.setMessage("Downloading...");
+                                                    pd.show();
+                                                    File mpath= Environment.getExternalStorageDirectory();
+
+                                                    File dir=new File(mpath+"/Dot/");
+                                                    dir.mkdirs();
+                                                    String filename=ncod+".mp4";
+                                                    File file=new File(dir, filename);
+
+                                                    strf.child("order").child(ncustomerid).child(ncod).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                                        @Override
+                                                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                                            Toast.makeText(provider_home.this, "Download complete", Toast.LENGTH_SHORT).show();
+                                                            pd.dismiss();
+                                                            btnplaynow.setVisibility(View.VISIBLE);
+                                                            imgplay.setVisibility(View.INVISIBLE);
+                                                            playfile();
+                                                        }
+                                                    }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                                                        @Override
+                                                        public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                                                    .getTotalByteCount());
+                                                            pd.setMessage("Downloading "+(int)progress+"%");
+                                                        }
+                                                    });
+                                                }
+
+
+                                                if(nformat.equals("image")) {
+                                                    pd.setMessage("Downloading...");
+                                                    pd.show();
+                                                    File mpath= Environment.getExternalStorageDirectory();
+
+                                                    File dir=new File(mpath+"/Dot/");
+                                                    dir.mkdirs();
+                                                    String filename=ncod+".jpg";
+                                                    File file=new File(dir, filename);
+
+                                                    strf.child("order").child(ncustomerid).child(ncod).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                                        @Override
+                                                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                                            Toast.makeText(provider_home.this, "Download complete", Toast.LENGTH_SHORT).show();
+                                                            pd.dismiss();
+                                                            btnplaynow.setVisibility(View.VISIBLE);
+                                                            imgplay.setVisibility(View.INVISIBLE);
+                                                            playfile();
+                                                        }
+                                                    }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                                                        @Override
+                                                        public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                                                    .getTotalByteCount());
+                                                            pd.setMessage("Downloading "+(int)progress+"%");
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+
+                                        btnplaynow.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                playfile();
+                                            }
+                                        });
+
+
+
+                                        detailayout.setVisibility(View.VISIBLE);
+
+                                        tvctime.setText(ntime);
+                                        tvcservice.setText(nservice);
+                                        tvcode.setText(ncod);
+                                        tvccomment.setText(ncommen);
+                                        tvservicetype.setText(nservicetype);
+
+                                        cname = nusername + System.lineSeparator() + naddress;
+                                        tvdetail.setText(cname);
+
+                                        storagevideo.child("order").child(ncustomerid).getDownloadUrl()
+                                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                    @Override
+                                                    public void onSuccess(Uri uri) {
+                                                        videouri = uri;
+                                                    }
+                                                });
+
+                                        if (!norderstatus.equals("") && norderstatus.equals("accepted")) {
+                                            btnstart.setText("Start");
+                                            qrlayout.setVisibility(View.VISIBLE);
+                                            params.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                                            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, 0);
+                                            p.weight = 0;
+                                            btncancel.setLayoutParams(p);
+                                            //((ViewManager) btncancel.getParent()).removeView(btncancel);
+                                        }
+                                    }
+                                    if(ncod.equals("")) {
+                                        detailayout.setVisibility(View.INVISIBLE);
+                                    }
+
+                                    break useridloop;
+
+                                }
+                                else {
+                                    cod="";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }

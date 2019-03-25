@@ -17,7 +17,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    packagingOptions{
+   /* packagingOptions{
         exclude 'AndroidManifest.xml'
         exclude 'lib/arm64-v8a/libcardioDecider.so'
         exclude 'lib/arm64-v8a/libcardioRecognizer.so'
@@ -41,7 +41,7 @@ android {
         exclude 'lib/x86_64/libcardioRecognizer_tegra2.so'
         exclude 'lib/x86_64/libopencv_core.so'
         exclude 'lib/x86_64/libopencv_imgproc.so'
-    }
+    }*/
 }
 
 dependencies {
@@ -55,13 +55,13 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-auth:16.0.5'
+    implementation 'com.google.firebase:firebase-auth:16.0.1'
     implementation 'com.google.firebase:firebase-database:16.0.1'
     implementation 'com.google.android.gms:play-services:12.0.1'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
     implementation 'com.google.android.gms:play-services-maps:16.0.0'
     implementation 'com.facebook.android:facebook-login:[4,5)'
-    implementation 'com.google.firebase:firebase-storage:16.0.5'
+    implementation 'com.google.firebase:firebase-storage:16.0.1'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
@@ -83,6 +83,7 @@ dependencies {
     implementation 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
     implementation 'com.soundcloud.android:android-crop:1.0.1@aar'
     implementation 'com.google.android.gms:play-services-places:15.0.1'
+    implementation 'id.zelory:compressor:2.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

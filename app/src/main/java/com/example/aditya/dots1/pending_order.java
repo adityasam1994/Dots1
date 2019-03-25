@@ -1,8 +1,13 @@
 package com.example.aditya.dots1;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +24,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -137,11 +144,13 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
 
                         MarkerOptions markerOptions=new MarkerOptions();
                         markerOptions.position(currentlocation);
+                        markerOptions.icon(bitmatdescriptorfromVector(getApplicationContext(),R.drawable.ic_iconfinder_pin));
                         markerOptions.title("My Location");
                         gmap.addMarker(markerOptions);
 
                         MarkerOptions provider=new MarkerOptions();
                         provider.position(providerlocation);
+                        provider.icon(bitmatdescriptorfromVector(getApplicationContext(),R.drawable.ic_iconfinder_pin_provider));
                         provider.title("Provider");
                         gmap.addMarker(provider);
 
@@ -155,7 +164,13 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
 
                         distance=locc.distanceTo(locp)/1000;
 
-                        txtdistance.setText((int) distance+" Km");
+                        double diss = distance;
+                        diss = diss * 100;
+                        diss = Math.round(diss);
+                        diss = diss / 100;
+                        String d = "" + diss + " Km";
+
+                        txtdistance.setText(d);
 
                         LatLngBounds.Builder builder=new LatLngBounds.Builder();
                         builder.include(provider.getPosition());
@@ -230,5 +245,14 @@ public class pending_order extends AppCompatActivity implements OnMapReadyCallba
     public void onMapReady(GoogleMap googleMap) {
         gmap=googleMap;
 
+    }
+
+    private BitmapDescriptor bitmatdescriptorfromVector(Context applicationContext, int vector_res_id) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(applicationContext, vector_res_id);
+        vectorDrawable.setBounds(0,0,vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 }

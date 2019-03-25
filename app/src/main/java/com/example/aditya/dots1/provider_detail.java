@@ -50,7 +50,7 @@ import java.util.Locale;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class provider_detail extends AppCompatActivity /*implements LocationListener */{
+public class provider_detail extends AppCompatActivity implements LocationListener {
 
     public static final int REQUEST_LOC_DET = 2834;
     Spinner service, avilable;
@@ -91,7 +91,7 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     && checkSelfPermission(ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -103,7 +103,7 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
             else {
                 requestlocation();
             }
-        }
+        }*/
         dbruser.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -289,10 +289,10 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            /*Criteria criteria = new Criteria();
+                            Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);*/
+                            locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
 
                             address.setText("");
                             showaddress=true;
@@ -307,10 +307,10 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
                         }
                     }
                     else {
-                        /*Criteria criteria = new Criteria();
+                        Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);*/
+                        locationManager.requestLocationUpdates(provider, 0, 0, provider_detail.this);
 
                         address.setText("");
                         showaddress=true;
@@ -372,30 +372,35 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                lat=location.getLatitude();
-                lng=location.getLongitude();
-                Geocoder geo = new Geocoder(provider_detail.this.getApplicationContext(), Locale.getDefault());
-                try {
-                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (addresses.isEmpty()) {
-                        address.setText("Waiting for address");
-                    } else {
-                        if (addresses.size() > 0 && showaddress==true && address.getText().toString().isEmpty()) {
-                            String ad = addresses.get(0).getAddressLine(0);
-                            address.setText(ad);
-                            pd.dismiss();
+                if (location != null) {
+                    lat = location.getLatitude();
+                    lng = location.getLongitude();
+                    Geocoder geo = new Geocoder(provider_detail.this.getApplicationContext(), Locale.getDefault());
+                    try {
+                        List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses.isEmpty()) {
+                            address.setText("Waiting for address");
+                        } else {
+                            if (addresses.size() > 0 && showaddress == true && address.getText().toString().isEmpty()) {
+                                String ad = addresses.get(0).getAddressLine(0);
+                                address.setText(ad);
+                                pd.dismiss();
+                            }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                }
+                else {
+                    getloc();
                 }
             }
         });
     }
 
-   /* @Override
+    @Override
     public void onLocationChanged(Location location) {
-        lat=location.getLatitude();
+        /*lat=location.getLatitude();
         lng=location.getLongitude();
         Geocoder geo = new Geocoder(provider_detail.this.getApplicationContext(), Locale.getDefault());
         try {
@@ -411,7 +416,7 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
@@ -427,6 +432,6 @@ public class provider_detail extends AppCompatActivity /*implements LocationList
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "Location provider is diasabled!", Toast.LENGTH_SHORT).show();
-    }*/
+    }
 }
 

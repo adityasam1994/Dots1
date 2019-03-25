@@ -10,6 +10,7 @@ import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -47,6 +48,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,6 +78,7 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -86,6 +89,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import id.zelory.compressor.Compressor;
+
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -93,7 +98,7 @@ import static com.example.aditya.dots1.R.*;
 import static com.example.aditya.dots1.myaccount.REQUEST_LOC;
 import static com.example.aditya.dots1.newsignup.CAMERA_PERMISSION_REQUEST;
 
-public class neworder extends AppCompatActivity/* implements LocationListener */{
+public class neworder extends AppCompatActivity implements LocationListener, View.OnClickListener {
 
     public static final int WRITE_STORAGE_PERMISSION = 9876;
     public static final int READ_STORAGE_PERMISSION = 9890;
@@ -163,6 +168,16 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_DENIED){
+                requestPermissions(new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1000);
+            }
+        }
 
         String head = getIntent().getExtras().getString("service");
         heading.setText(head);
@@ -241,43 +256,9 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
             }
         });
 
-        btnplus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if((checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)) {
-                                camvideo();
-                    }
-                    else {
-                        String[] pemissionRequest={Manifest.permission.CAMERA};
-                        requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
+        btnplus.setOnClickListener(this);
 
-                    }
-                }
-                else {
-                    camvideo();
-                }
-            }
-        });
-
-        btnplay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(cam_or_vid.equals("cam")){
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(outputfileuri, "image/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(intent, "Open image using"));
-                }
-
-                if(cam_or_vid.equals("vid")){
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(filePath, "video/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(intent, "Open video using"));
-                }
-            }
-        });
+        btnplay.setOnClickListener(this);
 
         btnimage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -304,71 +285,7 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
             }
         });
 
-        btnlocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(neworder.this);
-                    builder.setTitle("GPS Disabled!");
-                    builder.setMessage("GPS should be enabled to get your location");
-                    builder.setPositiveButton("Enable GPS", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            startActivity(intent);
-                        }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(neworder.this, "Okay", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    builder.show();
-                }
-                else{
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                            /*Criteria criteria = new Criteria();
-                            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                            String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);*/
-
-                            address.setText("");
-                            showaddress=true;
-                            address.setEnabled(false);
-                            btnchangeaddress.setVisibility(View.VISIBLE);
-                            pd.setMessage("Fetching Location...");
-                            pd.show();
-                            getloc();
-
-                        }
-                        else {
-                            String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
-                            requestPermissions(requestloc, REQUEST_LOC_ORDER);
-                        }
-                    }
-                    else {
-
-/*
-                        Criteria criteria = new Criteria();
-                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                        String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
-*/
-
-                        address.setText("");
-                        showaddress=true;
-                        address.setEnabled(false);
-                        btnchangeaddress.setVisibility(View.VISIBLE);
-                        pd.setMessage("Fetching Location...");
-                        pd.show();
-                        getloc();
-                    }
-                }
-            }
-            });
+        btnlocation.setOnClickListener(this);
 
         btnchangeaddress.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -393,69 +310,70 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
         });
 
 
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pd.setMessage("Saving details...");
-                pd.show();
-                double latitude=0.00,longitude=0.00;
+        submit.setOnClickListener(this);
+    }
+
+    private void submit(){
+        pd.setMessage("Saving details...");
+        pd.show();
+        double latitude=0.00,longitude=0.00;
 
 
-                if(address.isEnabled()) {
-                    Geocoder geocoder=new Geocoder(neworder.this.getApplicationContext(),Locale.getDefault());
-                    List<Address> addresses;
-                    try {
-                        addresses=geocoder.getFromLocationName(address.getText().toString(),1);
-                        if(addresses.size()>0){
-                            latitude=addresses.get(0).getLatitude();
-                            longitude=addresses.get(0).getLongitude();
-                            addressfound = true;
-                        }
-                        else {
-                            //Toast.makeText(neworder.this, "Address not found", Toast.LENGTH_SHORT).show();
-                            addressfound = false;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        if(address.isEnabled()) {
+            Geocoder geocoder=new Geocoder(neworder.this.getApplicationContext(),Locale.getDefault());
+            List<Address> addresses;
+            try {
+                addresses=geocoder.getFromLocationName(address.getText().toString(),1);
+                if(addresses.size()>0){
+                    latitude=addresses.get(0).getLatitude();
+                    longitude=addresses.get(0).getLongitude();
+                    addressfound = true;
                 }
                 else {
-                    latitude=lat;
-                    longitude=lng;
+                    //Toast.makeText(neworder.this, "Address not found", Toast.LENGTH_SHORT).show();
+                    addressfound = false;
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            latitude=lat;
+            longitude=lng;
+        }
 
-                if(address.getText().toString().length() < 5 ){
-                    pd.dismiss();
-                    Toast.makeText(neworder.this, "Please enter a valid address", Toast.LENGTH_SHORT).show();
-                }else{
-                String service, time, ecomment, eaddress;
-                service = spinner_service.getSelectedItem().toString();
-                time = spinner_time.getSelectedItem().toString();
-                ecomment = comment.getText().toString();
-                eaddress = address.getText().toString();
+        if(address.getText().toString().length() < 5 ){
+            pd.dismiss();
+            Toast.makeText(neworder.this, "Please enter a valid address", Toast.LENGTH_SHORT).show();
+        }else{
+            String service, time, ecomment, eaddress;
+            service = spinner_service.getSelectedItem().toString();
+            time = spinner_time.getSelectedItem().toString();
+            ecomment = comment.getText().toString();
+            eaddress = address.getText().toString();
 
-                Location location=new Location("");
-                location.setLatitude(latitude);
-                location.setLongitude(longitude);
+            Location location=new Location("");
+            location.setLatitude(latitude);
+            location.setLongitude(longitude);
 
-                Location loc2=new Location("");
-                loc2.setLatitude(26.837474);
-                loc2.setLongitude(83.2374646);
-                float distance = location.distanceTo(loc2)/1000;
+            Location loc2=new Location("");
+            loc2.setLatitude(26.837474);
+            loc2.setLongitude(83.2374646);
+            float distance = location.distanceTo(loc2)/1000;
 
-                DecimalFormat df2=new DecimalFormat(".##");
-                String dis=""+df2.format(distance)+" "+"Km";
-                if(service == "Select service type..."){
-                    Toast.makeText(neworder.this, "Please select a service type", Toast.LENGTH_SHORT).show();
+            DecimalFormat df2=new DecimalFormat(".##");
+            String dis=""+df2.format(distance)+" "+"Km";
+            if(service == "Select service type..."){
+                Toast.makeText(neworder.this, "Please select a service type", Toast.LENGTH_SHORT).show();
+                pd.dismiss();
+            }
+            else{
+                if(time == "Select prefered time..."){
+                    Toast.makeText(neworder.this, "Please select your prefered time", Toast.LENGTH_SHORT).show();
                     pd.dismiss();
                 }
-                else{
-                    if(time == "Select prefered time..."){
-                        Toast.makeText(neworder.this, "Please select your prefered time", Toast.LENGTH_SHORT).show();
-                        pd.dismiss();
-                    }
-                    else {
-                        if(addressfound || !address.isEnabled()){
+                else {
+                    if(addressfound || !address.isEnabled()){
                         //Toast.makeText(neworder.this, "okay"+addressfound, Toast.LENGTH_SHORT).show();
                         //generatecode();
                         generatecodeforqr();
@@ -482,12 +400,72 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
 
                     }
                     else if(addressfound == false && address.isEnabled()){
-                            Toast.makeText(neworder.this, "The address entered was not found", Toast.LENGTH_SHORT).show();
-                            pd.dismiss();
-                        }
+                        Toast.makeText(neworder.this, "The address entered was not found", Toast.LENGTH_SHORT).show();
+                        pd.dismiss();
                     }
-                }}}
-        });
+                }
+            }}
+    }
+
+    private void btnlocationstat(){
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(neworder.this);
+            builder.setTitle("GPS Disabled!");
+            builder.setMessage("GPS should be enabled to get your location");
+            builder.setPositiveButton("Enable GPS", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(neworder.this, "Okay", Toast.LENGTH_SHORT).show();
+                }
+            });
+            builder.show();
+        }
+        else{
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                    Criteria criteria = new Criteria();
+                    criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                    String provider = locationManager.getBestProvider(criteria, true);
+                    locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
+
+                    address.setText("");
+                    showaddress=true;
+                    address.setEnabled(false);
+                    btnchangeaddress.setVisibility(View.VISIBLE);
+                    pd.setMessage("Fetching Location...");
+                    pd.show();
+                    getloc();
+
+                }
+                else {
+                    String[] requestloc = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+                    requestPermissions(requestloc, REQUEST_LOC_ORDER);
+                }
+            }
+            else {
+
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                String provider = locationManager.getBestProvider(criteria, true);
+                locationManager.requestLocationUpdates(provider, 0, 0, neworder.this);
+
+                address.setText("");
+                showaddress=true;
+                address.setEnabled(false);
+                btnchangeaddress.setVisibility(View.VISIBLE);
+                pd.setMessage("Fetching Location...");
+                pd.show();
+                getloc();
+            }
+        }
     }
 
     private void generatecode() {
@@ -535,6 +513,12 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
                 Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show();
             }
         }
+
+        if(requestCode == 1000){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Permissions Granted", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void generatecodeforqr() {
@@ -576,21 +560,17 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
                     if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                             && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
-                        //String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/mypic.jpg";
-                        String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath();
-                        File dir = new File(storagedir, "/Dot/");
-                        if (!dir.exists()) {
-                            dir.mkdirs();
-                        }
-                        String picname=code+".jpg";
-
-                        File file = new File(dir, picname);
+                        File mpath= Environment.getExternalStorageDirectory();
+                        File dir=new File(mpath+"/Dots/sent_pics/");
+                        dir.mkdirs();
+                        String filename=code+".jpg";
+                        File file=new File(dir, filename);
+                        outputfileuri = FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID + ".provider" , file);
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        outputfileuri=FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID+ ".provider", getTempFile(neworder.this));
-                        //outputfileuri = Uri.fromFile(dir);
 
                         intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
-                        startActivityForResult(intent, Takepic);
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivityForResult(intent, 555);
                         dialog.dismiss();
                     }
                     else {
@@ -600,21 +580,8 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
                 }
 
                 else {
-                    String storagedir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/";
-                    File dir = new File(storagedir);
-                    if (!dir.exists()) {
-                        dir.mkdirs();
-                    }
-                    String picname=code+".jpg";
-
-                    File file = new File(dir, picname);
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-                    outputfileuri = Uri.fromFile(file);
-
-
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, outputfileuri);
-                    startActivityForResult(intent, Takepic);
+                    startActivityForResult(intent, 555);
                     dialog.dismiss();
                 }
 
@@ -626,10 +593,12 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
             public void onClick(View v) {
                 format="video";
                 generatecode();
-                Intent intent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                /*Intent intent=new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
                 intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 3);
-                startActivityForResult(intent, capture_video);
+                startActivityForResult(intent, capture_video);*/
+                Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                startActivityForResult(intent, 444);
                 dialog.dismiss();
             }
         });
@@ -637,37 +606,114 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
 
     }
 
+    @SuppressLint("NewApi")
+    private String getRealPath(Context context, Uri contentUri){
+        Cursor cursor = null;
+        try {
+            String[] proj = {MediaStore.Images.Media.DATA};
+            cursor = context.getContentResolver().query(contentUri,proj,null,null,null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }finally {
+            if(cursor != null){
+                cursor.close();
+            }
+        }
+    }
+
+    private File saveimage(File compressedfile, String name) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.fromFile(compressedfile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        File mpath= Environment.getExternalStorageDirectory();
+        File dir=new File(mpath+"/Dots/sent_pics/");
+        dir.mkdirs();
+        String filename=name+".jpg";
+        final File file=new File(dir, filename);
+
+        FileOutputStream fos = null;
+        try{
+            fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,fos);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }finally {
+            try{
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return file;
+
+    }
+
+    private File savevideo(File compressedfile, String name) {
+        File mpath= Environment.getExternalStorageDirectory();
+        File dir=new File(mpath+"/Dots/sent_pics/");
+        dir.mkdirs();
+        String filename=name+".mp4";
+        final File file=new File(dir, filename);
+
+        FileOutputStream fos = null;
+        try{
+            AssetFileDescriptor videoAsset = getContentResolver().openAssetFileDescriptor(
+                    FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID + ".provider", compressedfile), "r");
+            FileInputStream in = videoAsset.createInputStream();
+            fos = new FileOutputStream(file);
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0 ){
+                fos.write(buf,0,len);
+            }
+            in.close();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        filePath=outputfileuri;
-        if(requestCode == Takepic && resultCode == RESULT_OK) {
+        if(requestCode == 555 && resultCode == RESULT_OK) {
+            filePath=outputfileuri;
 
-            Bitmap bitmap=null;
-            final File filed = getTempFile(neworder.this);
-            try{
-                Uri uri = Uri.fromFile(filed);
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-
-                //btnimage.setImageBitmap(bitmap);
-                //btnimage.setVisibility(View.VISIBLE);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+            /*String abspath = getRealPath(this, filePath);
+            File ff = new File(abspath);*/
+            Bitmap bitmap = null;
+            //bitmap=(Bitmap)data.getExtras().get("data");
+            try {
+                bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            /*Bitmap bitmap = null;
+            /*File compressedfile = null;
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
+                compressedfile = new Compressor(this)
+                        .setQuality(20)
+                        .compressToFile(ff);
             } catch (IOException e) {
                 e.printStackTrace();
             }*/
+            //File newfile = saveimage(compressedfile, code);
 
             btnimage.setVisibility(View.VISIBLE);
 
-            //Bitmap bitmap=(Bitmap)data.getExtras().get("data");
             int w = bitmap.getWidth();
             int h = bitmap.getHeight();
             int neww = w / 2;
@@ -685,51 +731,21 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
             btnimage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             btnplay.setVisibility(View.VISIBLE);
             cam_or_vid = "cam";
-
-            /*if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
-
-                byte[] byteArray = stream.toByteArray();
-
-                Bitmap compressedBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-
-                String mpath = Environment.getExternalStorageDirectory().getAbsolutePath();
-                File dir = new File(mpath + "/Dot/");
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                String cpname = "mypicCompressed_.jpg";
-
-                File file = new File(dir, cpname);
-
-                Uri ptp = FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID + ".provider", file);
-                OutputStream out = null;
-                try {
-                    out = new FileOutputStream(ptp.toString());
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
-                    out.flush();
-                    out.close();
-
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                filePath = ptp;
-            }*/
         }
 
+        if(requestCode == 444 && resultCode == RESULT_OK){
 
-        if(requestCode == capture_video && resultCode == RESULT_OK){
-            filePath=data.getData();
+            Uri uri = data.getData();
 
-            result=filePath.getPath();
+            String abspath = getRealPath(this, uri);
+            File ff = new File(abspath);
+
+            File fl=savevideo(ff,code);
+
+            filePath = FileProvider.getUriForFile(neworder.this, BuildConfig.APPLICATION_ID +".provider" , fl);
 
             String[] filePathColumn ={MediaStore.Images.Media.DATA};
-            Cursor cursor = this.getContentResolver().query(filePath, filePathColumn, null, null, null);
+            Cursor cursor = this.getContentResolver().query(uri, filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnindex = cursor.getColumnIndex(filePathColumn[0]);
             String picPath=cursor.getString(columnindex);
@@ -757,9 +773,9 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
         }
     }
 
-    /*@Override
+    @Override
     public void onLocationChanged(final Location location) {
-        lat=location.getLatitude();
+        /*lat=location.getLatitude();
         lng=location.getLongitude();
                     Geocoder geo = new Geocoder(neworder.this.getApplicationContext(), Locale.getDefault());
                     try {
@@ -775,32 +791,37 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
 
-    }*/
+    }
 
     @SuppressLint("MissingPermission")
     private void getloc(){
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                lat=location.getLatitude();
-                lng=location.getLongitude();
-                Geocoder geo = new Geocoder(neworder.this.getApplicationContext(), Locale.getDefault());
-                try {
-                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (addresses.isEmpty()) {
-                        address.setText("Waiting for address");
-                    } else {
-                        if (addresses.size() > 0 && showaddress==true && address.getText().toString().isEmpty()) {
-                            String ad = addresses.get(0).getAddressLine(0);
-                            address.setText(ad);
-                            pd.dismiss();
+                if (location != null) {
+                    lat = location.getLatitude();
+                    lng = location.getLongitude();
+                    Geocoder geo = new Geocoder(neworder.this.getApplicationContext(), Locale.getDefault());
+                    try {
+                        List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses.isEmpty()) {
+                            address.setText("Waiting for address");
+                        } else {
+                            if (addresses.size() > 0 && showaddress == true && address.getText().toString().isEmpty()) {
+                                String ad = addresses.get(0).getAddressLine(0);
+                                address.setText(ad);
+                                pd.dismiss();
+                            }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                }
+                else {
+                    getloc();
                 }
             }
         });
@@ -824,7 +845,7 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
     }
 
 
-    /*@Override
+    @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
 
     }
@@ -837,5 +858,50 @@ public class neworder extends AppCompatActivity/* implements LocationListener */
     @Override
     public void onProviderDisabled(String provider) {
         //Toast.makeText(this, "Please enable the GPS", Toast.LENGTH_SHORT).show();
-    }*/
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btnplus:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if((checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)) {
+                        camvideo();
+                    }
+                    else {
+                        String[] pemissionRequest={Manifest.permission.CAMERA};
+                        requestPermissions(pemissionRequest, CAMERA_PERMISSION_REQUEST);
+
+                    }
+                }
+                else {
+                    camvideo();
+                }
+                break;
+
+            case R.id.btnplay:
+                if(cam_or_vid.equals("cam")){
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(filePath, "image/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(intent, "Open image using"));
+                }
+
+                if(cam_or_vid.equals("vid")){
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(filePath, "video/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(intent, "Open video using"));
+                }
+                break;
+
+            case R.id.btnlocation:
+                btnlocationstat();
+                break;
+
+            case R.id.btnstart:
+                submit();
+                break;
+        }
+    }
 }

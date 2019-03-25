@@ -132,8 +132,7 @@ public class provider_order_accepted extends AppCompatActivity {
 
                 if(nformat.equals("video")){
                     File mpath= Environment.getExternalStorageDirectory();
-
-                    File dir=new File(mpath+"/Dot/");
+                    File dir=new File(mpath+"/Dots/received/");
                     dir.mkdirs();
                     String filename=code+".mp4";
                     File file=new File(dir, filename);
@@ -146,8 +145,7 @@ public class provider_order_accepted extends AppCompatActivity {
 
                 if(nformat.equals("image")){
                     File mpath= Environment.getExternalStorageDirectory();
-
-                    File dir=new File(mpath+"/Dot/");
+                    File dir=new File(mpath+"/Dots/received/");
                     dir.mkdirs();
                     String filename=code+".jpg";
                     File file=new File(dir, filename);
@@ -182,8 +180,7 @@ public class provider_order_accepted extends AppCompatActivity {
                         pd.setMessage("Downloading...");
                         pd.show();
                     File mpath= Environment.getExternalStorageDirectory();
-
-                    File dir=new File(mpath+"/Dot/");
+                    File dir=new File(mpath+"/Dots/received/");
                     dir.mkdirs();
                     String filename=code+".mp4";
                     File file=new File(dir, filename);
@@ -213,12 +210,11 @@ public class provider_order_accepted extends AppCompatActivity {
 
                         pd.setMessage("Downloading...");
                         pd.show();
-                        File mpath= Environment.getExternalStorageDirectory();
-
-                        File dir=new File(mpath+"/Dot/");
-                        dir.mkdirs();
-                        String filename=code+".jpg";
-                        File file=new File(dir, filename);
+                    File mpath= Environment.getExternalStorageDirectory();
+                    File dir=new File(mpath+"/Dots/received/");
+                    dir.mkdirs();
+                    String filename=code+".jpg";
+                    final File file=new File(dir, filename);
 
                         strf.child("order").child(path).getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                             @Override
@@ -249,11 +245,10 @@ public class provider_order_accepted extends AppCompatActivity {
                 if(nformat.equals("video")){
 
                     //File mpath= Environment.getExternalStorageDirectory();
-                    String mpath=Environment.getExternalStorageDirectory().getAbsolutePath() + "/Dot/";
-                    File dir=new File(mpath);
-                    //dir.mkdirs();
+                    File mpath= Environment.getExternalStorageDirectory();
+                    File dir=new File(mpath+"/Dots/received/");
                     String filename=code+".mp4";
-                    File file=new File(dir, filename);
+                    final File file=new File(dir, filename);
 
                     //Uri filepath=Uri.fromFile(file);
                     Uri filepath= FileProvider.getUriForFile(provider_order_accepted.this, BuildConfig.APPLICATION_ID + ".provider",file);
@@ -270,11 +265,10 @@ public class provider_order_accepted extends AppCompatActivity {
                 if(nformat.equals("image")){
 
                     //File mpath= Environment.getExternalStorageDirectory();
-                    String mpath=Environment.getExternalStorageDirectory().getAbsolutePath()+"/Dot/";
-                    File dir=new File(mpath);
-                    //dir.mkdirs();
+                    File mpath= Environment.getExternalStorageDirectory();
+                    File dir=new File(mpath+"/Dots/received/");
                     String filename=code+".jpg";
-                    File file=new File(dir, filename);
+                    final File file=new File(dir, filename);
 
                     //Uri filepath=Uri.fromFile(file);
                     Uri filepath= FileProvider.getUriForFile(provider_order_accepted.this, BuildConfig.APPLICATION_ID + ".provider",file);

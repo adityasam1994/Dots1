@@ -11,7 +11,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:orientation="vertical"
@@ -74,6 +74,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:orientation="vertical">
 
                 <FrameLayout
@@ -141,13 +142,12 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
-                        android:src="@drawable/ic_work_black_24dp"
-                        android:layout_gravity="center_vertical"/>
+                        android:src="@drawable/ic_work_black_24dp" />
 
                     <Spinner
                         android:id="@+id/spinner_service"
-                        android:paddingLeft="30dp"
                         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -157,6 +157,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
+                        android:paddingLeft="30dp"
                         android:theme="@style/ThemeSpinner" />
 
                 </FrameLayout>
@@ -168,13 +169,12 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
                         android:layout_gravity="center_vertical"
+                        android:layout_marginStart="16dp"
                         android:src="@drawable/ic_access_time_black_24dp" />
 
                     <Spinner
                         android:id="@+id/spinner_time"
-                        android:paddingLeft="30dp"
                         style="@style/Base.Widget.AppCompat.Spinner.Underlined"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -184,14 +184,15 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="8dp"
-                        android:theme="@style/ThemeSpinner"/>
+                        android:paddingLeft="30dp"
+                        android:theme="@style/ThemeSpinner" />
 
                 </FrameLayout>
 
                 <EditText
                     android:id="@+id/etcomment"
                     android:layout_width="match_parent"
-                    android:layout_height="138dp"
+                    android:layout_height="130dp"
                     android:layout_above="@+id/etaddress"
                     android:layout_centerHorizontal="true"
                     android:layout_marginBottom="8dp"

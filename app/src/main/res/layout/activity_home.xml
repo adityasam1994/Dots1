@@ -58,6 +58,14 @@
 
         </LinearLayout>
 
+        <ListView
+            android:id="@+id/lv"
+            android:layout_marginTop="10dp"
+            android:dividerHeight="5dp"
+            android:divider="@color/zxing_transparent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

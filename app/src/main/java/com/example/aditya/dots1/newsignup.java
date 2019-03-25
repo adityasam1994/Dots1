@@ -90,7 +90,7 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-public class newsignup extends AppCompatActivity implements /*LocationListener,*/ View.OnClickListener {
+public class newsignup extends AppCompatActivity implements LocationListener, View.OnClickListener {
 
     public static final int CAMERA_PERMISSION_REQUEST = 12345678;
     public static final int REQUSET_FINE_LOCATION = 9999;
@@ -707,9 +707,9 @@ public class newsignup extends AppCompatActivity implements /*LocationListener,*
     }
 
 
-    /*@Override
+    @Override
     public void onLocationChanged(final Location location) {
-        latitude=location.getLatitude();
+        /*latitude=location.getLatitude();
         longitude=location.getLongitude();
         Geocoder geo = new Geocoder(newsignup.this.getApplicationContext(), Locale.getDefault());
         try {
@@ -725,7 +725,7 @@ public class newsignup extends AppCompatActivity implements /*LocationListener,*
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
             }
 
@@ -743,29 +743,34 @@ public class newsignup extends AppCompatActivity implements /*LocationListener,*
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "GPS service is disabled", Toast.LENGTH_SHORT).show();
-    }*/
+    }
 
     @SuppressLint("MissingPermission")
     private void getloc(){
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                latitude=location.getLatitude();
-                longitude=location.getLongitude();
-                Geocoder geo = new Geocoder(newsignup.this.getApplicationContext(), Locale.getDefault());
-                try {
-                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (addresses.isEmpty()) {
-                        etaddress.setText("Waiting for address");
-                    } else {
-                        if (addresses.size() > 0 && showaddress==true && etaddress.getText().toString().isEmpty()) {
-                            String fn = addresses.get(0).getAddressLine(0);
-                            etaddress.setText(fn);
-                            pd.dismiss();
+                if (location != null) {
+                    latitude = location.getLatitude();
+                    longitude = location.getLongitude();
+                    Geocoder geo = new Geocoder(newsignup.this.getApplicationContext(), Locale.getDefault());
+                    try {
+                        List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses.isEmpty()) {
+                            etaddress.setText("Waiting for address");
+                        } else {
+                            if (addresses.size() > 0 && showaddress == true && etaddress.getText().toString().isEmpty()) {
+                                String fn = addresses.get(0).getAddressLine(0);
+                                etaddress.setText(fn);
+                                pd.dismiss();
+                            }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                }
+                else {
+                    getloc();
                 }
             }
         });
@@ -799,10 +804,10 @@ public class newsignup extends AppCompatActivity implements /*LocationListener,*
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                 && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            /*Criteria criteria = new Criteria();
+                            Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0,  this);*/
+                            locationManager.requestLocationUpdates(provider, 0, 0,  this);
 
                             etaddress.setText("");
                             showaddress=true;
@@ -818,10 +823,10 @@ public class newsignup extends AppCompatActivity implements /*LocationListener,*
                         }
                     }
                     else {
-                        /*Criteria criteria = new Criteria();
+                        Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0,  this);*/
+                        locationManager.requestLocationUpdates(provider, 0, 0,  this);
 
                         etaddress.setText("");
                         showaddress=true;

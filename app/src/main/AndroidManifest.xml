@@ -105,11 +105,10 @@
         <activity android:name=".Video_player" />
         <activity android:name=".order_accepted" />
         <activity android:name=".job_done" />
-
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <service
             android:name=".testsevice"
@@ -154,10 +153,12 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".myaccount"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".report_problem"
-            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".myaccount"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".report_problem"
+            android:windowSoftInputMode="stateHidden" />
 
         <receiver
             android:name=".timer_receiver"
@@ -177,17 +178,22 @@
             android:exported="true" />
 
         <activity android:name=".Privacy_Policy" />
-        <activity android:name=".Contact_us"></activity>
+        <activity android:name=".Contact_us" />
 
         <provider
-            android:authorities="${applicationId}.provider"
             android:name="android.support.v4.content.FileProvider"
-            android:grantUriPermissions="true"
-            android:exported="false">
-
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/providers_path"/>
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/providers_path" />
         </provider>
+
+        <service
+            android:name=".foreground_test"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

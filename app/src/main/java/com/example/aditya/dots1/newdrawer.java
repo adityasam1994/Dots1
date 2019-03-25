@@ -1,15 +1,18 @@
 package com.example.aditya.dots1;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +21,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -80,6 +84,7 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Random;
 
 import androidmads.library.qrgenearator.QRGContents;
@@ -88,7 +93,7 @@ import github.nisrulz.qreader.QRDataListener;
 import github.nisrulz.qreader.QREader;
 
 public class newdrawer extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
 
     LinearLayout servicelist;
@@ -110,6 +115,8 @@ public class newdrawer extends AppCompatActivity
     double u_lat, u_lng;
     TextView txtdistance;
     ImageView btnsetting;
+    ListView listView;
+    ArrayList<service> slist = new ArrayList<>();
 
     Intent mServiceIntent;
     private testcounterservice mYourService;
@@ -125,13 +132,55 @@ public class newdrawer extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        btnsetting=(ImageView)findViewById(R.id.btnsetting);
+        initialize(savedInstanceState);
 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        View header=navigationView.getHeaderView(0);
+        final Button btnap=(Button)header.findViewById(R.id.btnasprovider);
+
+        dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.child("status").getValue().toString().equals("provider")){
+                    btnap.setVisibility(View.VISIBLE);
+                }
+                else {
+                    btnap.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        btnap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("current_status").setValue("provider");
+
+                startActivity(new Intent(newdrawer.this, provider_home.class));
+            }
+        });
+    }
+
+    private void initialize(Bundle savedInstanceState) {
+        listView=(ListView) findViewById(R.id.lv);
+        btnsetting=(ImageView)findViewById(R.id.btnsetting);
         sharedPreferences=getSharedPreferences( "appopen", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putBoolean("customer_at_home", true);
         editor.commit();
-
         servicelist=(LinearLayout)findViewById(R.id.service_layout);
         lines=(Button)findViewById(R.id.btnmenu);
 
@@ -141,160 +190,35 @@ public class newdrawer extends AppCompatActivity
         FirebaseUser currentuser=FirebaseAuth.getInstance().getCurrentUser();
         email=currentuser.getEmail();
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_DENIED){
+                requestPermissions(new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1000);
+            }
+        }
+
+        showmenu();
+        showpayment();
+
         dbr.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                fname=dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("fname").getValue().toString();
-                lname=dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("lname").getValue().toString();
+                if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("fname")) {
+                    fname = dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("fname").getValue().toString();
+                }
+                if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("fname")) {
+                    lname = dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("lname").getValue().toString();
+                }
                 tv.setText(fname);
 
                 if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("profilepic")) {
                     piclink = dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("profilepic").getValue().toString();
                 }
 
-                }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        btnsetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isMyServiceRunning(customer_notification_service.class)){
-                    //Toast.makeText(newdrawer.this, "The bastered is running", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    //Toast.makeText(newdrawer.this, "Not Running", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        dbrservices.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (final DataSnapshot ds:dataSnapshot.getChildren()){
-
-                    final double[] distance = {50000};
-                    final int[] count = {0};
-                    dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                            if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("lati")) {
-                                u_lat = (double) dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("lati").getValue();
-                            }
-                            if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("lati")) {
-                                u_lng = (double) dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("longi").getValue();
-                            }
-                            for(DataSnapshot d : dataSnapshot.getChildren()) {
-                                if (d.hasChild("status")) {
-                                    if (d.child("status").getValue().toString().equals("provider")) {
-                                        if (d.child("info").child("eservice").getValue().toString().equals(ds.getKey().toString())) {
-
-                                            count[0] = count[0] + 1;
-
-                                            double p_lat = (double) d.child("info").child("lati").getValue();
-                                            double p_lng = (double) d.child("info").child("longi").getValue();
-
-                                            Location locc = new Location("");
-                                            locc.setLatitude(u_lat);
-                                            locc.setLongitude(u_lng);
-
-                                            Location locp = new Location("");
-                                            locp.setLatitude(p_lat);
-                                            locp.setLongitude(p_lng);
-
-                                            double dist = (double) locc.distanceTo(locp);
-
-                                            if (dist < distance[0]) {
-                                                distance[0] = dist;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            float dip_mt=8f;
-                            Resources r=getResources();
-                            float px_mt= TypedValue.applyDimension(
-                                    TypedValue.COMPLEX_UNIT_DIP, dip_mt, r.getDisplayMetrics()
-                            );
-
-                            float dip_pl=20f;
-                            float px_pl= TypedValue.applyDimension(
-                                    TypedValue.COMPLEX_UNIT_DIP, dip_pl, r.getDisplayMetrics()
-                            );
-
-                            float dip_h=35f;
-                            float px_h= TypedValue.applyDimension(
-                                    TypedValue.COMPLEX_UNIT_DIP, dip_h, r.getDisplayMetrics()
-                            );
-
-                            float dip_ts=10f;
-                            float px_ts= TypedValue.applyDimension(
-                                    TypedValue.COMPLEX_UNIT_DIP, dip_ts, r.getDisplayMetrics()
-                            );
-
-                            double diss = distance[0] / 1000;
-                            diss = diss * 100;
-                            diss = Math.round(diss);
-                            diss = diss / 100;
-
-                            if(diss < 50.0){
-                                txtdistance = new TextView(newdrawer.this);
-                                txtdistance.setText("("+diss+" Km"+")");
-                                txtdistance.setTextSize(14);
-                                txtdistance.setPadding(0,0,14,0);
-                                txtdistance.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
-                            }
-                            else {
-                                txtdistance = new TextView(newdrawer.this);
-                                txtdistance.setText("N/A");
-                                txtdistance.setTextSize(14);
-                                txtdistance.setPadding(0,0,14,0);
-                                txtdistance.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
-                            }
-
-                            final LinearLayout layout = new LinearLayout(newdrawer.this);
-                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) px_h);
-                            params.setMargins(0, (int) px_mt, 0, 0);
-                            layout.setLayoutParams(params);
-                            layout.setOrientation(LinearLayout.HORIZONTAL);
-                            layout.setBackground(ContextCompat.getDrawable(newdrawer.this, R.drawable.t_stripe));
-
-                            Button mybutton=new Button(newdrawer.this);
-                            mybutton.setText(ds.getKey().toString());
-                            mybutton.setTextSize(18);
-                            mybutton.setTypeface(null, Typeface.BOLD);
-                            mybutton.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-                            LinearLayout.LayoutParams para = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT,1);
-                            mybutton.setLayoutParams(para);
-                            mybutton.setPadding((int) px_pl,0,0,0);
-                            mybutton.setBackground(ContextCompat.getDrawable(newdrawer.this, R.color.zxing_transparent));
-
-                            layout.addView(mybutton);
-                            layout.addView(txtdistance);
-                            servicelist.addView(layout);
-
-                            mybutton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Intent intent=new Intent(newdrawer.this,neworder.class);
-                                    intent.putExtra("service",ds.getKey().toString());
-                                    startActivity(intent);
-                                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-                }
             }
 
             @Override
@@ -303,6 +227,41 @@ public class newdrawer extends AppCompatActivity
             }
         });
 
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView txtname = (TextView)view.findViewById(R.id.service);
+
+                Intent intent=new Intent(newdrawer.this,neworder.class);
+                intent.putExtra("service",txtname.getText().toString());
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
+        });
+
+        storageReference.child("images/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).getDownloadUrl()
+                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        profile=uri;
+                    }
+                });
+
+        lines.setOnClickListener(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 1000){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Permissions Granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void showpayment(){
         dbrorder.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -347,77 +306,91 @@ public class newdrawer extends AppCompatActivity
 
             }
         });
-
-
-
-        /*QRGEncoder qrgEncoder=new QRGEncoder("Aditya Nath", null, QRGContents.Type.TEXT, 300);
-        try{
-            Bitmap bitmap=qrgEncoder.encodeAsBitmap();
-            ImageView im=(ImageView)findViewById(R.id.testimage);
-            im.setImageBitmap(bitmap);
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }*/
-
-
-
-
-        storageReference.child("images/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).getDownloadUrl()
-                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        profile=uri;
-                    }
-                });
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        View header=navigationView.getHeaderView(0);
-        Button btnap=(Button)header.findViewById(R.id.btnasprovider);
-
-        btnap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dbr.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("current_status").setValue("provider");
-
-                startActivity(new Intent(newdrawer.this, provider_home.class));
-            }
-        });
-        //startService(new Intent(newdrawer.this,order_status_service.class));
-
-        lines.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                TextView name=(TextView)drawer.findViewById(R.id.tvname);
-                ImageView image=(ImageView)drawer.findViewById(R.id.ivpic);
-                TextView mail=(TextView)drawer.findViewById(R.id.tvemail);
-                name.setText(fname+" "+lname);
-                mail.setText(email);
-                if(!piclink.equals("") && profile == null) {
-
-                    Picasso.get().load(piclink).resize(100, 100).into(image);
-                }
-                if(profile != null){
-                    Picasso.get().load(profile).resize(100, 100).into(image);
-                }
-                if (drawer.isDrawerOpen(GravityCompat.START)) {
-                    drawer.closeDrawer(GravityCompat.START);
-                } else {
-                    drawer.openDrawer((int)GravityCompat.START);
-                }
-            }
-        });
     }
 
+    private void showmenu(){
+        dbrservices.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (final DataSnapshot ds:dataSnapshot.getChildren()){
+
+                    final double[] distance = {50000};
+                    final int[] count = {0};
+                    dbruser.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("lati")) {
+                                u_lat = (double) dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("lati").getValue();
+                            }
+                            if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).hasChild("lati")) {
+                                u_lng = (double) dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("longi").getValue();
+                            }
+                            for(DataSnapshot d : dataSnapshot.getChildren()) {
+                                if (d.hasChild("status")) {
+                                    if (d.child("status").getValue().toString().equals("provider")) {
+                                        if (d.child("info").child("eservice").getValue().toString().equals(ds.getKey().toString())) {
+
+                                            count[0] = count[0] + 1;
+
+                                            double p_lat = (double) d.child("info").child("lati").getValue();
+                                            double p_lng = (double) d.child("info").child("longi").getValue();
+
+                                            Location locc = new Location("");
+                                            locc.setLatitude(u_lat);
+                                            locc.setLongitude(u_lng);
+
+                                            Location locp = new Location("");
+                                            locp.setLatitude(p_lat);
+                                            locp.setLongitude(p_lng);
+
+                                            double dist = (double) locc.distanceTo(locp);
+
+                                            if (dist < distance[0]) {
+                                                distance[0] = dist;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            double diss = distance[0] / 1000;
+                            diss = diss * 100;
+                            diss = Math.round(diss);
+                            diss = diss / 100;
+
+                            String dss = "";
+                            if(diss < 50.0){
+                                dss="("+diss+" Km"+")";
+                            }
+                            else {
+                                dss="N/A";
+                            }
+
+                            final LinearLayout layout = new LinearLayout(newdrawer.this);
+
+                            slist.add(new service(ds.getKey().toString(), dss));
+
+                            servicelist.addView(layout);
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        Servicelistadapter adapter = new Servicelistadapter(this, R.layout.service_name, slist);
+        listView.setAdapter(adapter);
+    }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -654,4 +627,30 @@ public class newdrawer extends AppCompatActivity
     }
 
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btnmenu:
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                TextView name=(TextView)drawer.findViewById(R.id.tvname);
+                ImageView image=(ImageView)drawer.findViewById(R.id.ivpic);
+                TextView mail=(TextView)drawer.findViewById(R.id.tvemail);
+                name.setText(fname+" "+lname);
+                mail.setText(email);
+                if(!piclink.equals("") && profile == null) {
+
+                    Picasso.get().load(piclink).resize(100, 100).into(image);
+                }
+                if(profile != null){
+                    Picasso.get().load(profile).resize(100, 100).into(image);
+                }
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START);
+                } else {
+                    drawer.openDrawer((int)GravityCompat.START);
+                }
+                break;
+
+        }
+    }
 }

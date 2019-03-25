@@ -78,7 +78,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class myaccount extends AppCompatActivity/* implements LocationListener*/{
+public class myaccount extends AppCompatActivity implements LocationListener {
 
     public static final int REQUEST_LOC = 67564;
     private static final int REQ_STORAGE_WRITE_MY = 796786;
@@ -129,6 +129,17 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
         getloc_work = (ImageView) findViewById(R.id.getloc_work);
 
         pd = new ProgressDialog(this);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED ||
+                    checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_DENIED){
+                requestPermissions(new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1000);
+            }
+        }
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -256,10 +267,10 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            /*Criteria criteria = new Criteria();
+                            Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
+                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
 
 
                             showaddress_work = true;
@@ -274,10 +285,10 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                             requestPermissions(requestloc, REQUEST_LOC);
                         }
                     } else {
-                        /*Criteria criteria = new Criteria();
+                        Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
+                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
 
 
                         showaddress_work = true;
@@ -316,10 +327,10 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            /*Criteria criteria = new Criteria();
+                            Criteria criteria = new Criteria();
                             criteria.setAccuracy(Criteria.ACCURACY_FINE);
                             String provider = locationManager.getBestProvider(criteria, true);
-                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
+                            locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
 
 
                             showaddress = true;
@@ -334,10 +345,10 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                             requestPermissions(requestloc, REQUEST_LOC);
                         }
                     } else {
-                        /*Criteria criteria = new Criteria();
+                        Criteria criteria = new Criteria();
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         String provider = locationManager.getBestProvider(criteria, true);
-                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);*/
+                        locationManager.requestLocationUpdates(provider, 0, 0, myaccount.this);
 
 
                         showaddress = true;
@@ -568,11 +579,11 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
-                String picname="profile.jpg";
+                String picname = "profile.jpg";
 
                 File file = new File(dir, picname);
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                inputuri=FileProvider.getUriForFile(myaccount.this, BuildConfig.APPLICATION_ID+ ".provider", file);
+                inputuri = FileProvider.getUriForFile(myaccount.this, BuildConfig.APPLICATION_ID + ".provider", file);
 
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, inputuri);
                 startActivityForResult(intent, CAPTURE_IMAGE_FROM_CAM);
@@ -597,7 +608,7 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
         });
     }
 
-    protected synchronized void buildGoogleApiClient(){
+    protected synchronized void buildGoogleApiClient() {
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) this)
                 .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) this)
@@ -622,6 +633,8 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                 criteria.setAccuracy(Criteria.ACCURACY_FINE);
                 String provider = locationManager.getBestProvider(criteria, true);
                 locationManager.requestLocationUpdates(provider, 0, 0, (LocationListener) this);
+
+                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Location permission is required", Toast.LENGTH_SHORT).show();
             }
@@ -632,6 +645,12 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
                 Toast.makeText(this, "Storage Read permission Granted", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if(requestCode == 1000){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -679,10 +698,10 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
         }
 
         if (requestCode == CAPTURE_IMAGE_FROM_CAM && resultCode == RESULT_OK) {
-                beginCrop(inputuri);
-            } else if (requestCode == Crop.REQUEST_CROP) {
-                handleCrop(resultCode, data);
-            }
+            beginCrop(inputuri);
+        } else if (requestCode == Crop.REQUEST_CROP) {
+            handleCrop(resultCode, data);
+        }
     }
 
     private void beginCrop(Uri source) {
@@ -715,9 +734,9 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
         }
     }
 
-    /*@Override
+    @Override
     public void onLocationChanged(Location location) {
-        lat = location.getLatitude();
+        /*lat = location.getLatitude();
         lng = location.getLongitude();
         Geocoder geo = new Geocoder(myaccount.this.getApplicationContext(), Locale.getDefault());
         try {
@@ -752,7 +771,7 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
@@ -768,51 +787,62 @@ public class myaccount extends AppCompatActivity/* implements LocationListener*/
     @Override
     public void onProviderDisabled(String provider) {
 
-    }*/
+    }
 
     @SuppressLint("MissingPermission")
-    private void getloc(){
+    private void getloc() {
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                lat = location.getLatitude();
-                lng = location.getLongitude();
-                Geocoder geo = new Geocoder(myaccount.this.getApplicationContext(), Locale.getDefault());
-                try {
-                    List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (addresses.isEmpty()) {
-                        etaddress.setText("Waiting for address");
-                    } else {
-                        if (addresses.size() > 0 && showaddress == true) {
-                            etaddress.setText("");
+                if (location != null) {
+                    lat = location.getLatitude();
+                    lng = location.getLongitude();
+                    Geocoder geo = new Geocoder(myaccount.this.getApplicationContext(), Locale.getDefault());
+                    try {
+                        List<Address> addresses = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses.isEmpty()) {
+                            etaddress.setText("Waiting for address");
+                        } else {
+                            if (addresses.size() > 0 && showaddress == true) {
+                                etaddress.setText("");
 
-                            String ad = addresses.get(0).getAddressLine(0);
-                            etaddress.setText(ad);
-                            pd.dismiss();
+                                String ad = addresses.get(0).getAddressLine(0);
+                                etaddress.setText(ad);
+                                pd.dismiss();
+                            }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+                    try {
+                        List<Address> addresses_work = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses_work.isEmpty()) {
+                            etaddress_work.setText("Waiting for address");
+                        } else {
+                            if (addresses_work.size() > 0 && showaddress_work == true) {
+                                etaddress_work.setText("");
+
+                                String ad = addresses_work.get(0).getAddressLine(0);
+                                etaddress_work.setText(ad);
+                                pd.dismiss();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-
-                try {
-                    List<Address> addresses_work = geo.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                    if (addresses_work.isEmpty()) {
-                        etaddress_work.setText("Waiting for address");
-                    } else {
-                        if (addresses_work.size() > 0 && showaddress_work == true) {
-                            etaddress_work.setText("");
-
-                            String ad = addresses_work.get(0).getAddressLine(0);
-                            etaddress_work.setText(ad);
-                            pd.dismiss();
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                else {
+                    getloc();
                 }
             }
-        });
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(myaccount.this, "Failed to get the location. please try again", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 }

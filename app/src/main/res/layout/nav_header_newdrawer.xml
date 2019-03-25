@@ -47,7 +47,8 @@
                 android:text="Continue as Provider"
                 android:textColor="#ff9950"
                 android:textSize="9dp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="invisible" />
 
         </LinearLayout>
 
